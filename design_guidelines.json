@@ -1,0 +1,143 @@
+{
+  "theme": {
+    "mode": "toggle",
+    "primary_archetype": "Archetype 5 (Luxury) + Archetype 4 (Swiss & High-Contrast)",
+    "description": "Ultra-premium event discovery platform combining Apple's 2026 'Liquid Glass' aesthetic, Airbnb's functional filtering, and Linear's stark minimalism. Emphasizes depth, rich photography, and tactile micro-interactions."
+  },
+  "colors": {
+    "light": {
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "surface_glass": "rgba(255, 255, 255, 0.7)",
+      "text_primary": "#0A0A0A",
+      "text_secondary": "#52525A",
+      "accent": "#000000",
+      "border": "rgba(0, 0, 0, 0.08)",
+      "border_glass": "rgba(255, 255, 255, 0.4)"
+    },
+    "dark": {
+      "background": "#05050A",
+      "surface": "#0F0F16",
+      "surface_glass": "rgba(10, 10, 15, 0.6)",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#A1A1AA",
+      "accent": "#FFFFFF",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "border_glass": "rgba(255, 255, 255, 0.15)"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Cabinet Grotesk, sans-serif",
+      "weights": ["300", "500", "800"],
+      "tracking": "tracking-tight"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weights": ["400", "500", "600"],
+      "tracking": "tracking-normal"
+    },
+    "rules": [
+      "No Inter for headings.",
+      "H1 up to text-6xl, fluid scaling, tight leading.",
+      "Labels must be uppercase, text-xs, tracking-[0.2em]."
+    ]
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing (p-8, p-12) for premium breathing room.",
+    "grid_system": "Bento Grid (Mode A: Tetris) for category discovery. Asymmetrical spans (col-span-8, col-span-4).",
+    "containers": "Cards must have internal padding (p-6/p-8) to prevent text collision with borders."
+  },
+  "surfaces_and_materials": {
+    "glassmorphism": {
+      "usage": "Sticky headers, floating filter bars, contextual overlays, bottom nav.",
+      "implementation": "backdrop-blur-2xl, backdrop-saturate-150. Light: bg-white/70 + border-white/40. Dark: bg-black/60 + border-white/15. Subtle ambient shadow."
+    },
+    "solid_cards": {
+      "usage": "Primary event lists, readable descriptions.",
+      "implementation": "Solid background matching theme surface, 1px border-border, no heavy shadows."
+    },
+    "tracing_beam": {
+      "usage": "Featured or 'Premium' event cards.",
+      "implementation": "Subtle glowing gradient border tracing the card edge."
+    }
+  },
+  "animations_and_motion": {
+    "libraries": [
+      "framer-motion",
+      "lenis"
+    ],
+    "interactions": [
+      "Smooth scrolling (Lenis) is mandatory for premium weight.",
+      "Staggered entrance animations on event grids.",
+      "Hover states: translate-y-[-2px] + subtle shadow expansion.",
+      "Live counters: animated ticking numbers.",
+      "Parallax: slight delay on hero background imagery during scroll."
+    ]
+  },
+  "components": {
+    "hero": "Immersive discovery feed. Rich background (darkened slightly for contrast). Animated text 'Discover India's Most Important Events'. Live counter stats (events this week, cities, attendees).",
+    "search_and_filters": "Sticky translucent filter bar (Apple Liquid Glass style) beneath the hero. Chips for fast category selection. Advanced sidebar filtering (Airbnb style) for date, price, industry.",
+    "event_cards": "Interactive cards. Solid content base, high contrast text. Image zoom on hover. Hover reveals 'Save' and 'Share' quick actions.",
+    "featured_cities": "Interactive India map or bento layout of cities (Mumbai, Delhi, Bangalore) using rich photography and glass overlays.",
+    "event_detail": "Cinematic hero banner with max 50% opacity overlay gradient. Timeline for schedule. Glass sticky ticket purchase bar at bottom."
+  },
+  "testing": {
+    "rules": "All interactive elements MUST have role-based data-testid (e.g., data-testid='event-card-save-button')."
+  },
+  "media": {
+    "images": {
+      "hero_and_tech_events": [
+        {
+          "url": "https://images.unsplash.com/photo-1558008258-3256797b43f3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHw0fHx0ZWNoJTIwY29uZmVyZW5jZSUyMHN0YWdlJTIwZXZlbnR8ZW58MHx8fHwxNzgwNTA2MjAzfDA&ixlib=rb-4.1.0&q=85",
+          "description": "Large tech conference stage"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwyfHx0ZWNoJTIwY29uZmVyZW5jZSUyMHN0YWdlJTIwZXZlbnR8ZW58MHx8fHwxNzgwNTA2MjAzfDA&ixlib=rb-4.1.0&q=85",
+          "description": "Speaker pitch at modern conference"
+        }
+      ],
+      "startup_business": [
+        {
+          "url": "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwzfHxzdGFydHVwJTIwcGl0Y2glMjBtZWV0aW5nJTIwbW9kZXJufGVufDB8fHx8MTc4MDUwNjIwM3ww&ixlib=rb-4.1.0&q=85",
+          "description": "Startup pitch meeting"
+        },
+        {
+          "url": "https://images.pexels.com/photos/7413916/pexels-photo-7413916.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "description": "Modern office meeting startup"
+        }
+      ],
+      "cities_mumbai": [
+        {
+          "url": "https://images.pexels.com/photos/5414582/pexels-photo-5414582.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "description": "Mumbai premium skyline night"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1653299311171-31939b3b84b0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxtdW1iYWklMjBza3lsaW5lJTIwcHJlbWl1bSUyMHNreWxpbmV8ZW58MHx8fHwxNzgwNTA2MjAyfDA&ixlib=rb-4.1.0&q=85",
+          "description": "Bandra Worli Sea Link Mumbai"
+        }
+      ],
+      "music_festivals": [
+        {
+          "url": "https://images.pexels.com/photos/13230484/pexels-photo-13230484.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "description": "Concert lights festival"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwzfHxtdXNpYyUyMGZlc3RpdmFsJTIwY29uY2VydCUyMGxpZ2h0c3xlbnwwfHx8fDE3ODA1MDYyMDN8MA&ixlib=rb-4.1.0&q=85",
+          "description": "Music festival stage lighting"
+        }
+      ]
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install and use 'framer-motion' and 'lenis' for scrolling/animations.",
+    "Use 'lucide-react' for all icons.",
+    "Create a toggle for Light/Dark mode. The app must shine in both, using the defined color palettes.",
+    "Navigation and filter bars MUST use the 'Liquid Glass' aesthetic (backdrop-blur-2xl, background opacity, 1px top/inner border).",
+    "Event cards must be solid to maintain readability (Airbnb usability), while resting on rich backgrounds.",
+    "Do NOT use pure black or gray; use tinted deep obsidian for dark mode.",
+    "Add 'data-testid' to ALL buttons, links, inputs, and interactive elements. Format: kebab-case, role-based.",
+    "Use purely .js files (no TypeScript/tsx).",
+    "Hero section must include animated numeric counters."
+  ]
+}

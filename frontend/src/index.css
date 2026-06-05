@@ -1,0 +1,132 @@
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 98%;
+        --foreground: 0 0% 4%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 4%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 4%;
+        --primary: 0 0% 4%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 95%;
+        --muted-foreground: 240 4% 40%;
+        --accent: 0 0% 94%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 90%;
+        --input: 0 0% 90%;
+        --ring: 0 0% 4%;
+        --radius: 1rem;
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(0, 0, 0, 0.06);
+    }
+    .dark {
+        --background: 240 33% 3%;
+        --foreground: 0 0% 100%;
+        --card: 240 19% 7%;
+        --card-foreground: 0 0% 100%;
+        --popover: 240 19% 7%;
+        --popover-foreground: 0 0% 100%;
+        --primary: 0 0% 100%;
+        --primary-foreground: 240 33% 4%;
+        --secondary: 240 12% 12%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 12% 11%;
+        --muted-foreground: 240 5% 65%;
+        --accent: 240 12% 14%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62% 45%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 12% 15%;
+        --input: 240 12% 15%;
+        --ring: 0 0% 83%;
+        --glass-bg: rgba(10, 10, 15, 0.6);
+        --glass-border: rgba(255, 255, 255, 0.12);
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Manrope', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+    }
+    h1, h2, h3, h4, .font-display {
+        font-family: 'Cabinet Grotesk', sans-serif;
+        letter-spacing: -0.02em;
+    }
+    ::selection {
+        background: hsl(var(--foreground));
+        color: hsl(var(--background));
+    }
+}
+
+@layer utilities {
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(24px) saturate(150%);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        border: 1px solid var(--glass-border);
+    }
+    .label-eyebrow {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.22em;
+        font-weight: 600;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .text-balance { text-wrap: balance; }
+}
+
+/* Premium scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.35);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.6); background-clip: content-box; }
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 37%, hsl(var(--muted)) 63%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+}
+.animate-float { animation: float 7s ease-in-out infinite; }
+
+.aurora {
+    background:
+        radial-gradient(40% 50% at 20% 20%, hsl(265 80% 60% / 0.18), transparent 70%),
+        radial-gradient(35% 45% at 80% 15%, hsl(190 90% 55% / 0.16), transparent 70%),
+        radial-gradient(45% 55% at 60% 85%, hsl(330 80% 60% / 0.14), transparent 70%);
+}
