@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Plus, Eye, Users, IndianRupee, CalendarDays, Pencil, Trash2, LogOut,
-  BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock,
+  BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock, AlertCircle, CheckCircle2, XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -49,9 +49,14 @@ export default function Dashboard() {
     getDashboard(slug).then((d) => {
       setData(d);
       update({ verification_status: d.organizer.verification_status, verified: d.organizer.verified });
+    }).catch((err) => {
+      if (err.response?.status === 404) {
+        logout();
+        toast.error("Organizer account no longer exists.");
+      }
     });
     getOrganizerEvents(slug).then(setEvents);
-  }, [slug, update]);
+  }, [slug, update, logout]);
 
   useEffect(() => {
     refresh();
@@ -115,7 +120,7 @@ export default function Dashboard() {
       </div>
 
       {/* Verification */}
-      {!organizer.verified && (
+      {!organizer.verified ? (
         <div className="rounded-3xl border border-border bg-card p-6 mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="verification-card">
           <div className="flex items-start gap-4">
             <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
@@ -137,6 +142,20 @@ export default function Dashboard() {
               Request verification
             </button>
           )}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-blue-500/30 bg-blue-500/5 p-6 mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="verified-success-card">
+          <div className="flex items-start gap-4">
+            <div className="h-11 w-11 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
+              <BadgeCheck size={24} />
+            </div>
+            <div>
+              <div className="font-semibold text-blue-700 dark:text-blue-400">Official Organizer Status</div>
+              <p className="text-sm text-muted-foreground mt-0.5 max-w-md">
+                You are a verified organizer! Your events now stand out with the official trust badge and receive priority placement.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -163,7 +182,24 @@ export default function Dashboard() {
               <div key={ev.id} className="flex items-center gap-4 p-4 sm:p-5" data-testid={`org-event-${ev.id}`}>
                 <img src={ev.cover_image} alt="" className="h-16 w-24 rounded-xl object-cover hidden sm:block" />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">{ev.title}</div>
+                  <div className="font-semibold truncate flex items-center gap-2">
+                    {ev.title}
+                    {ev.approval_status === "pending" && (
+                      <span className="text-[10px] uppercase font-bold tracking-wider bg-amber-500/15 text-amber-600 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <AlertCircle size={10} /> Pending Approval
+                      </span>
+                    )}
+                    {ev.approval_status === "approved" && (
+                      <span className="text-[10px] uppercase font-bold tracking-wider bg-green-500/15 text-green-600 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <CheckCircle2 size={10} /> Approved
+                      </span>
+                    )}
+                    {ev.approval_status === "rejected" && (
+                      <span className="text-[10px] uppercase font-bold tracking-wider bg-red-500/15 text-red-600 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <XCircle size={10} /> Rejected
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
                     <span className="flex items-center gap-1"><CalendarDays size={12} /> {formatDate(ev.start_iso)}</span>
                     <span className="flex items-center gap-1"><MapPin size={12} /> {ev.city}</span>

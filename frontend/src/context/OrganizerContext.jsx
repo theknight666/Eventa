@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const OrganizerContext = createContext({ organizer: null, login: () => {}, logout: () => {}, update: () => {} });
 const KEY = "eventa_organizer";
@@ -18,7 +19,10 @@ export const OrganizerProvider = ({ children }) => {
   }, [organizer]);
 
   const login = (org) => setOrganizer(org);
-  const logout = () => setOrganizer(null);
+  const logout = () => {
+    setOrganizer(null);
+    toast.success("Successfully logged out");
+  };
   const update = (patch) => setOrganizer((o) => (o ? { ...o, ...patch } : o));
 
   return (

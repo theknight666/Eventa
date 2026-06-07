@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Header
+
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -13,8 +14,18 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 from serpapi_sync import sync_all_cities
+from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
 _DEFAULT_COVER = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"
@@ -84,6 +95,14 @@ CITIES = [
 
 @app.on_event("startup")
 async def on_startup():
+    # Remove duplicates and assign dedup_keys to existing events
+    duplicates_removed = await deduplicate_database(db)
+    if duplicates_removed > 0:
+        logger.info(f"Removed {duplicates_removed} duplicate events from database.")
+        
+    # Grandfather existing events to be approved
+    await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
+    
     # Kick off SerpApi live-event sync in the background (non-blocking)
     asyncio.create_task(_background_sync())
 
@@ -132,9 +151,15 @@ async def root():
 
 # -------------------- Attendee / Saved Events --------------------
 
-class AttendeeLoginReq(BaseModel):
+class AttendeeRegisterReq(BaseModel):
     name: str
     email: str
+    password: Optional[str] = None
+
+class AttendeeLoginReq(BaseModel):
+    name: Optional[str] = None
+    email: str
+    password: Optional[str] = None
 
 class ToggleSavedReq(BaseModel):
     event_id: str
@@ -143,19 +168,77 @@ class ToggleSavedReq(BaseModel):
 class BulkEventsReq(BaseModel):
     ids: List[str]
 
+class ForgotPasswordReq(BaseModel):
+    email: str
+
+class ResetPasswordReq(BaseModel):
+    email: str
+    token: str
+    new_password: str
+
+@api_router.post("/attendee/register")
+async def attendee_register(req: AttendeeRegisterReq):
+    attendee = await db.attendees.find_one({"email": req.email})
+    if attendee:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    new_attendee = {
+        "email": req.email,
+        "name": req.name,
+        "saved_events": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    if req.password:
+        new_attendee["password_hash"] = get_password_hash(req.password)
+        
+    await db.attendees.insert_one(new_attendee)
+    return clean(new_attendee)
+
 @api_router.post("/attendee/login")
 async def attendee_login(req: AttendeeLoginReq):
+    attendee = await db.attendees.find_one({
+        "$or": [{"email": req.email}, {"name": req.email}]
+    })
+    
+    if not attendee:
+        if not req.password and req.name:
+            # Google auto-register
+            new_attendee = {
+                "email": req.email,
+                "name": req.name,
+                "saved_events": [],
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.attendees.insert_one(new_attendee)
+            return clean(new_attendee)
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    if req.password:
+        if not attendee.get("password_hash") or not verify_password(req.password, attendee["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+            
+    return clean(attendee)
+
+@api_router.post("/attendee/forgot-password")
+async def attendee_forgot_password(req: ForgotPasswordReq):
     attendee = await db.attendees.find_one({"email": req.email})
     if not attendee:
-        new_attendee = {
-            "email": req.email,
-            "name": req.name,
-            "saved_events": [],
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.attendees.insert_one(new_attendee)
-        attendee = new_attendee
-    return clean(attendee)
+        return {"ok": True, "token": "dummy-token"}
+    token = uuid.uuid4().hex
+    await db.attendees.update_one({"email": req.email}, {"$set": {"reset_token": token}})
+    return {"ok": True, "token": token}
+
+@api_router.post("/attendee/reset-password")
+async def attendee_reset_password(req: ResetPasswordReq):
+    attendee = await db.attendees.find_one({"email": req.email, "reset_token": req.token})
+    if not attendee:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+    await db.attendees.update_one(
+        {"email": req.email},
+        {"$set": {"password_hash": get_password_hash(req.new_password)}, "$unset": {"reset_token": ""}}
+    )
+    return {"ok": True}
 
 @api_router.get("/attendee/{email}/saved")
 async def get_attendee_saved(email: str):
@@ -299,7 +382,7 @@ async def list_events(
     limit: int = 60,
     skip: int = 0,
 ):
-    query = {}
+    query = {"approval_status": "approved"}
     if category:
         query["category"] = category
     if city:
@@ -401,7 +484,7 @@ async def summarize_event(event_id: str):
 async def recommendations(req: RecommendRequest):
     req.limit = max(1, min(req.limit, 20))
     # candidate pool
-    candidates = [clean(d) async for d in db.events.find({}).limit(60)]
+    candidates = [clean(d) async for d in db.events.find({"approval_status": "approved"}).limit(60)]
     by_id = {e["id"]: e for e in candidates}
 
     # local scoring
@@ -463,9 +546,15 @@ def slugify(name: str) -> str:
     return s or "organizer"
 
 
-class OrganizerLogin(BaseModel):
+class OrganizerRegisterReq(BaseModel):
     name: str
-    email: Optional[str] = None
+    email: str
+    password: Optional[str] = None
+
+class OrganizerLogin(BaseModel):
+    name: Optional[str] = None
+    email: str
+    password: Optional[str] = None
 
 
 class EventInput(BaseModel):
@@ -479,6 +568,7 @@ class EventInput(BaseModel):
     city: str
     state: str = ""
     venue: str = ""
+    address: str = ""
     event_type: str = "offline"
     pricing: str = "free"
     price: int = 0
@@ -505,11 +595,13 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
     cat_industry = inp.industry or inp.category.replace("-", " ").title()
     return {
         "id": f"org-{uuid.uuid4().hex[:10]}",
+        "dedup_key": generate_dedup_key(inp.title, inp.date, inp.city),
         "title": inp.title,
         "category": inp.category,
         "industry": cat_industry,
         "description": inp.description,
         "ai_summary": "",
+        "approval_status": "pending",
         "cover_image": inp.cover_image or _DEFAULT_COVER,
         "date": inp.date,
         "start_iso": _start_iso_from(inp.date),
@@ -519,7 +611,7 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
         "state": inp.state,
         "country": "India",
         "venue": inp.venue,
-        "address": f"{inp.venue}, {inp.city}, {inp.state}, India".strip(", "),
+        "address": inp.address or f"{inp.venue}, {inp.city}, {inp.state}, India".strip(", "),
         "lat": 0.0, "lng": 0.0,
         "event_type": inp.event_type,
         "pricing": inp.pricing,
@@ -567,18 +659,68 @@ async def _seed_event_traction(event):
                                {"$set": {"views": n_views, "attendees_count": n_regs}})
 
 
+@api_router.post("/organizer/register")
+async def organizer_register(body: OrganizerRegisterReq):
+    slug = slugify(body.name)
+    org = await db.organizers.find_one({"email": body.email})
+    if org:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    new_org = {
+        "slug": slug, "name": body.name.strip(), "email": body.email or "",
+        "verified": False, "verification_status": "none",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if body.password:
+        new_org["password_hash"] = get_password_hash(body.password)
+        
+    await db.organizers.insert_one(new_org)
+    return clean(new_org)
+
 @api_router.post("/organizer/login")
 async def organizer_login(body: OrganizerLogin):
-    slug = slugify(body.name)
-    org = await db.organizers.find_one({"slug": slug})
+    org = await db.organizers.find_one({
+        "$or": [{"email": body.email}, {"name": body.email}]
+    })
     if not org:
-        org = {
-            "slug": slug, "name": body.name.strip(), "email": body.email or "",
-            "verified": False, "verification_status": "none",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        await db.organizers.insert_one(dict(org))
+        if not body.password and body.name:
+            # Google auto-register
+            slug = slugify(body.name)
+            new_org = {
+                "slug": slug, "name": body.name.strip(), "email": body.email or "",
+                "verified": False, "verification_status": "none",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.organizers.insert_one(new_org)
+            return clean(new_org)
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    if body.password:
+        if not org.get("password_hash") or not verify_password(body.password, org["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+            
     return clean(dict(org))
+
+@api_router.post("/organizer/forgot-password")
+async def organizer_forgot_password(req: ForgotPasswordReq):
+    org = await db.organizers.find_one({"email": req.email})
+    if not org:
+        return {"ok": True, "token": "dummy-token"}
+    token = uuid.uuid4().hex
+    await db.organizers.update_one({"email": req.email}, {"$set": {"reset_token": token}})
+    return {"ok": True, "token": token}
+
+@api_router.post("/organizer/reset-password")
+async def organizer_reset_password(req: ResetPasswordReq):
+    org = await db.organizers.find_one({"email": req.email, "reset_token": req.token})
+    if not org:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+    await db.organizers.update_one(
+        {"email": req.email},
+        {"$set": {"password_hash": get_password_hash(req.new_password)}, "$unset": {"reset_token": ""}}
+    )
+    return {"ok": True}
 
 
 @api_router.get("/organizer/{slug}")
@@ -609,9 +751,12 @@ async def create_event(slug: str, inp: EventInput):
     org = await db.organizers.find_one({"slug": slug})
     if not org:
         raise HTTPException(status_code=404, detail="Organizer not found")
+        
+    if await check_duplicate_exists(db, inp.title, inp.date, inp.city):
+        raise HTTPException(status_code=400, detail="An event with this title, city, and date already exists.")
+        
     event = _build_organizer_event(inp, org)
     await db.events.insert_one(dict(event))
-    await _seed_event_traction(event)
     fresh = await db.events.find_one({"id": event["id"]})
     return clean(fresh)
 
@@ -621,13 +766,18 @@ async def update_event(slug: str, event_id: str, inp: EventInput):
     existing = await db.events.find_one({"id": event_id, "owner_slug": slug})
     if not existing:
         raise HTTPException(status_code=404, detail="Event not found")
+        
+    if await check_duplicate_exists(db, inp.title, inp.date, inp.city, exclude_event_id=event_id):
+        raise HTTPException(status_code=400, detail="Another event with this title, city, and date already exists.")
+        
     updates = {
+        "dedup_key": generate_dedup_key(inp.title, inp.date, inp.city),
         "title": inp.title, "category": inp.category,
         "industry": inp.industry or inp.category.replace("-", " ").title(),
         "description": inp.description, "cover_image": inp.cover_image or existing["cover_image"],
         "date": inp.date, "start_iso": _start_iso_from(inp.date), "time": inp.time,
         "city": inp.city, "state": inp.state, "venue": inp.venue,
-        "address": f"{inp.venue}, {inp.city}, {inp.state}, India".strip(", "),
+        "address": inp.address or f"{inp.venue}, {inp.city}, {inp.state}, India".strip(", "),
         "event_type": inp.event_type, "pricing": inp.pricing,
         "price": inp.price if inp.pricing == "paid" else 0,
         "attendance_size": inp.attendance_size, "tags": inp.tags,
@@ -692,6 +842,95 @@ async def organizer_dashboard(slug: str):
         "timeseries": timeseries,
         "recent_registrations": recent,
     }
+
+
+# ======================= ADMIN PORTAL =======================
+from fastapi import Header
+
+def get_admin_key(x_admin_key: str = Header(None)):
+    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
+    if not x_admin_key or x_admin_key != secret:
+        raise HTTPException(status_code=401, detail="Unauthorized Admin")
+    return True
+
+class AdminLoginReq(BaseModel):
+    password: str
+
+@api_router.post("/admin/login")
+async def admin_login(req: AdminLoginReq):
+    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
+    if req.password == secret:
+        return {"token": secret}
+    raise HTTPException(status_code=401, detail="Invalid admin password")
+
+@api_router.get("/admin/events/pending")
+async def admin_pending_events(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.events.find({"approval_status": "pending"}).sort([("created_at", -1)])
+    return [clean(d) async for d in cursor]
+
+@api_router.get("/admin/events/all")
+async def admin_all_events(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.events.find({}).sort([("created_at", -1)]).limit(100)
+    return [clean(d) async for d in cursor]
+
+@api_router.put("/admin/events/{event_id}/approve")
+async def admin_approve_event(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.events.update_one({"id": event_id}, {"$set": {"approval_status": "approved"}})
+    return {"status": "ok"}
+
+@api_router.put("/admin/events/{event_id}/reject")
+async def admin_reject_event(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.events.update_one({"id": event_id}, {"$set": {"approval_status": "rejected"}})
+    return {"status": "ok"}
+
+@api_router.delete("/admin/events/{event_id}")
+async def admin_delete_event(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.events.delete_one({"id": event_id})
+    return {"status": "ok"}
+
+@api_router.get("/admin/organizers/pending")
+async def admin_pending_organizers(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.organizers.find({"verification_status": "pending"}).sort([("created_at", -1)])
+    return [clean(d) async for d in cursor]
+
+@api_router.get("/admin/organizers/all")
+async def admin_all_organizers(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.organizers.find({}).sort([("created_at", -1)]).limit(100)
+    return [clean(d) async for d in cursor]
+
+@api_router.get("/admin/organizers/verified")
+async def admin_verified_organizers(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.organizers.find({"verified": True}).sort([("created_at", -1)]).limit(100)
+    return [clean(d) async for d in cursor]
+
+@api_router.put("/admin/organizers/{slug}/verify")
+async def admin_verify_organizer(slug: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.organizers.update_one({"slug": slug}, {"$set": {"verification_status": "verified", "verified": True}})
+    await db.events.update_many({"owner_slug": slug}, {"$set": {"organizer.verified": True}})
+    return {"status": "ok"}
+
+@api_router.put("/admin/organizers/{slug}/reject")
+async def admin_reject_organizer(slug: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.organizers.update_one({"slug": slug}, {"$set": {"verification_status": "rejected", "verified": False}})
+    await db.events.update_many({"owner_slug": slug}, {"$set": {"organizer.verified": False}})
+    return {"status": "ok"}
+
+@api_router.delete("/admin/organizers/{slug}")
+async def admin_delete_organizer(slug: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.organizers.delete_one({"slug": slug})
+    await db.events.delete_many({"owner_slug": slug})
+    return {"status": "ok"}
 
 
 @api_router.post("/events/{event_id}/view")

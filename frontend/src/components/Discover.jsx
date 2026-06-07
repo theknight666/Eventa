@@ -185,7 +185,9 @@ export default function Discover({ filters, setFilters, categories = [], cities 
         <div>
           <p className="label-eyebrow text-muted-foreground">Find your next event</p>
           <h2 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mt-3">
-            Discover Events
+            {filters.city 
+              ? (filters.category ? `${categories.find(c => c.id === filters.category)?.label || filters.category} Events in ${filters.city}` : `Events in ${filters.city}`)
+              : (filters.category ? `${categories.find(c => c.id === filters.category)?.label || filters.category} Events` : "Discover Events")}
           </h2>
         </div>
 

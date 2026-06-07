@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Bookmark, Share2, MapPin, Calendar, Clock, Users, BadgeCheck,
@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { getEvent, getRelated, summarizeEvent, trackView } from "../lib/api";
 import { useSaved } from "../context/SavedContext";
+import { useUser } from "../context/UserContext";
 import { CATEGORY_META, formatINR, formatDateLong, FALLBACK_IMG } from "../data/meta";
 import EventCard from "../components/EventCard";
 import RegisterDialog from "../components/RegisterDialog";
@@ -19,6 +20,8 @@ export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isSaved, toggle } = useSaved();
+  const { user } = useUser();
+  const location = useLocation();
   const [event, setEvent] = useState(null);
   const [related, setRelated] = useState([]);
   const [summary, setSummary] = useState("");
@@ -261,7 +264,14 @@ export default function EventDetail() {
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <button
                   data-testid="detail-save-btn"
-                  onClick={() => { toggle(event.id); toast(saved ? "Removed from saved" : "Saved"); }}
+                  onClick={() => { 
+                    if (!user) {
+                      navigate(`?login=true`);
+                      return;
+                    }
+                    toggle(event.id); 
+                    toast(saved ? "Removed from saved" : "Saved"); 
+                  }}
                   className="rounded-2xl border border-border py-3 text-sm font-medium flex items-center justify-center gap-2 hover:border-foreground/40 transition-colors"
                 >
                   <Bookmark size={16} fill={saved ? "currentColor" : "none"} /> {saved ? "Saved" : "Save"}

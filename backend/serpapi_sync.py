@@ -14,6 +14,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from dedup import generate_dedup_key
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -219,11 +220,13 @@ def normalize_event(raw: dict, city: str, category: str) -> Optional[dict]:
 
     return {
         "id": event_id,
+        "dedup_key": generate_dedup_key(title, dt.date().isoformat(), city),
         "title": title,
         "category": category,
         "industry": category.replace("-", " ").title(),
         "description": description,
         "ai_summary": "",
+        "approval_status": "approved",
         "cover_image": cover,
         "date": dt.date().isoformat(),
         "start_iso": dt.isoformat(),
@@ -333,6 +336,13 @@ async def sync_all_cities(db, force: bool = False) -> dict:
             events = await fetch_events_for_query(city, query, category, api_key)
             for event in events:
                 try:
+                    # check if a duplicate already exists with a different id
+                    existing = await db.events.find_one({"dedup_key": event["dedup_key"]})
+                    if existing and existing["id"] != event["id"]:
+                        # A duplicate exists (maybe from an organizer or a different URL).
+                        # Skip adding this live event to avoid duplicates.
+                        continue
+                        
                     result = await db.events.update_one(
                         {"id": event["id"]},
                         {"$set": event},

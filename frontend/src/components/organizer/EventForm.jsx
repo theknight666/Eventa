@@ -9,7 +9,7 @@ const labelCls = "label-eyebrow text-muted-foreground mb-1.5 block";
 
 const EMPTY = {
   title: "", category: "", industry: "", description: "", cover_image: "",
-  date: "", time: "10:00 AM", city: "", state: "", venue: "",
+  date: "", time: "10:00 AM", city: "", state: "", venue: "", address: "",
   event_type: "offline", pricing: "free", price: 0, attendance_size: "medium", tags: "",
 };
 
@@ -51,7 +51,7 @@ export default function EventForm({ open, onOpenChange, slug, categories = [], i
         toast.success("Event updated");
       } else {
         await createOrganizerEvent(slug, payload);
-        toast.success("Event published — it's now live in discovery!");
+        toast.success("Event sent for review");
       }
       onSaved?.();
       onOpenChange(false);
@@ -64,14 +64,15 @@ export default function EventForm({ open, onOpenChange, slug, categories = [], i
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="font-display text-2xl font-extrabold tracking-tight">
-            {editing ? "Edit Event" : "Create Event"}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={submit} className="space-y-4 mt-2" data-testid="event-form">
-          <div>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col rounded-2xl p-0 overflow-hidden">
+        <div data-lenis-prevent className="flex-1 overflow-y-auto p-6 overscroll-contain">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl font-extrabold tracking-tight">
+              {editing ? "Edit Event" : "Create Event"}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submit} className="space-y-4 mt-2" data-testid="event-form">
+            <div>
             <label className={labelCls}>Event Title *</label>
             <input data-testid="form-title" className={inputCls} value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. India SaaS Summit 2026" />
           </div>
@@ -141,6 +142,11 @@ export default function EventForm({ open, onOpenChange, slug, categories = [], i
             </div>
           </div>
 
+          <div>
+            <label className={labelCls}>Full Address / Location</label>
+            <input data-testid="form-address" className={inputCls} value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="e.g. Plot No C-20, G Block, BKC, Bandra East, Mumbai" />
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Pricing</label>
@@ -162,15 +168,16 @@ export default function EventForm({ open, onOpenChange, slug, categories = [], i
             <input data-testid="form-tags" className={inputCls} value={form.tags} onChange={(e) => set("tags", e.target.value)} placeholder="SaaS, AI, Networking" />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => onOpenChange(false)} className="rounded-xl border border-border px-5 py-2.5 text-sm font-medium">
-              Cancel
-            </button>
-            <button data-testid="form-submit" type="submit" disabled={saving} className="rounded-xl bg-foreground text-background px-6 py-2.5 text-sm font-semibold disabled:opacity-60">
-              {saving ? "Saving…" : editing ? "Save Changes" : "Publish Event"}
-            </button>
-          </div>
-        </form>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => onOpenChange(false)} className="rounded-xl border border-border px-5 py-2.5 text-sm font-medium">
+                Cancel
+              </button>
+              <button data-testid="form-submit" type="submit" disabled={saving} className="rounded-xl bg-foreground text-background px-6 py-2.5 text-sm font-semibold disabled:opacity-60">
+                {saving ? "Saving…" : editing ? "Save Changes" : "Publish Event"}
+              </button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

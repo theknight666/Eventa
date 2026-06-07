@@ -24,6 +24,12 @@ export const getBulkEvents = (body) =>
 // ---------- Attendee / User ----------
 export const attendeeLogin = (body) =>
   client.post("/attendee/login", body).then((r) => r.data);
+export const attendeeRegister = (body) =>
+  client.post("/attendee/register", body).then((r) => r.data);
+export const attendeeForgotPassword = (body) =>
+  client.post("/attendee/forgot-password", body).then((r) => r.data);
+export const attendeeResetPassword = (body) =>
+  client.post("/attendee/reset-password", body).then((r) => r.data);
 export const getAttendeeSaved = (email) =>
   client.get(`/attendee/${email}/saved`).then((r) => r.data);
 export const toggleAttendeeSaved = (email, body) =>
@@ -34,6 +40,12 @@ export const getAttendeeHistory = (email) =>
 // ---------- Organizer Portal ----------
 export const organizerLogin = (body) =>
   client.post("/organizer/login", body).then((r) => r.data);
+export const organizerRegister = (body) =>
+  client.post("/organizer/register", body).then((r) => r.data);
+export const organizerForgotPassword = (body) =>
+  client.post("/organizer/forgot-password", body).then((r) => r.data);
+export const organizerResetPassword = (body) =>
+  client.post("/organizer/reset-password", body).then((r) => r.data);
 export const getOrganizer = (slug) =>
   client.get(`/organizer/${slug}`).then((r) => r.data);
 export const requestVerification = (slug) =>
@@ -52,3 +64,45 @@ export const registerForEvent = (id, body) =>
   client.post(`/events/${id}/register`, body).then((r) => r.data);
 export const trackView = (id) =>
   client.post(`/events/${id}/view`).then((r) => r.data).catch(() => {});
+
+// ---------- Admin Portal ----------
+const getAdminHeaders = () => {
+  const token = localStorage.getItem("adminToken");
+  return token ? { "x-admin-key": token } : {};
+};
+
+export const adminLogin = (body) =>
+  client.post("/admin/login", body).then((r) => r.data);
+
+export const getAdminPendingEvents = () =>
+  client.get("/admin/events/pending", { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const getAdminAllEvents = () =>
+  client.get("/admin/events/all", { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminApproveEvent = (id) =>
+  client.put(`/admin/events/${id}/approve`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminRejectEvent = (id) =>
+  client.put(`/admin/events/${id}/reject`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminDeleteEvent = (id) =>
+  client.delete(`/admin/events/${id}`, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const getAdminPendingOrganizers = () =>
+  client.get("/admin/organizers/pending", { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const getAdminAllOrganizers = () =>
+  client.get("/admin/organizers/all", { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const getAdminVerifiedOrganizers = () =>
+  client.get("/admin/organizers/verified", { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminVerifyOrganizer = (slug) =>
+  client.put(`/admin/organizers/${slug}/verify`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminRejectOrganizerVerification = (slug) =>
+  client.put(`/admin/organizers/${slug}/reject`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminDeleteOrganizer = (slug) =>
+  client.delete(`/admin/organizers/${slug}`, { headers: getAdminHeaders() }).then((r) => r.data);

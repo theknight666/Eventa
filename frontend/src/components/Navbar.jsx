@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bookmark, Search, Building2, User, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useSaved } from "../context/SavedContext";
 import { useUser } from "../context/UserContext";
-import { useGoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
-import { attendeeLogin } from "../lib/api";
 import { toast } from "sonner";
+import LoginDialog from "./LoginDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -25,27 +23,19 @@ export default function Navbar() {
   const { saved } = useSaved();
   const { user, login, logout } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        }).then(res => res.json());
+  const [loginOpen, setLoginOpen] = useState(false);
 
-        const name = userInfo.name || userInfo.given_name || "Attendee";
-        const email = userInfo.email || "";
-
-        const attendee = await attendeeLogin({ name, email });
-        login(attendee);
-        toast.success(`Welcome, ${attendee.name}!`);
-      } catch (err) {
-        console.error(err);
-        toast.error("Login failed");
-      }
-    },
-    onError: () => toast.error("Google Login Failed"),
-  });
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("login") === "true") {
+      setLoginOpen(true);
+      searchParams.delete("login");
+      const newUrl = location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+      navigate(newUrl, { replace: true });
+    }
+  }, [location.search, navigate, location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -53,10 +43,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollToDiscover = () => {
-    const el = document.getElementById("discover");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-    else navigate("/#discover");
+  const scrollToSection = (e, id) => {
+    if (location.pathname !== "/") {
+      return; // Let standard anchor behavior handle navigation to home
+    }
+    e?.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
   };
 
   return (
@@ -67,13 +63,13 @@ export default function Navbar() {
       className="fixed top-0 inset-x-0 z-50"
     >
       <div
-        className={`mx-auto max-w-5xl mt-3 px-4 sm:px-6 transition-all duration-500 ${
+        className={`mx-auto max-w-7xl mt-3 px-4 sm:px-6 transition-all duration-500 ${
           scrolled ? "scale-[0.99]" : ""
         }`}
       >
         <div
-          className={`flex items-center justify-between rounded-2xl px-4 sm:px-5 h-16 transition-all duration-500 ${
-            scrolled ? "glass shadow-lg shadow-black/5" : ""
+          className={`flex items-center justify-between rounded-2xl h-16 transition-all duration-500 ${
+            scrolled ? "glass shadow-lg shadow-black/5 px-4 sm:px-5" : "px-0"
           }`}
         >
           <Link
@@ -85,16 +81,16 @@ export default function Navbar() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <button data-testid="nav-discover" onClick={scrollToDiscover} className="hover:text-foreground transition-colors">
+            <a data-testid="nav-discover" href="/#discover" onClick={(e) => scrollToSection(e, "discover")} className="hover:text-foreground transition-colors">
               Discover
-            </button>
-            <a data-testid="nav-categories" href="/#categories" className="hover:text-foreground transition-colors">
+            </a>
+            <a data-testid="nav-categories" href="/#categories" onClick={(e) => scrollToSection(e, "categories")} className="hover:text-foreground transition-colors">
               Categories
             </a>
-            <a data-testid="nav-cities" href="/#cities" className="hover:text-foreground transition-colors">
+            <a data-testid="nav-cities" href="/#cities" onClick={(e) => scrollToSection(e, "cities")} className="hover:text-foreground transition-colors">
               Cities
             </a>
-            <a data-testid="nav-ai" href="/#ai-picks" className="hover:text-foreground transition-colors">
+            <a data-testid="nav-ai" href="/#ai-picks" onClick={(e) => scrollToSection(e, "ai-picks")} className="hover:text-foreground transition-colors">
               AI Picks
             </a>
             <Link data-testid="nav-organizer" to="/organizer" className="hover:text-foreground transition-colors">
@@ -105,7 +101,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2.5">
             <button
               data-testid="navbar-search-btn"
-              onClick={scrollToDiscover}
+              onClick={(e) => scrollToSection(e, "discover")}
               aria-label="Search"
               className="h-10 w-10 rounded-full glass flex items-center justify-center hover:scale-105 transition-transform"
             >
@@ -155,7 +151,7 @@ export default function Navbar() {
               </DropdownMenu>
             ) : (
               <button
-                onClick={() => googleLogin()}
+                onClick={() => setLoginOpen(true)}
                 className="h-10 px-4 rounded-full glass flex items-center gap-2 text-sm font-semibold hover:scale-105 transition-transform"
               >
                 Sign In
@@ -173,6 +169,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </motion.header>
   );
 }

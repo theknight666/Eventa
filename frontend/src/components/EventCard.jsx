@@ -1,9 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bookmark, MapPin, Calendar, Share2, BadgeCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useSaved } from "../context/SavedContext";
+import { useUser } from "../context/UserContext";
 import { CATEGORY_META, formatDate, formatINR, FALLBACK_IMG } from "../data/meta";
 
 const ease = [0.22, 1, 0.36, 1];
@@ -17,12 +18,19 @@ const TICKET_LABEL = { available: "Tickets available", few_left: "Few left", sol
 
 export default function EventCard({ event, index = 0 }) {
   const { isSaved, toggle } = useSaved();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
   const saved = isSaved(event.id);
   const meta = CATEGORY_META[event.category] || { gradient: "from-slate-500 to-slate-700" };
 
   const onSave = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      navigate(`?login=true`);
+      return;
+    }
     toggle(event.id);
     toast(saved ? "Removed from saved" : "Saved to your list", {
       description: event.title,
