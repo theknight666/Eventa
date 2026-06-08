@@ -25,6 +25,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 from serpapi_sync import sync_all_cities
+from ticketmaster_sync import sync_ticketmaster
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
@@ -108,7 +109,7 @@ async def on_startup():
 
 
 async def _background_sync():
-    """Run SerpApi sync without blocking server startup."""
+    """Run SerpApi and Ticketmaster sync without blocking server startup."""
     try:
         result = await sync_all_cities(db)
         if result.get("skipped"):
@@ -117,6 +118,15 @@ async def _background_sync():
             logger.info(f"SerpApi sync done — {result['upserted']} events upserted")
     except Exception as e:
         logger.error(f"SerpApi background sync error: {e}")
+
+    try:
+        tm_result = await sync_ticketmaster(db)
+        if tm_result.get("skipped"):
+            logger.info(f"Ticketmaster sync skipped: {tm_result.get('error') or 'cooldown active'}")
+        else:
+            logger.info(f"Ticketmaster sync done — {tm_result['upserted']} events upserted")
+    except Exception as e:
+        logger.error(f"Ticketmaster background sync error: {e}")
 
 
 # ----------------------- Models -----------------------
@@ -305,25 +315,35 @@ async def event_sources():
     async for row in db.events.aggregate(pipeline):
         breakdown[row["_id"] or "seed"] = row["count"]
     total = await db.events.count_documents({})
-    # Last sync time
     meta = await db.meta.find_one({"key": "last_serpapi_sync"})
     last_sync = meta["value"] if meta else None
     serpapi_key_set = bool(os.environ.get("SERPAPI_KEY", "").strip())
+    
+    tm_meta = await db.meta.find_one({"key": "last_ticketmaster_sync"})
+    last_tm_sync = tm_meta["value"] if tm_meta else None
+    tm_key_set = bool(os.environ.get("TICKETMASTER_KEY", "").strip())
+    
     return {
         "total": total,
         "by_source": breakdown,
         "last_serpapi_sync": last_sync,
         "serpapi_key_configured": serpapi_key_set,
+        "last_ticketmaster_sync": last_tm_sync,
+        "ticketmaster_key_configured": tm_key_set,
     }
 
 
 @api_router.post("/admin/sync")
 async def admin_sync(force: bool = False):
-    """Manually trigger a SerpApi live-event sync.
-    Pass ?force=true to bypass the 6-hour cooldown.
+    """Manually trigger a live-event sync.
+    Pass ?force=true to bypass the cooldown.
     """
-    result = await sync_all_cities(db, force=force)
-    return result
+    serpapi_res = await sync_all_cities(db, force=force)
+    tm_res = await sync_ticketmaster(db, force=force)
+    return {
+        "serpapi": serpapi_res,
+        "ticketmaster": tm_res
+    }
 
 
 @api_router.get("/categories")

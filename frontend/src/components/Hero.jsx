@@ -9,6 +9,73 @@ const HERO_VIDEO =
 
 const ease = [0.22, 1, 0.36, 1];
 
+const TicketFront = ({ 
+  opacity = 1,
+  title1 = "Eventa",
+  title2 = "All-Access",
+  subtitle = "Valid for 2026 Season",
+  holder = "VIP Guest",
+  price = "Priceless",
+  ticketType = "Admit One",
+  bgGradient = "from-foreground/5 to-transparent",
+  color1 = "bg-indigo-500/30",
+  color2 = "bg-emerald-500/30",
+  priceColor = "text-emerald-500",
+  blurClass = "backdrop-blur-md",
+  isVip = false
+}) => (
+  <div 
+    className={`absolute inset-0 rounded-[2.5rem] border ${isVip ? "border-amber-500/30 shadow-[0_30px_60px_rgba(245,158,11,0.25)]" : "border-border/50 shadow-[0_30px_60px_rgba(0,0,0,0.6)]"} bg-gradient-to-br ${bgGradient} ${blurClass} p-8 flex flex-col justify-between overflow-hidden`}
+    style={{ 
+      opacity,
+      backfaceVisibility: "hidden",
+      WebkitMaskImage: "radial-gradient(circle 14px at 0% 80%, transparent 14px, black 14.5px), radial-gradient(circle 14px at 100% 80%, transparent 14px, black 14.5px)",
+      WebkitMaskComposite: "source-in",
+      maskImage: "radial-gradient(circle 14px at 0% 80%, transparent 14px, black 14.5px), radial-gradient(circle 14px at 100% 80%, transparent 14px, black 14.5px)",
+      maskComposite: "intersect"
+    }}
+  >
+     <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60 ${color1}`} />
+     <div className={`absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60 ${color2}`} />
+     
+     {isVip && (
+       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/20 via-transparent to-transparent opacity-60 mix-blend-overlay pointer-events-none" />
+     )}
+     {isVip && (
+       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-100/10 to-transparent pointer-events-none skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
+     )}
+
+     <div className="relative z-10">
+       <div className="flex justify-between items-start mb-8">
+         <div className={`h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-md border ${isVip ? "bg-amber-500/10 border-amber-500/30" : "bg-foreground/5 border-border/50"}`}>
+           <TicketIcon size={18} className={isVip ? "text-amber-500" : "text-foreground"} />
+         </div>
+         <span className={`px-3 py-1.5 rounded-full text-[0.65rem] font-extrabold uppercase tracking-widest backdrop-blur-md border ${isVip ? "bg-amber-500/10 text-foreground border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]" : "bg-foreground/5 text-foreground border-border/50"}`}>{ticketType}</span>
+       </div>
+       <div className={`font-display font-extrabold text-4xl leading-[1.1] tracking-tight ${isVip ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-transparent bg-clip-text drop-shadow-sm" : "text-foreground"}`}>
+         {title1}<br/>{title2}
+       </div>
+       <div className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{subtitle}</div>
+     </div>
+
+     <div className="relative z-10">
+        <div className="w-full h-[1px] my-6 relative flex items-center justify-between">
+          <div className="absolute left-0 right-0 border-t-2 border-dashed border-border" />
+        </div>
+        <div className="flex justify-between items-end">
+          <div>
+            <div className="text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground">Ticket Holder</div>
+            <div className="font-display font-semibold text-lg text-foreground">{holder}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground">Price</div>
+            <div className={`font-display font-bold text-xl ${priceColor}`}>{price}</div>
+          </div>
+        </div>
+     </div>
+  </div>
+);
+
 function Ticket3D() {
   const ref = useRef(null);
   const [flipped, setFlipped] = useState(false);
@@ -18,9 +85,17 @@ function Ticket3D() {
 
   const mouseXSpring = useSpring(x, { stiffness: 150, damping: 15 });
   const mouseYSpring = useSpring(y, { stiffness: 150, damping: 15 });
+  const mouseXSpringBg1 = useSpring(x, { stiffness: 90, damping: 20 });
+  const mouseYSpringBg1 = useSpring(y, { stiffness: 90, damping: 20 });
+  const mouseXSpringBg2 = useSpring(x, { stiffness: 60, damping: 25 });
+  const mouseYSpringBg2 = useSpring(y, { stiffness: 60, damping: 25 });
 
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["17.5deg", "-17.5deg"]);
   const rotateYBase = useTransform(mouseXSpring, [-0.5, 0.5], ["-17.5deg", "17.5deg"]);
+  const rotateXBg1 = useTransform(mouseYSpringBg1, [-0.5, 0.5], ["17.5deg", "-17.5deg"]);
+  const rotateYBaseBg1 = useTransform(mouseXSpringBg1, [-0.5, 0.5], ["-17.5deg", "17.5deg"]);
+  const rotateXBg2 = useTransform(mouseYSpringBg2, [-0.5, 0.5], ["17.5deg", "-17.5deg"]);
+  const rotateYBaseBg2 = useTransform(mouseXSpringBg2, [-0.5, 0.5], ["-17.5deg", "17.5deg"]);
 
   const handleMouseMove = (e) => {
     if (!ref.current) return;
@@ -41,7 +116,60 @@ function Ticket3D() {
   };
 
   return (
-    <div className="relative w-full max-w-[360px] aspect-[1/1.5] perspective-[1200px]" style={{ perspective: 1200 }}>
+    <div className="relative w-full max-w-[360px] aspect-[1/1.5] perspective-[1200px]" style={{ perspective: 1200, transform: "scale(0.9)" }}>
+      {/* Background Ticket 2 (Further back, falling left) */}
+      <motion.div
+        initial={{ z: -40, rotateZ: -30 }}
+        whileHover={{ z: -10, rotateZ: -50 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        style={{
+          rotateX: rotateXBg2,
+          rotateY: rotateYBaseBg2,
+          transformStyle: "preserve-3d",
+          transformOrigin: "bottom center",
+        }}
+        className="absolute inset-0 w-full h-full cursor-pointer pointer-events-auto"
+      >
+        <TicketFront 
+          title1="Eventa"
+          title2="Early Bird"
+          holder="General"
+          price="₹499"
+          bgGradient="from-rose-500/20 to-rose-500/5"
+          color1="bg-rose-500/40"
+          color2="bg-rose-600/40"
+          priceColor="text-rose-500"
+          blurClass="backdrop-blur-2xl"
+        />
+      </motion.div>
+
+      {/* Background Ticket 1 (Middle, falling left) */}
+      <motion.div
+        initial={{ z: -20, rotateZ: -15 }}
+        whileHover={{ z: 0, rotateZ: -30 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        style={{
+          rotateX: rotateXBg1,
+          rotateY: rotateYBaseBg1,
+          transformStyle: "preserve-3d",
+          transformOrigin: "bottom center",
+        }}
+        className="absolute inset-0 w-full h-full cursor-pointer pointer-events-auto"
+      >
+        <TicketFront 
+          title1="Eventa"
+          title2="Standard"
+          holder="General"
+          price="₹999"
+          bgGradient="from-cyan-400/50 to-cyan-500/20"
+          color1="bg-cyan-400/70"
+          color2="bg-cyan-500/70"
+          priceColor="text-cyan-400"
+          blurClass="backdrop-blur-2xl"
+        />
+      </motion.div>
+
+      {/* Main Ticket */}
       <motion.div
         ref={ref}
         onMouseMove={handleMouseMove}
@@ -51,6 +179,7 @@ function Ticket3D() {
           rotateX,
           rotateY: rotateYBase,
           transformStyle: "preserve-3d",
+          transformOrigin: "bottom center",
         }}
         className="w-full h-full relative cursor-pointer group"
       >
@@ -61,52 +190,16 @@ function Ticket3D() {
           className="w-full h-full relative"
         >
           {/* Front of Ticket */}
-          <div 
-            className="absolute inset-0 rounded-[2.5rem] border border-border/50 bg-gradient-to-br from-foreground/5 to-transparent backdrop-blur-2xl p-8 flex flex-col justify-between overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.6)]" 
-            style={{ 
-              backfaceVisibility: "hidden",
-              WebkitMaskImage: "radial-gradient(circle 14px at 0% 80%, transparent 14px, black 14.5px), radial-gradient(circle 14px at 100% 80%, transparent 14px, black 14.5px)",
-              WebkitMaskComposite: "source-in",
-              maskImage: "radial-gradient(circle 14px at 0% 80%, transparent 14px, black 14.5px), radial-gradient(circle 14px at 100% 80%, transparent 14px, black 14.5px)",
-              maskComposite: "intersect"
-            }}
-          >
-             <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
-             <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
-             
-             <div className="relative z-10">
-               <div className="flex justify-between items-start mb-8">
-                 <div className="h-10 w-10 rounded-full bg-foreground/5 flex items-center justify-center backdrop-blur-md border border-border/50">
-                   <TicketIcon size={18} className="text-foreground" />
-                 </div>
-                 <span className="px-3 py-1.5 bg-foreground/5 rounded-full text-[0.65rem] font-extrabold uppercase tracking-widest text-foreground backdrop-blur-md border border-border/50">Admit One</span>
-               </div>
-               <div className="font-display font-extrabold text-4xl text-foreground leading-[1.1] tracking-tight">
-                 Eventa<br/>All-Access
-               </div>
-               <div className="mt-3 text-muted-foreground text-xs font-semibold uppercase tracking-widest">Valid for 2026 Season</div>
-             </div>
-
-             <div className="relative z-10">
-                <div className="w-full h-[1px] my-6 relative flex items-center justify-between">
-                  <div className="absolute left-0 right-0 border-t-2 border-dashed border-border" />
-                </div>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="text-[0.65rem] text-muted-foreground font-bold uppercase tracking-widest mb-1.5">Ticket Holder</div>
-                    <div className="font-display font-semibold text-lg text-foreground">VIP Guest</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[0.65rem] text-muted-foreground font-bold uppercase tracking-widest mb-1.5">Price</div>
-                    <div className="font-display font-bold text-lg text-emerald-500">Priceless</div>
-                  </div>
-                </div>
-             </div>
-          </div>
+          <TicketFront 
+            isVip={true} 
+            color1="bg-amber-500/40" 
+            color2="bg-yellow-600/30" 
+            bgGradient="from-amber-500/10 to-transparent" 
+          />
           
           {/* Back of Ticket */}
           <div 
-            className="absolute inset-0 rounded-[2.5rem] border border-border/50 bg-gradient-to-br from-foreground/5 to-transparent backdrop-blur-2xl p-8 flex flex-col justify-center items-center overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.6)]" 
+            className="absolute inset-0 rounded-[2.5rem] border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent backdrop-blur-md p-8 flex flex-col justify-center items-center overflow-hidden shadow-[0_30px_60px_rgba(245,158,11,0.25)]" 
             style={{ 
               backfaceVisibility: "hidden", 
               transform: "rotateY(180deg)",
@@ -116,8 +209,8 @@ function Ticket3D() {
               maskComposite: "intersect"
             }}
           >
-             <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
-             <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
+             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
+             <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-600/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
              
              <div className="relative z-10 w-full max-w-[200px] aspect-square bg-white rounded-2xl p-4 flex items-center justify-center shadow-inner">
                 <img 
