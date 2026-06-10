@@ -54,7 +54,7 @@ export default function LoginDialog({ open, onOpenChange }) {
       setEmail("");
       setPassword("");
     }
-  }, [open]);
+  }, [open, mode]);
 
   const toggleInterest = (id) => {
     setPrefInterests(prev => 
