@@ -22,7 +22,7 @@ client.interceptors.response.use(
   }
 );
 
-export const getStats = () => client.get("/stats").then((r) => r.data);
+export const getStats = () => client.get("/overview").then((r) => r.data);
 export const getCategories = () => client.get("/categories").then((r) => r.data);
 export const getCities = () => client.get("/cities").then((r) => r.data);
 export const getEvents = (params = {}) =>

@@ -385,8 +385,8 @@ async def get_cities():
     return [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
 
 
-@api_router.get("/stats")
-async def get_stats():
+@api_router.get("/overview")
+async def get_overview():
     now = datetime.now(timezone.utc)
     week = (now + timedelta(days=7)).isoformat()
     events_this_week = await db.events.count_documents({"start_iso": {"$lte": week}})
