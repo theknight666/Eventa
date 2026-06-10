@@ -81,7 +81,55 @@ export default function AIRecommendations() {
     fetchRecs(next);
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <section id="ai-picks" className="relative py-24" data-testid="ai-recommendations-section">
+        <div className="absolute inset-0 aurora opacity-40 pointer-events-none" />
+        <div className="relative mx-auto max-w-5xl px-6">
+          <div className="rounded-[2rem] border border-border glass p-10 sm:p-14 text-center flex flex-col items-center">
+            <Wand2 className="text-muted-foreground animate-float mb-6" size={48} />
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
+              Unlock AI Recommendations
+            </h2>
+            <p className="text-muted-foreground max-w-md mb-8">
+              Sign in to let our AI analyze your interests and rank the best matching events tailored specifically to your taste.
+            </p>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-login"))}
+              className="px-6 py-3 bg-foreground text-background font-semibold rounded-full hover:bg-foreground/90 transition-colors"
+            >
+              Sign In to Continue
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (user && (!user.preferences?.city || !user.preferences?.interests?.length)) {
+    return (
+      <section id="ai-picks" className="relative py-24" data-testid="ai-recommendations-section">
+        <div className="absolute inset-0 aurora opacity-40 pointer-events-none" />
+        <div className="relative mx-auto max-w-5xl px-6">
+          <div className="rounded-[2rem] border border-border glass p-10 sm:p-14 text-center flex flex-col items-center">
+            <Sparkles className="text-rose-400 animate-float mb-6" size={48} />
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
+              Personalize Your Feed
+            </h2>
+            <p className="text-muted-foreground max-w-md mb-8">
+              Tell us what excites you to activate your custom AI recommendations engine.
+            </p>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-login", { detail: { mode: "onboarding" } }))}
+              className="px-6 py-3 bg-rose-500 text-white font-semibold rounded-full hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/25"
+            >
+              Configure Preferences
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="ai-picks" className="relative py-24" data-testid="ai-recommendations-section">

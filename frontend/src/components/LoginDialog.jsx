@@ -45,7 +45,17 @@ export default function LoginDialog({ open, onOpenChange }) {
   const [prefInterests, setPrefInterests] = useState([]);
   const [tempUser, setTempUser] = useState(null);
 
-  const { login } = useUser();
+  const { user, login } = useUser();
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.mode) {
+        setMode(e.detail.mode);
+      }
+    };
+    window.addEventListener("open-login", handler);
+    return () => window.removeEventListener("open-login", handler);
+  }, []);
 
   useEffect(() => {
     if (open && mode !== "onboarding") {
@@ -64,16 +74,17 @@ export default function LoginDialog({ open, onOpenChange }) {
 
   const handleOnboardingSubmit = async (e) => {
     e.preventDefault();
-    if (!tempUser) return;
+    const targetUser = user || tempUser;
+    if (!targetUser) return;
     
     setLoading(true);
     try {
-      const res = await updateAttendeePreferences(tempUser.email, {
+      const res = await updateAttendeePreferences(targetUser.email, {
         city: prefCity,
         interests: prefInterests
       });
       // Update local user state
-      const updatedUser = { ...tempUser, preferences: res.preferences };
+      const updatedUser = { ...targetUser, preferences: res.preferences };
       login(updatedUser);
       toast.success("Preferences saved! Your AI picks are ready.");
       onOpenChange(false);

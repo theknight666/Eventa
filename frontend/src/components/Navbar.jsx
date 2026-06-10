@@ -60,6 +60,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const handler = () => setLoginOpen(true);
+    window.addEventListener("open-login", handler);
+    return () => window.removeEventListener("open-login", handler);
+  }, []);
+
   const scrollToSection = (e, id) => {
     setMobileMenuOpen(false); // Close mobile menu if open
     if (location.pathname !== "/") {
