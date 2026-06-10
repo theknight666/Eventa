@@ -175,12 +175,20 @@ def clean(doc):
 
 async def llm_complete(system: str, prompt: str, max_tokens: int = 600) -> str:
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id="eventa", system_message=system).with_model("openai", "gpt-4o-mini")
-        resp = await chat.send_message(UserMessage(text=prompt))
-        return resp if isinstance(resp, str) else str(resp)
-    except ImportError:
-        raise Exception("emergentintegrations not available")
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(api_key=EMERGENT_LLM_KEY)
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=max_tokens
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"llm error: {e}")
+        raise Exception("openai not available or failed")
 
 
 # ----------------------- Routes -----------------------
