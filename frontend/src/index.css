@@ -29,6 +29,7 @@
         --radius: 1rem;
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(0, 0, 0, 0.06);
+        --3d-shadow-color: rgba(0, 0, 0, 0.35);
     }
     .dark {
         --background: 240 33% 3%;
@@ -52,6 +53,7 @@
         --ring: 0 0% 83%;
         --glass-bg: rgba(10, 10, 15, 0.6);
         --glass-border: rgba(255, 255, 255, 0.12);
+        --3d-shadow-color: rgba(0, 0, 0, 0.8);
     }
 }
 

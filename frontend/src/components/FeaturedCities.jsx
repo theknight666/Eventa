@@ -21,7 +21,7 @@ function CityCard({ city, isActive, onSelect, delay, className = "" }) {
   // Dynamic shadow maps (casts shadow away from mouse)
   const shadowX = useTransform(mouseXSpring, [-0.5, 0.5], ["30px", "-30px"]);
   const shadowY = useTransform(mouseYSpring, [-0.5, 0.5], ["30px", "-30px"]);
-  const dynamicBoxShadow = useMotionTemplate`${shadowX} ${shadowY} 50px -10px rgba(255,255,255,0.35)`;
+  const dynamicBoxShadow = useMotionTemplate`${shadowX} ${shadowY} 50px -10px var(--3d-shadow-color)`;
 
   const handleMouseMove = (e) => {
     if (!ref.current) return;
@@ -150,10 +150,10 @@ export default function FeaturedCities({ cities = [], active, onSelect }) {
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-5 backdrop-blur-md shadow-xl"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 mb-5 backdrop-blur-md shadow-xl"
         >
-          <Sparkles className="w-4 h-4 text-rose-400" />
-          <span className="text-xs font-bold tracking-widest uppercase text-white/90">Where it's happening</span>
+          <Sparkles className="w-4 h-4 text-rose-500 dark:text-rose-400" />
+          <span className="text-xs font-bold tracking-widest uppercase text-foreground/90">Where it's happening</span>
         </motion.div>
 
         <motion.h2
