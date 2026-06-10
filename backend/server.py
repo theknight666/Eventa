@@ -53,9 +53,12 @@ db = client[os.environ.get('DB_NAME', 'eventa')]
 
 app = FastAPI(title="Eventa — India Event Discovery")
 
+cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
+allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")] if cors_origins_env != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
