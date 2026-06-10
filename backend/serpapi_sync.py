@@ -100,6 +100,7 @@ IMG_DEFAULT = ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?cro
 CITIES = [
     "Mumbai", "New Delhi", "Bengaluru", "Hyderabad",
     "Pune", "Chennai", "Ahmedabad", "Kolkata",
+    "Jaipur", "Gurugram", "Noida", "Surat",
 ]
 
 QUERIES: list[tuple[str, str]] = [
@@ -213,10 +214,8 @@ def normalize_event(raw: dict, city: str, category: str) -> Optional[dict]:
     # Description
     description = (raw.get("description") or "").strip()
 
-    random.seed(event_id)
-    attendees = random.randint(50, 5000)
-    views = attendees * random.randint(3, 10)
-    random.seed()
+    attendees = random.randint(15, 850)
+    views = attendees * random.randint(3, 12)
 
     return {
         "id": event_id,
@@ -343,9 +342,15 @@ async def sync_all_cities(db, force: bool = False) -> dict:
                         # Skip adding this live event to avoid duplicates.
                         continue
                         
+                    set_data = {k: v for k, v in event.items() if k not in ("attendees_count", "views", "created_at")}
+                    set_on_insert = {
+                        "attendees_count": event["attendees_count"],
+                        "views": event["views"],
+                        "created_at": event["created_at"],
+                    }
                     result = await db.events.update_one(
                         {"id": event["id"]},
-                        {"$set": event},
+                        {"$set": set_data, "$setOnInsert": set_on_insert},
                         upsert=True,
                     )
                     if result.upserted_id or result.modified_count:

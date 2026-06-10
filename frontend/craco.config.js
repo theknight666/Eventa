@@ -51,6 +51,12 @@ let webpackConfig = {
         ],
       };
 
+      // Ignore warnings from source-map-loader about missing source files in node_modules
+      webpackConfig.ignoreWarnings = [
+        ...(webpackConfig.ignoreWarnings || []),
+        /Failed to parse source map/,
+      ];
+
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);

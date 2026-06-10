@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import {
   adminLogin,
@@ -27,13 +27,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    if (token) {
-      loadData();
-    }
-  }, [token, tab]);
+  const logout = useCallback(() => {
+    localStorage.removeItem("adminToken");
+    setToken(null);
+  }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       if (tab === "events") {
@@ -61,7 +60,13 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tab, logout]);
+
+  useEffect(() => {
+    if (token) {
+      loadData();
+    }
+  }, [token, loadData]);
 
   const login = async (e) => {
     e.preventDefault();
@@ -75,11 +80,6 @@ export default function AdminDashboard() {
     } catch {
       toast.error("Invalid admin password");
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("adminToken");
-    setToken(null);
   };
 
   if (!token) {

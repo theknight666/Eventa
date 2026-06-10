@@ -21,11 +21,13 @@ const TicketFront = ({
   color1 = "bg-indigo-500/30",
   color2 = "bg-emerald-500/30",
   priceColor = "text-emerald-500",
+  textColor = "text-white",
+  subtitleColor = "text-white/70",
   blurClass = "backdrop-blur-md",
   isVip = false
 }) => (
   <div 
-    className={`absolute inset-0 rounded-[2.5rem] border ${isVip ? "border-amber-500/30 shadow-[0_30px_60px_rgba(245,158,11,0.25)]" : "border-border/50 shadow-[0_30px_60px_rgba(0,0,0,0.6)]"} bg-gradient-to-br ${bgGradient} ${blurClass} p-8 flex flex-col justify-between overflow-hidden`}
+    className={`absolute inset-0 rounded-[2.5rem] border ${isVip ? "border-amber-500/50 shadow-[0_30px_60px_rgba(245,158,11,0.3)]" : "border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.6)]"} bg-gradient-to-br ${bgGradient} ${blurClass} p-8 flex flex-col justify-between overflow-hidden`}
     style={{ 
       opacity,
       backfaceVisibility: "hidden",
@@ -35,8 +37,8 @@ const TicketFront = ({
       maskComposite: "intersect"
     }}
   >
-     <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60 ${color1}`} />
-     <div className={`absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60 ${color2}`} />
+     <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-80 ${color1}`} />
+     <div className={`absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-80 ${color2}`} />
      
      {isVip && (
        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/20 via-transparent to-transparent opacity-60 mix-blend-overlay pointer-events-none" />
@@ -47,28 +49,28 @@ const TicketFront = ({
 
      <div className="relative z-10">
        <div className="flex justify-between items-start mb-8">
-         <div className={`h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-md border ${isVip ? "bg-amber-500/10 border-amber-500/30" : "bg-foreground/5 border-border/50"}`}>
-           <TicketIcon size={18} className={isVip ? "text-amber-500" : "text-foreground"} />
+         <div className={`h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-md border ${isVip ? "bg-amber-500/20 border-amber-500/50" : "bg-white/20 border-white/30"}`}>
+           <TicketIcon size={18} className={isVip ? "text-amber-400" : "text-white"} />
          </div>
-         <span className={`px-3 py-1.5 rounded-full text-[0.65rem] font-extrabold uppercase tracking-widest backdrop-blur-md border ${isVip ? "bg-amber-500/10 text-foreground border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]" : "bg-foreground/5 text-foreground border-border/50"}`}>{ticketType}</span>
+         <span className={`px-3 py-1.5 rounded-full text-[0.65rem] font-extrabold uppercase tracking-widest backdrop-blur-md border ${isVip ? "bg-amber-500/20 text-amber-100 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]" : "bg-white/20 text-white border-white/30"}`}>{ticketType}</span>
        </div>
-       <div className={`font-display font-extrabold text-4xl leading-[1.1] tracking-tight ${isVip ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-transparent bg-clip-text drop-shadow-sm" : "text-foreground"}`}>
+       <div className={`font-display font-extrabold text-4xl leading-[1.1] tracking-tight ${isVip ? "bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-transparent bg-clip-text drop-shadow-sm" : textColor}`}>
          {title1}<br/>{title2}
        </div>
-       <div className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{subtitle}</div>
+       <div className={`mt-3 text-xs font-semibold uppercase tracking-widest ${subtitleColor}`}>{subtitle}</div>
      </div>
 
      <div className="relative z-10">
         <div className="w-full h-[1px] my-6 relative flex items-center justify-between">
-          <div className="absolute left-0 right-0 border-t-2 border-dashed border-border" />
+          <div className="absolute left-0 right-0 border-t-2 border-dashed border-white/30" />
         </div>
         <div className="flex justify-between items-end">
           <div>
-            <div className="text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground">Ticket Holder</div>
-            <div className="font-display font-semibold text-lg text-foreground">{holder}</div>
+            <div className={`text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 ${subtitleColor}`}>Ticket Holder</div>
+            <div className={`font-display font-semibold text-lg ${textColor}`}>{holder}</div>
           </div>
           <div className="text-right">
-            <div className="text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground">Price</div>
+            <div className={`text-[0.65rem] font-bold uppercase tracking-widest mb-1.5 ${subtitleColor}`}>Price</div>
             <div className={`font-display font-bold text-xl ${priceColor}`}>{price}</div>
           </div>
         </div>
@@ -116,7 +118,7 @@ function Ticket3D() {
   };
 
   return (
-    <div className="relative w-full max-w-[360px] aspect-[1/1.5] perspective-[1200px]" style={{ perspective: 1200, transform: "scale(0.9)" }}>
+    <div className="relative w-full max-w-[280px] sm:max-w-[360px] aspect-[1/1.5] perspective-[1200px]" style={{ perspective: 1200, transform: "scale(0.76)" }}>
       {/* Background Ticket 2 (Further back, falling left) */}
       <motion.div
         initial={{ z: -40, rotateZ: -30 }}
@@ -135,11 +137,13 @@ function Ticket3D() {
           title2="Early Bird"
           holder="General"
           price="₹499"
-          bgGradient="from-rose-500/20 to-rose-500/5"
-          color1="bg-rose-500/40"
-          color2="bg-rose-600/40"
-          priceColor="text-rose-500"
-          blurClass="backdrop-blur-2xl"
+          bgGradient="from-rose-600 to-rose-800 dark:from-rose-500/20 dark:to-rose-500/5"
+          color1="bg-rose-400 dark:bg-rose-500/40"
+          color2="bg-rose-500 dark:bg-rose-600/40"
+          priceColor="text-rose-100 dark:text-rose-500"
+          textColor="text-white dark:text-foreground"
+          subtitleColor="text-rose-200 dark:text-muted-foreground"
+          blurClass="dark:backdrop-blur-2xl"
         />
       </motion.div>
 
@@ -161,11 +165,13 @@ function Ticket3D() {
           title2="Standard"
           holder="General"
           price="₹999"
-          bgGradient="from-cyan-400/50 to-cyan-500/20"
-          color1="bg-cyan-400/70"
-          color2="bg-cyan-500/70"
-          priceColor="text-cyan-400"
-          blurClass="backdrop-blur-2xl"
+          bgGradient="from-cyan-600 to-cyan-800 dark:from-cyan-400/30 dark:to-cyan-500/10"
+          color1="bg-cyan-400 dark:bg-cyan-400/40"
+          color2="bg-cyan-500 dark:bg-cyan-500/40"
+          priceColor="text-cyan-100 dark:text-cyan-400"
+          textColor="text-white dark:text-foreground"
+          subtitleColor="text-cyan-200 dark:text-muted-foreground"
+          blurClass="dark:backdrop-blur-2xl"
         />
       </motion.div>
 
@@ -192,14 +198,16 @@ function Ticket3D() {
           {/* Front of Ticket */}
           <TicketFront 
             isVip={true} 
-            color1="bg-amber-500/40" 
-            color2="bg-yellow-600/30" 
-            bgGradient="from-amber-500/10 to-transparent" 
+            color1="bg-amber-600 dark:bg-amber-500/40" 
+            color2="bg-yellow-700 dark:bg-yellow-600/30" 
+            bgGradient="bg-zinc-950 dark:bg-transparent dark:from-amber-500/10 dark:to-transparent dark:bg-gradient-to-br" 
+            textColor="text-white dark:text-foreground"
+            subtitleColor="text-zinc-400 dark:text-muted-foreground"
           />
           
           {/* Back of Ticket */}
           <div 
-            className="absolute inset-0 rounded-[2.5rem] border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent backdrop-blur-md p-8 flex flex-col justify-center items-center overflow-hidden shadow-[0_30px_60px_rgba(245,158,11,0.25)]" 
+            className="absolute inset-0 rounded-[2.5rem] border border-amber-500/50 dark:border-amber-500/30 bg-zinc-950 dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-500/10 dark:to-transparent dark:backdrop-blur-md p-8 flex flex-col justify-center items-center overflow-hidden shadow-[0_30px_60px_rgba(245,158,11,0.3)] dark:shadow-[0_30px_60px_rgba(245,158,11,0.25)]" 
             style={{ 
               backfaceVisibility: "hidden", 
               transform: "rotateY(180deg)",
@@ -209,8 +217,8 @@ function Ticket3D() {
               maskComposite: "intersect"
             }}
           >
-             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
-             <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-600/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-60" />
+             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-600 dark:bg-amber-500/40 rounded-full blur-3xl -mr-12 -mt-12 transition-opacity duration-500 group-hover:opacity-100 opacity-80 dark:opacity-60" />
+             <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-700 dark:bg-yellow-600/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-80 dark:opacity-60" />
              
              <div className="relative z-10 w-full max-w-[200px] aspect-square bg-white rounded-2xl p-4 flex items-center justify-center shadow-inner">
                 <img 
@@ -220,8 +228,8 @@ function Ticket3D() {
                 />
              </div>
              <div className="relative z-10 mt-8 text-center space-y-2">
-               <div className="font-display text-foreground font-extrabold tracking-widest text-lg">SCAN FOR MAGIC</div>
-               <div className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">eventa.in/vip</div>
+               <div className="font-display text-white dark:text-foreground font-extrabold tracking-tracking-widest text-lg">SCAN FOR MAGIC</div>
+               <div className="text-zinc-400 dark:text-muted-foreground text-xs font-semibold uppercase tracking-widest">eventa.in/vip</div>
              </div>
           </div>
         </motion.div>
@@ -266,7 +274,7 @@ export default function Hero({ stats, onSearch }) {
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
       <div className="absolute inset-0 aurora opacity-50" />
 
-      <div className="relative mx-auto max-w-7xl w-full px-6 pt-32 pb-20 lg:pt-40 lg:pb-32 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-16 lg:gap-8">
+      <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-32 pb-20 lg:pt-40 lg:pb-32 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-16 lg:gap-8">
         
         {/* Left Column: Text & CTA */}
         <div className="flex-1 max-w-2xl w-full relative z-10">
@@ -280,7 +288,7 @@ export default function Hero({ stats, onSearch }) {
             <span className="label-eyebrow text-foreground/80">AI-powered event discovery · India</span>
           </motion.div>
 
-          <h1 className="font-display font-extrabold tracking-tight text-balance text-5xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1] max-w-2xl">
+          <h1 className="font-display font-extrabold tracking-tight text-balance text-4xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1] max-w-2xl">
             {"Discover India's Most".split(" ").map((w, i) => (
               <motion.span
                 key={i}
@@ -321,8 +329,8 @@ export default function Hero({ stats, onSearch }) {
             className="mt-10 max-w-xl w-full"
             data-testid="hero-search-form"
           >
-            <div className="glass rounded-2xl p-2 flex items-center gap-2 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-3 flex-1 px-4">
+            <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-3 flex-1 px-4 py-1 sm:py-0">
                 <Search size={20} className="text-muted-foreground shrink-0" />
                 <input
                   data-testid="hero-search-input"
@@ -335,7 +343,7 @@ export default function Hero({ stats, onSearch }) {
               <button
                 type="submit"
                 data-testid="hero-search-submit"
-                className="rounded-xl bg-foreground text-background px-7 py-3.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="w-full sm:w-auto rounded-xl bg-foreground text-background px-7 py-3.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
                 <MapPin size={16} /> Explore
               </button>

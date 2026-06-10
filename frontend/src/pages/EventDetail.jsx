@@ -140,28 +140,6 @@ export default function EventDetail() {
       <div className="mx-auto max-w-5xl px-6 mt-12 grid lg:grid-cols-3 gap-10">
         {/* Main column */}
         <div className="lg:col-span-2 space-y-12">
-          {/* AI summary */}
-          <div className="rounded-3xl border border-border glass p-6" data-testid="ai-summary-block">
-            <div className="flex items-center justify-between gap-4 mb-3">
-              <p className="label-eyebrow text-muted-foreground flex items-center gap-2">
-                <Sparkles size={14} /> AI Highlight
-              </p>
-              {!summary && (
-                <button
-                  data-testid="generate-summary-btn"
-                  onClick={genSummary}
-                  disabled={summaryLoading}
-                  className="rounded-full bg-foreground text-background px-4 py-1.5 text-xs font-semibold flex items-center gap-2 disabled:opacity-60"
-                >
-                  {summaryLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                  {summaryLoading ? "Generating…" : "Generate"}
-                </button>
-              )}
-            </div>
-            <p className="text-lg leading-relaxed" data-testid="ai-summary-text">
-              {summary || "Tap Generate to create an AI-written highlight tailored for attendees."}
-            </p>
-          </div>
 
           {/* Overview */}
           <section>

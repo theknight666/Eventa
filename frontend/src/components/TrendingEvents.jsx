@@ -21,7 +21,7 @@ export default function TrendingEvents() {
   };
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-24" data-testid="trending-section">
+    <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24" data-testid="trending-section">
       <div className="flex items-end justify-between mb-10">
         <div>
           <p className="label-eyebrow text-muted-foreground flex items-center gap-2">
@@ -44,7 +44,7 @@ export default function TrendingEvents() {
       {loading ? (
         <GridSkeleton count={3} />
       ) : (
-        <div ref={scroller} className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-6 px-6">
+        <div ref={scroller} className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6">
           {events.map((ev, i) => (
             <div key={ev.id} className="snap-start shrink-0 w-[80vw] sm:w-[300px]">
               <EventCard event={ev} index={i} />

@@ -2,9 +2,11 @@ import re
 
 def generate_dedup_key(title: str, date: str, city: str) -> str:
     """Generate a stable deduplication key from an event's title, date, and city."""
-    t = re.sub(r'[^a-z0-9]', '', (title or "").lower())
+    title_lower = (title or "").lower()
+    title_no_year = re.sub(r'20\d{2}', '', title_lower)
+    t = re.sub(r'[^a-z0-9]', '', title_no_year)
     c = re.sub(r'[^a-z0-9]', '', (city or "").lower())
-    d = (date or "")
+    d = (date or "")[:7]
     return f"{t}_{c}_{d}"
 
 async def deduplicate_database(db):

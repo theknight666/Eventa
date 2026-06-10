@@ -1,9 +1,26 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
 
 const client = axios.create({ baseURL: API });
+
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error caught globally:", error);
+    if (!error.response) {
+      toast.error("Network error. Please check your connection.");
+    } else if (error.response.status >= 500) {
+      toast.error("Server error. We are looking into it.");
+    } else {
+      // Don't toast 401s globally if they are expected (like expired tokens), but generally safe for now.
+      toast.error(error.response.data?.detail || "An unexpected error occurred.");
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const getStats = () => client.get("/stats").then((r) => r.data);
 export const getCategories = () => client.get("/categories").then((r) => r.data);

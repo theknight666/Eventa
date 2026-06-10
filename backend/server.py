@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Request
+from fastapi.responses import JSONResponse
 
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -25,7 +26,6 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 from serpapi_sync import sync_all_cities
-from ticketmaster_sync import sync_ticketmaster
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
@@ -91,6 +91,12 @@ CITIES = [
     {"name": "Chennai", "state": "Tamil Nadu", "image": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
     {"name": "Ahmedabad", "state": "Gujarat", "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
     {"name": "Kolkata", "state": "West Bengal", "image": "https://images.unsplash.com/photo-1558431382-27e303142255?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Jaipur", "state": "Rajasthan", "image": "https://images.unsplash.com/photo-1477587458883-47145ed94245?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Gurugram", "state": "Haryana", "image": "https://images.unsplash.com/photo-1580974852861-c381510bc98a?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Noida", "state": "Uttar Pradesh", "image": "https://images.unsplash.com/photo-1667849357658-0ceb68ab3066?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Surat", "state": "Gujarat", "image": "https://images.unsplash.com/photo-1605705353164-9cb6dcfdc9a2?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Varanasi", "state": "Uttar Pradesh", "image": "https://images.unsplash.com/photo-1561359313-0639aad073f0?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Indore", "state": "Madhya Pradesh", "image": "https://images.unsplash.com/photo-1587474260584-136574528ed5?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
 ]
 
 
@@ -106,10 +112,13 @@ async def on_startup():
     
     # Kick off SerpApi live-event sync in the background (non-blocking)
     asyncio.create_task(_background_sync())
+    
+    # Kick off periodic deduplication process
+    asyncio.create_task(_background_dedup())
 
 
 async def _background_sync():
-    """Run SerpApi and Ticketmaster sync without blocking server startup."""
+    """Run SerpApi sync without blocking server startup."""
     try:
         result = await sync_all_cities(db)
         if result.get("skipped"):
@@ -119,14 +128,25 @@ async def _background_sync():
     except Exception as e:
         logger.error(f"SerpApi background sync error: {e}")
 
-    try:
-        tm_result = await sync_ticketmaster(db)
-        if tm_result.get("skipped"):
-            logger.info(f"Ticketmaster sync skipped: {tm_result.get('error') or 'cooldown active'}")
-        else:
-            logger.info(f"Ticketmaster sync done — {tm_result['upserted']} events upserted")
-    except Exception as e:
-        logger.error(f"Ticketmaster background sync error: {e}")
+
+async def _background_dedup():
+    """Run deduplication continuously every 30 minutes."""
+    while True:
+        await asyncio.sleep(1800)  # 30 minutes
+        try:
+            removed = await deduplicate_database(db)
+            if removed > 0:
+                logger.info(f"Periodic dedup removed {removed} duplicate events.")
+        except Exception as e:
+            logger.error(f"Periodic dedup error: {e}")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception at {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred. Our team has been notified.", "error_type": type(exc).__name__}
+    )
 
 
 # ----------------------- Models -----------------------
@@ -319,17 +339,11 @@ async def event_sources():
     last_sync = meta["value"] if meta else None
     serpapi_key_set = bool(os.environ.get("SERPAPI_KEY", "").strip())
     
-    tm_meta = await db.meta.find_one({"key": "last_ticketmaster_sync"})
-    last_tm_sync = tm_meta["value"] if tm_meta else None
-    tm_key_set = bool(os.environ.get("TICKETMASTER_KEY", "").strip())
-    
     return {
         "total": total,
         "by_source": breakdown,
         "last_serpapi_sync": last_sync,
         "serpapi_key_configured": serpapi_key_set,
-        "last_ticketmaster_sync": last_tm_sync,
-        "ticketmaster_key_configured": tm_key_set,
     }
 
 
@@ -339,10 +353,8 @@ async def admin_sync(force: bool = False):
     Pass ?force=true to bypass the cooldown.
     """
     serpapi_res = await sync_all_cities(db, force=force)
-    tm_res = await sync_ticketmaster(db, force=force)
     return {
-        "serpapi": serpapi_res,
-        "ticketmaster": tm_res
+        "serpapi": serpapi_res
     }
 
 
@@ -654,29 +666,7 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
     }
 
 
-async def _seed_event_traction(event):
-    """Seed realistic 14-day views & registrations so analytics look alive."""
-    now = datetime.now(timezone.utc)
-    view_docs, reg_docs = [], []
-    n_regs = random.randint(6, 26)
-    n_views = n_regs * random.randint(8, 16)
-    for _ in range(n_views):
-        dt = now - timedelta(days=random.randint(0, 13), hours=random.randint(0, 23))
-        view_docs.append({"event_id": event["id"], "owner_slug": event["owner_slug"],
-                          "created_at": dt.isoformat(), "date": dt.date().isoformat()})
-    for _ in range(n_regs):
-        dt = now - timedelta(days=random.randint(0, 13), hours=random.randint(0, 23))
-        nm = random.choice(SAMPLE_NAMES)
-        reg_docs.append({"id": str(uuid.uuid4()), "event_id": event["id"],
-                         "owner_slug": event["owner_slug"], "name": nm,
-                         "email": nm.lower().replace(" ", ".") + "@example.com",
-                         "created_at": dt.isoformat(), "date": dt.date().isoformat()})
-    if view_docs:
-        await db.views.insert_many(view_docs)
-    if reg_docs:
-        await db.registrations.insert_many(reg_docs)
-    await db.events.update_one({"id": event["id"]},
-                               {"$set": {"views": n_views, "attendees_count": n_regs}})
+
 
 
 @api_router.post("/organizer/register")

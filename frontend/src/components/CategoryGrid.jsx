@@ -9,7 +9,7 @@ export default function CategoryGrid({ categories = [], active, onSelect }) {
   const list = categories.filter((c) => CATEGORY_META[c.id]).slice(0, 18);
 
   return (
-    <section id="categories" className="mx-auto max-w-5xl px-6 py-24" data-testid="categories-section">
+    <section id="categories" className="mx-auto max-w-5xl px-4 sm:px-6 py-24" data-testid="categories-section">
       <div className="flex items-end justify-between mb-10">
         <div>
           <p className="label-eyebrow text-muted-foreground">Browse by interest</p>

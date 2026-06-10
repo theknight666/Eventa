@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Bookmark, Search, Building2, User, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bookmark, Search, Building2, User, LogOut, Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useSaved } from "../context/SavedContext";
 import { useUser } from "../context/UserContext";
@@ -26,6 +26,7 @@ export default function Navbar() {
   const location = useLocation();
 
   const [loginOpen, setLoginOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -44,6 +45,7 @@ export default function Navbar() {
   }, []);
 
   const scrollToSection = (e, id) => {
+    setMobileMenuOpen(false); // Close mobile menu if open
     if (location.pathname !== "/") {
       return; // Let standard anchor behavior handle navigation to home
     }
@@ -166,9 +168,35 @@ export default function Navbar() {
               <Building2 size={18} />
             </Link>
             <ThemeToggle />
+            <button
+              className="h-10 w-10 rounded-full glass md:hidden flex items-center justify-center hover:scale-105 transition-transform"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden overflow-hidden bg-background/95 backdrop-blur-md border-b border-border shadow-lg"
+          >
+            <div className="flex flex-col px-6 py-4 space-y-4 text-sm font-medium">
+              <a href="/#discover" onClick={(e) => scrollToSection(e, "discover")} className="text-muted-foreground hover:text-foreground">Discover</a>
+              <a href="/#categories" onClick={(e) => scrollToSection(e, "categories")} className="text-muted-foreground hover:text-foreground">Categories</a>
+              <a href="/#cities" onClick={(e) => scrollToSection(e, "cities")} className="text-muted-foreground hover:text-foreground">Cities</a>
+              <a href="/#ai-picks" onClick={(e) => scrollToSection(e, "ai-picks")} className="text-muted-foreground hover:text-foreground">AI Picks</a>
+              <Link to="/organizer" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">For Organizers</Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </motion.header>
   );

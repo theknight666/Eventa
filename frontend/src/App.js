@@ -16,6 +16,7 @@ import Organizer from "@/pages/Organizer";
 import SavedEvents from "@/pages/SavedEvents";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import About from "@/pages/About";
 import ContactUs from "@/pages/ContactUs";
@@ -30,7 +31,8 @@ function App() {
           <SavedProvider>
             <OrganizerProvider>
               <BrowserRouter>
-                <SmoothScroll>
+                <ErrorBoundary>
+                  <SmoothScroll>
                   <Preloader />
                   <Navbar />
                   <Routes>
@@ -48,6 +50,7 @@ function App() {
                   <Footer />
                 </SmoothScroll>
                 <Toaster position="bottom-right" theme="system" />
+                </ErrorBoundary>
               </BrowserRouter>
             </OrganizerProvider>
           </SavedProvider>

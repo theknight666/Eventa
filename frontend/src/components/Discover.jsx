@@ -180,7 +180,7 @@ export default function Discover({ filters, setFilters, categories = [], cities 
   const chips = categories;
 
   return (
-    <section id="discover" className="mx-auto max-w-5xl px-6 py-24 scroll-mt-24" data-testid="discover-section">
+    <section id="discover" className="mx-auto max-w-5xl px-4 sm:px-6 py-24 scroll-mt-24" data-testid="discover-section">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
         <div>
           <p className="label-eyebrow text-muted-foreground">Find your next event</p>
@@ -191,7 +191,7 @@ export default function Discover({ filters, setFilters, categories = [], cities 
           </h2>
         </div>
 
-        <div className="flex items-center gap-3 w-full lg:w-auto">
+        <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto">
           <div className="flex items-center gap-2 flex-1 lg:w-72 glass rounded-xl px-3 py-2.5">
             <Search size={16} className="text-muted-foreground" />
             <input
