@@ -63,7 +63,7 @@ function CityCard({ city, isActive, onSelect, delay, className = "" }) {
           boxShadow: dynamicBoxShadow,
           transformStyle: "preserve-3d",
         }}
-        className={`relative overflow-hidden bg-black transition-all duration-300 rounded-3xl w-full h-full pointer-events-none
+        className={`relative overflow-hidden bg-black transition-colors duration-300 rounded-3xl w-full h-full pointer-events-none
                     ${isActive ? "ring-2 ring-white/50 z-30" : "ring-1 ring-white/10 z-10"} 
                     ${className}`}
       >
