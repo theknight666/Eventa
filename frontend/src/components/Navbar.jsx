@@ -15,6 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "./ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { LayoutDashboard, History, Settings } from "lucide-react";
 
@@ -27,6 +37,12 @@ export default function Navbar() {
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+
+  const handleLogoutConfirm = () => {
+    logout();
+    toast.success("You have successfully logged out.");
+  };
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -100,7 +116,7 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             <button
               data-testid="navbar-search-btn"
               onClick={(e) => scrollToSection(e, "discover")}
@@ -145,7 +161,7 @@ export default function Navbar() {
                     )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                  <DropdownMenuItem onClick={() => setLogoutOpen(true)} className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
@@ -159,14 +175,6 @@ export default function Navbar() {
                 Sign In
               </button>
             )}
-            <Link
-              data-testid="navbar-organizer-btn"
-              to="/organizer"
-              aria-label="Organizer portal"
-              className="h-10 w-10 rounded-full glass md:hidden flex items-center justify-center hover:scale-105 transition-transform"
-            >
-              <Building2 size={18} />
-            </Link>
             <ThemeToggle />
             <button
               className="h-10 w-10 rounded-full glass md:hidden flex items-center justify-center hover:scale-105 transition-transform"
@@ -198,6 +206,23 @@ export default function Navbar() {
       </AnimatePresence>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+
+      <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-xl font-bold">Sign Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out of your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogoutConfirm} className="rounded-xl bg-red-500 text-white hover:bg-red-600 border-none">
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.header>
   );
 }

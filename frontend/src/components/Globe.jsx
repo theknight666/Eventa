@@ -41,14 +41,14 @@ export default function Globe({ className }) {
   }, [dimensions.width, dimensions.height]); // Re-center if recreated
 
   const gData = [
-    { lat: 19.0760, lng: 72.8777, name: "Mumbai", size: 0.1, color: "#f59e0b" },
-    { lat: 28.6139, lng: 77.2090, name: "New Delhi", size: 0.1, color: "#f59e0b" },
-    { lat: 12.9716, lng: 77.5946, name: "Bengaluru", size: 0.1, color: "#f59e0b" },
-    { lat: 17.3850, lng: 78.4867, name: "Hyderabad", size: 0.08, color: "#f59e0b" },
-    { lat: 18.5204, lng: 73.8567, name: "Pune", size: 0.08, color: "#f59e0b" },
-    { lat: 13.0827, lng: 80.2707, name: "Chennai", size: 0.08, color: "#f59e0b" },
-    { lat: 23.0225, lng: 72.5714, name: "Ahmedabad", size: 0.08, color: "#f59e0b" },
-    { lat: 22.5726, lng: 88.3639, name: "Kolkata", size: 0.08, color: "#f59e0b" },
+    { lat: 19.0760, lng: 72.8777, name: "Mumbai", size: 0.1, color: "#ffffff" },
+    { lat: 28.6139, lng: 77.2090, name: "New Delhi", size: 0.1, color: "#ffffff" },
+    { lat: 12.9716, lng: 77.5946, name: "Bengaluru", size: 0.1, color: "#ffffff" },
+    { lat: 17.3850, lng: 78.4867, name: "Hyderabad", size: 0.08, color: "#ffffff" },
+    { lat: 18.5204, lng: 73.8567, name: "Pune", size: 0.08, color: "#ffffff" },
+    { lat: 13.0827, lng: 80.2707, name: "Chennai", size: 0.08, color: "#ffffff" },
+    { lat: 23.0225, lng: 72.5714, name: "Ahmedabad", size: 0.08, color: "#ffffff" },
+    { lat: 22.5726, lng: 88.3639, name: "Kolkata", size: 0.08, color: "#ffffff" },
   ];
 
   return (
@@ -58,9 +58,11 @@ export default function Globe({ className }) {
           ref={globeEl}
           width={dimensions.width}
           height={dimensions.height}
-          globeImageUrl={isLightMode ? "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg" : "//unpkg.com/three-globe/example/img/earth-dark.jpg"}
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
           backgroundColor="rgba(0,0,0,0)"
+          atmosphereColor="#ffffff"
+          atmosphereAltitude={0.15}
           pointsData={gData}
           pointAltitude="size"
           pointColor="color"

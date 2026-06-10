@@ -26,6 +26,14 @@ export default function RegisterDialog({ open, onOpenChange, event, onRegistered
       setEmail("");
       onRegistered?.();
       onOpenChange(false);
+      
+      const officialUrl = event.ticket_url || event.event_url;
+      if (officialUrl) {
+        toast("Redirecting to official event page...");
+        setTimeout(() => {
+          window.open(officialUrl, "_blank", "noopener,noreferrer");
+        }, 1000);
+      }
     } catch {
       toast.error("Registration failed, please try again");
     } finally {
@@ -52,7 +60,7 @@ export default function RegisterDialog({ open, onOpenChange, event, onRegistered
             <input data-testid="register-email" type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
           </div>
           <button data-testid="register-submit" type="submit" disabled={loading} className="w-full rounded-2xl bg-foreground text-background py-3.5 font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
-            <Ticket size={18} /> {loading ? "Confirming…" : "Confirm Registration"}
+            <Ticket size={18} /> {loading ? "Confirming…" : ((event?.ticket_url || event?.event_url) ? "Continue to Official Site" : "Confirm Registration")}
           </button>
         </form>
       </DialogContent>

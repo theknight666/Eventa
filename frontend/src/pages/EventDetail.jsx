@@ -13,6 +13,7 @@ import { CATEGORY_META, formatINR, formatDateLong, FALLBACK_IMG } from "../data/
 import EventCard from "../components/EventCard";
 import RegisterDialog from "../components/RegisterDialog";
 import { GridSkeleton } from "../components/Skeletons";
+import SEO from "../components/SEO";
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -89,10 +90,58 @@ export default function EventDetail() {
   const saved = isSaved(event.id);
   const meta = CATEGORY_META[event.category] || { gradient: "from-slate-500 to-slate-700" };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": event.title,
+    "description": event.description,
+    "image": event.cover_image || FALLBACK_IMG,
+    "startDate": event.start_iso,
+    "endDate": new Date(new Date(event.start_iso).getTime() + 6 * 3600 * 1000).toISOString(),
+    "eventAttendanceMode": event.event_type === "online" ? "https://schema.org/OnlineEventAttendanceMode" : "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": event.event_type === "online" ? {
+      "@type": "VirtualLocation",
+      "url": window.location.href
+    } : {
+      "@type": "Place",
+      "name": event.venue,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": event.city,
+        "addressRegion": event.state,
+        "addressCountry": "IN"
+      }
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": event.price || "0",
+      "priceCurrency": "INR",
+      "availability": "https://schema.org/InStock",
+      "url": window.location.href
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": event.organizer_name || "Eventa"
+    }
+  };
+
   return (
     <div className="pb-28">
+      <SEO 
+        title={event.title} 
+        description={event.description.substring(0, 160)} 
+        url={window.location.href}
+        image={event.cover_image || FALLBACK_IMG}
+        type="article"
+      >
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      </SEO>
+
       {/* Hero banner */}
-      <div className="relative h-[62vh] min-h-[460px] w-full overflow-hidden">
+      <div className="relative min-h-[60vh] lg:min-h-[70vh] w-full overflow-hidden flex flex-col">
         <img
           src={event.cover_image}
           onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
@@ -101,19 +150,22 @@ export default function EventDetail() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-black/40" />
 
-        <div className="relative h-full mx-auto max-w-5xl px-6 flex flex-col justify-between py-24">
-          <button
-            data-testid="back-btn"
-            onClick={() => navigate(-1)}
-            className="self-start inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white hover:scale-105 transition-transform"
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
+        <div className="relative flex-1 w-full mx-auto max-w-5xl px-6 flex flex-col py-24">
+          <div className="mb-12 lg:mb-20">
+            <button
+              data-testid="back-btn"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white hover:scale-105 transition-transform"
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
+            className="mt-auto"
           >
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className={`rounded-full px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-white bg-gradient-to-r ${meta.gradient}`}>
@@ -139,7 +191,7 @@ export default function EventDetail() {
 
       <div className="mx-auto max-w-5xl px-6 mt-12 grid lg:grid-cols-3 gap-10">
         {/* Main column */}
-        <div className="lg:col-span-2 space-y-12">
+        <div className="lg:col-span-2 space-y-12 order-last lg:order-first">
 
           {/* Overview */}
           <section>
@@ -180,28 +232,30 @@ export default function EventDetail() {
           )}
 
           {/* Schedule timeline */}
-          <section>
-            <h2 className="font-display text-2xl font-bold tracking-tight mb-6">Schedule</h2>
-            <div className="relative pl-6">
-              <div className="absolute left-[7px] top-1 bottom-1 w-px bg-border" />
-              {event.schedule.map((s, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="relative pb-7"
-                  data-testid={`schedule-item-${i}`}
-                >
-                  <div className="absolute -left-[22px] top-1.5 h-3.5 w-3.5 rounded-full bg-foreground ring-4 ring-background" />
-                  <div className="text-sm font-semibold text-muted-foreground">{s.time}</div>
-                  <div className="font-medium mt-0.5">{s.title}</div>
-                  <div className="text-sm text-muted-foreground mt-0.5">{s.desc}</div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
+          {event.schedule?.length > 0 && (
+            <section>
+              <h2 className="font-display text-2xl font-bold tracking-tight mb-6">Schedule</h2>
+              <div className="relative pl-6">
+                <div className="absolute left-[7px] top-1 bottom-1 w-px bg-border" />
+                {event.schedule.map((s, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                    className="relative pb-7"
+                    data-testid={`schedule-item-${i}`}
+                  >
+                    <div className="absolute -left-[22px] top-1.5 h-3.5 w-3.5 rounded-full bg-foreground ring-4 ring-background" />
+                    <div className="text-sm font-semibold text-muted-foreground">{s.time}</div>
+                    <div className="font-medium mt-0.5">{s.title}</div>
+                    <div className="text-sm text-muted-foreground mt-0.5">{s.desc}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Venue */}
           <section>
@@ -223,7 +277,7 @@ export default function EventDetail() {
         </div>
 
         {/* Sidebar ticket card */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 order-first lg:order-last">
           <div className="lg:sticky lg:top-24 space-y-4">
             <div className="rounded-3xl border border-border bg-card p-6" data-testid="ticket-card">
               <div className="flex items-baseline justify-between">

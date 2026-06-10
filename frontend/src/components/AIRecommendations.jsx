@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
-import { getRecommendations } from "../lib/api";
+import { getRecommendations, updateAttendeePreferences } from "../lib/api";
 import { useSaved } from "../context/SavedContext";
+import { useUser } from "../context/UserContext";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
@@ -13,34 +14,74 @@ const INTERESTS = [
   { id: "marketing", label: "Marketing" },
   { id: "music", label: "Music" },
   { id: "networking", label: "Networking" },
-  { id: "healthcare", label: "Healthcare" },
+  { id: "business", label: "Business" },
+  { id: "design", label: "Design" },
+  { id: "education", label: "Education" },
+  { id: "gaming", label: "Gaming" },
+  { id: "art", label: "Art" },
+  { id: "food", label: "Food" },
+  { id: "sports", label: "Sports" },
+  { id: "realestate", label: "Real Estate" },
+  { id: "ecommerce", label: "E-Commerce" },
 ];
 
 export default function AIRecommendations() {
   const { saved } = useSaved();
-  const [selected, setSelected] = useState(["technology", "ai"]);
+  const { user, login } = useUser();
+  const [selected, setSelected] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Sync state with user preferences on mount
+  useEffect(() => {
+    if (user?.preferences?.interests) {
+      setSelected(user.preferences.interests);
+    }
+  }, [user]);
+
   const fetchRecs = (interests) => {
+    if (!user) return;
     setLoading(true);
-    getRecommendations({ interests, saved_ids: saved, limit: 6 })
+    getRecommendations({ 
+      interests, 
+      city: user.preferences?.city,
+      saved_ids: saved, 
+      limit: 6 
+    })
       .then((d) => setEvents(d.events))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchRecs(selected);
+    if (user) {
+      fetchRecs(selected);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, saved]);
 
-  const toggle = (id) => {
+  const toggle = async (id) => {
     const next = selected.includes(id)
       ? selected.filter((x) => x !== id)
       : [...selected, id];
+    
     setSelected(next);
+    
+    // Instantly update backend so their profile stays in sync
+    if (user) {
+      try {
+        const res = await updateAttendeePreferences(user.email, {
+          city: user.preferences?.city || "Bengaluru",
+          interests: next
+        });
+        login({ ...user, preferences: res.preferences });
+      } catch (err) {
+        console.error("Failed to sync preferences", err);
+      }
+    }
     fetchRecs(next);
   };
+
+  if (!user) return null;
 
   return (
     <section id="ai-picks" className="relative py-24" data-testid="ai-recommendations-section">

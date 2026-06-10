@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
+from xml.sax.saxutils import escape
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -25,7 +26,7 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-from serpapi_sync import sync_all_cities
+from scraper_sync import sync_all_cities
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
@@ -119,7 +120,7 @@ async def on_startup():
     # Grandfather existing events to be approved
     await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
     
-    # Kick off SerpApi live-event sync in the background (non-blocking)
+    # Kick off live-event scraper sync in the background (non-blocking)
     asyncio.create_task(_background_sync())
     
     # Kick off periodic deduplication process
@@ -127,15 +128,15 @@ async def on_startup():
 
 
 async def _background_sync():
-    """Run SerpApi sync without blocking server startup."""
+    """Run Scraper sync without blocking server startup."""
     try:
         result = await sync_all_cities(db)
         if result.get("skipped"):
-            logger.info(f"SerpApi sync skipped: {result.get('error') or 'cooldown active'}")
+            logger.info(f"Scraper sync skipped: {result.get('error') or 'cooldown active'}")
         else:
-            logger.info(f"SerpApi sync done — {result['upserted']} events upserted")
+            logger.info(f"Scraper sync done — {result['upserted']} events upserted")
     except Exception as e:
-        logger.error(f"SerpApi background sync error: {e}")
+        logger.error(f"Scraper background sync error: {e}")
 
 
 async def _background_dedup():
@@ -204,6 +205,10 @@ class ToggleSavedReq(BaseModel):
     event_id: str
     save: bool
 
+class AttendeePreferencesReq(BaseModel):
+    city: Optional[str] = None
+    interests: List[str] = []
+
 class BulkEventsReq(BaseModel):
     ids: List[str]
 
@@ -225,6 +230,7 @@ async def attendee_register(req: AttendeeRegisterReq):
         "email": req.email,
         "name": req.name,
         "saved_events": [],
+        "preferences": {"city": None, "interests": []},
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     if req.password:
@@ -246,6 +252,7 @@ async def attendee_login(req: AttendeeLoginReq):
                 "email": req.email,
                 "name": req.name,
                 "saved_events": [],
+                "preferences": {"city": None, "interests": []},
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             await db.attendees.insert_one(new_attendee)
@@ -278,6 +285,21 @@ async def attendee_reset_password(req: ResetPasswordReq):
         {"$set": {"password_hash": get_password_hash(req.new_password)}, "$unset": {"reset_token": ""}}
     )
     return {"ok": True}
+
+@api_router.put("/attendee/{email}/preferences")
+async def update_attendee_preferences(email: str, req: AttendeePreferencesReq):
+    import urllib.parse
+    decoded_email = urllib.parse.unquote(email)
+    attendee = await db.attendees.find_one({"email": decoded_email})
+    if not attendee:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+        
+    preferences = {"city": req.city, "interests": req.interests}
+    await db.attendees.update_one(
+        {"email": decoded_email},
+        {"$set": {"preferences": preferences}}
+    )
+    return {"status": "ok", "preferences": preferences}
 
 @api_router.get("/attendee/{email}/saved")
 async def get_attendee_saved(email: str):
@@ -344,26 +366,24 @@ async def event_sources():
     async for row in db.events.aggregate(pipeline):
         breakdown[row["_id"] or "seed"] = row["count"]
     total = await db.events.count_documents({})
-    meta = await db.meta.find_one({"key": "last_serpapi_sync"})
+    meta = await db.meta.find_one({"key": "last_scraper_sync"})
     last_sync = meta["value"] if meta else None
-    serpapi_key_set = bool(os.environ.get("SERPAPI_KEY", "").strip())
     
     return {
         "total": total,
         "by_source": breakdown,
-        "last_serpapi_sync": last_sync,
-        "serpapi_key_configured": serpapi_key_set,
+        "last_scraper_sync": last_sync,
     }
 
 
 @api_router.post("/admin/sync")
 async def admin_sync(force: bool = False):
-    """Manually trigger a live-event sync.
+    """Manually trigger a live-event scraper sync.
     Pass ?force=true to bypass the cooldown.
     """
-    serpapi_res = await sync_all_cities(db, force=force)
+    scraper_res = await sync_all_cities(db, force=force)
     return {
-        "serpapi": serpapi_res
+        "scraper": scraper_res
     }
 
 
@@ -384,6 +404,39 @@ async def get_cities():
         counts[row["_id"]] = row["count"]
     return [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
 
+
+@api_router.get("/sitemap.xml")
+async def get_sitemap():
+    # Base URL of the frontend
+    base_url = "https://eventa.in"
+    
+    # Static routes
+    urls = [
+        f"{base_url}/",
+        f"{base_url}/organizer",
+    ]
+    
+    # Dynamic events
+    events = db.events.find({"approval_status": "approved"}, {"id": 1})
+    async for event in events:
+        urls.append(f"{base_url}/events/{event['id']}")
+        
+    # Organizers
+    organizers = db.organizers.find({}, {"slug": 1})
+    async for org in organizers:
+        urls.append(f"{base_url}/org/{org['slug']}")
+
+    xml_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    
+    for url in urls:
+        xml_lines.append(f"  <url><loc>{escape(url)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>")
+        
+    xml_lines.append("</urlset>")
+    
+    return Response(content="\n".join(xml_lines), media_type="application/xml")
 
 @api_router.get("/overview")
 async def get_overview():

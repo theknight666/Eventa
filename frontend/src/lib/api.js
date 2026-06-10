@@ -47,6 +47,8 @@ export const attendeeForgotPassword = (body) =>
   client.post("/attendee/forgot-password", body).then((r) => r.data);
 export const attendeeResetPassword = (body) =>
   client.post("/attendee/reset-password", body).then((r) => r.data);
+export const updateAttendeePreferences = (email, body) =>
+  client.put(`/attendee/${email}/preferences`, body).then((r) => r.data);
 export const getAttendeeSaved = (email) =>
   client.get(`/attendee/${email}/saved`).then((r) => r.data);
 export const toggleAttendeeSaved = (email, body) =>
