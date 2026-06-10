@@ -9,6 +9,7 @@ and via the /api/admin/sync endpoint.
 import asyncio
 import logging
 import os
+import re
 import uuid
 import random
 from datetime import datetime, timedelta, timezone
@@ -127,7 +128,7 @@ def _parse_date(when_str: str) -> Optional[datetime]:
     if not when_str:
         return None
     # Strip time-range suffixes like " – 6 PM" and dot separators
-    cleaned = when_str.split("–")[0].replace("·", " ").strip()
+    cleaned = re.split(r'[-–—]', when_str)[0].replace("·", " ").strip()
     try:
         import dateparser
         dt = dateparser.parse(
