@@ -68,7 +68,7 @@ export default function CuratedEvents() {
   }, []);
 
   return (
-    <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-24 border-t border-border">
+    <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-24 border-t border-border overflow-hidden">
       {/* Background aesthetics */}
       <div className="absolute top-20 right-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
       <div className="absolute bottom-20 left-1/4 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />

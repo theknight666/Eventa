@@ -376,7 +376,7 @@ export default function Hero({ stats, onSearch }) {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, ease, delay: 0.3 }}
-          className="flex-1 w-full flex justify-center lg:justify-end"
+          className="hidden md:flex flex-1 w-full justify-center lg:justify-end"
         >
           <Ticket3D />
         </motion.div>

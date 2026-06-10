@@ -176,12 +176,14 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => setLoginOpen(true)}
-                className="h-10 px-4 rounded-full glass flex items-center gap-2 text-sm font-semibold hover:scale-105 transition-transform"
+                className="hidden sm:flex h-10 px-4 rounded-full glass items-center gap-2 text-sm font-semibold hover:scale-105 transition-transform"
               >
                 Sign In
               </button>
             )}
-            <ThemeToggle />
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             <button
               className="h-10 w-10 rounded-full glass md:hidden flex items-center justify-center hover:scale-105 transition-transform"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -206,6 +208,14 @@ export default function Navbar() {
               <a href="/#cities" onClick={(e) => scrollToSection(e, "cities")} className="text-muted-foreground hover:text-foreground">Cities</a>
               <a href="/#ai-picks" onClick={(e) => scrollToSection(e, "ai-picks")} className="text-muted-foreground hover:text-foreground">AI Picks</a>
               <Link to="/organizer" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">For Organizers</Link>
+              {!user && (
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); setLoginOpen(true); }} 
+                  className="text-left text-foreground font-bold hover:text-foreground/80 mt-2"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </motion.div>
         )}
