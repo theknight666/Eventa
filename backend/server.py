@@ -51,6 +51,15 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'eventa')]
 
 app = FastAPI(title="Eventa — India Event Discovery")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -94,9 +103,9 @@ CITIES = [
     {"name": "Jaipur", "state": "Rajasthan", "image": "https://images.unsplash.com/photo-1477587458883-47145ed94245?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
     {"name": "Gurugram", "state": "Haryana", "image": "https://images.unsplash.com/photo-1580974852861-c381510bc98a?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
     {"name": "Noida", "state": "Uttar Pradesh", "image": "https://images.unsplash.com/photo-1667849357658-0ceb68ab3066?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
-    {"name": "Surat", "state": "Gujarat", "image": "https://images.unsplash.com/photo-1605705353164-9cb6dcfdc9a2?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
-    {"name": "Varanasi", "state": "Uttar Pradesh", "image": "https://images.unsplash.com/photo-1561359313-0639aad073f0?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
-    {"name": "Indore", "state": "Madhya Pradesh", "image": "https://images.unsplash.com/photo-1587474260584-136574528ed5?crop=entropy&cs=srgb&fm=jpg&q=85&w=900"},
+    {"name": "Surat", "state": "Gujarat", "image": "/images/surat.png"},
+    {"name": "Varanasi", "state": "Uttar Pradesh", "image": "/images/varanasi.png"},
+    {"name": "Indore", "state": "Madhya Pradesh", "image": "/images/indore.png"},
 ]
 
 
