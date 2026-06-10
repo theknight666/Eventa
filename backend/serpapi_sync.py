@@ -141,7 +141,8 @@ def _parse_date(when_str: str) -> Optional[datetime]:
             },
         )
         return dt
-    except Exception:
+    except Exception as e:
+        logger.warning(f"dateparser failed for '{cleaned}': {e}")
         return None
 
 
@@ -183,9 +184,14 @@ def normalize_event(raw: dict, city: str, category: str) -> Optional[dict]:
     when = raw.get("date", {}).get("when", "")
     dt = _parse_date(when)
     now = datetime.now(timezone.utc)
+    event_id = _stable_id(raw.get("link", ""), title)
+
     if dt is None or dt < now:
-        # If date is unclear/past, place it 30 days ahead as a best guess
-        dt = now + timedelta(days=30)
+        # If date is unclear/past, spread randomly over the next 45 days. Make it stable per event.
+        import random
+        random.seed(event_id)
+        dt = now + timedelta(days=random.randint(1, 45))
+        random.seed()
 
     # Address / venue
     addr_arr: list = raw.get("address", [])
@@ -199,10 +205,8 @@ def normalize_event(raw: dict, city: str, category: str) -> Optional[dict]:
     state = CITY_STATE.get(city, "")
 
     # Cover image
-    event_id = _stable_id(raw.get("link", ""), title)
-    
     # Always use premium curated images instead of low-quality thumbnails
-    random.seed(event_id)
+    import random
     images_list = IMG_FALLBACK.get(category, IMG_DEFAULT)
     cover = random.choice(images_list)
     random.seed()
