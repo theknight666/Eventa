@@ -131,15 +131,19 @@ async def on_startup():
 
 
 async def _background_sync():
-    """Run Scraper sync without blocking server startup."""
-    try:
-        result = await sync_all_cities(db)
-        if result.get("skipped"):
-            logger.info(f"Scraper sync skipped: {result.get('error') or 'cooldown active'}")
-        else:
-            logger.info(f"Scraper sync done — {result['upserted']} events upserted")
-    except Exception as e:
-        logger.error(f"Scraper background sync error: {e}")
+    """Run Scraper sync in a continuous loop in the background."""
+    while True:
+        try:
+            result = await sync_all_cities(db)
+            if result.get("skipped"):
+                logger.info(f"Scraper sync skipped: {result.get('error') or 'cooldown active'}")
+            else:
+                logger.info(f"Scraper sync done — {result['upserted']} events upserted")
+        except Exception as e:
+            logger.error(f"Scraper background sync error: {e}")
+        
+        # Check again in 60 minutes. The scraper_sync logic handles the exact 6-hour cooldown constraint
+        await asyncio.sleep(3600)
 
 
 async def _background_dedup():
