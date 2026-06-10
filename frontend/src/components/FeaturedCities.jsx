@@ -189,6 +189,19 @@ export default function FeaturedCities({ cities = [], active, onSelect }) {
             </div>
           ))}
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="mt-12 text-center"
+        >
+          <p className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-2">
+            <span className="h-px w-12 bg-border"></span>
+            More cities and global hubs coming soon
+            <span className="h-px w-12 bg-border"></span>
+          </p>
+        </motion.div>
       </div>
     </section>
   );
