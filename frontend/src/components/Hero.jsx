@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon } from "lucide-react";
+import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import Counter from "./Counter";
 import { useRef } from "react";
 
@@ -238,8 +239,9 @@ function Ticket3D() {
   );
 }
 
-export default function Hero({ stats, onSearch }) {
+export default function Hero({ stats, onSearch, onCity }) {
   const [q, setQ] = useState("");
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 140]);
   const scale = useTransform(scrollY, [0, 600], [1, 1.12]);
@@ -247,7 +249,39 @@ export default function Hero({ stats, onSearch }) {
 
   const submit = (e) => {
     e.preventDefault();
-    onSearch?.(q);
+    if (q.trim()) onSearch?.(q);
+  };
+
+  const handleLocationClick = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setLoadingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
+          const data = await res.json();
+          const city = data.address.city || data.address.town || data.address.village || data.address.state_district;
+          if (city) {
+            toast.success(`Location found: ${city}`);
+            onCity?.(city);
+          } else {
+            toast.error("Could not determine your city");
+          }
+        } catch (error) {
+          toast.error("Failed to reverse geocode location");
+        } finally {
+          setLoadingLocation(false);
+        }
+      },
+      (error) => {
+        toast.error("Could not get your location. Please enable permissions.");
+        setLoadingLocation(false);
+      }
+    );
   };
 
   const counters = [
@@ -346,6 +380,17 @@ export default function Hero({ stats, onSearch }) {
                 className="w-full sm:w-auto rounded-xl bg-foreground text-background px-7 py-3.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
                 <MapPin size={16} /> Explore
+              </button>
+            </div>
+            <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground px-2">
+              <button 
+                type="button" 
+                onClick={handleLocationClick} 
+                disabled={loadingLocation} 
+                className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
+                <span>Use my current location</span>
               </button>
             </div>
           </motion.form>

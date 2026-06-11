@@ -52,7 +52,7 @@ export default function Home() {
 
   return (
     <main>
-      <Hero stats={stats} onSearch={onSearch} />
+      <Hero stats={stats} onSearch={onSearch} onCity={onCity} />
       <TrendingEvents />
       <CuratedEvents />
       <CategoryGrid categories={categories} active={filters.category} onSelect={onCategory} />
