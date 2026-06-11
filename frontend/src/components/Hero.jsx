@@ -274,7 +274,7 @@ export default function Hero({ stats, onSearch }) {
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
       <div className="absolute inset-0 aurora opacity-50" />
 
-      <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-32 pb-20 lg:pt-40 lg:pb-32 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-16 lg:gap-8">
+      <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-24 lg:pt-24 pb-4 lg:pb-4 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
         
         {/* Left Column: Text & CTA */}
         <div className="flex-1 max-w-2xl w-full relative z-10">
@@ -376,7 +376,7 @@ export default function Hero({ stats, onSearch }) {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, ease, delay: 0.3 }}
-          className="hidden md:flex flex-1 w-full justify-center lg:justify-end"
+          className="hidden md:flex flex-1 w-full justify-center lg:justify-end -mt-28 lg:-mt-48"
         >
           <Ticket3D />
         </motion.div>
