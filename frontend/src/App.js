@@ -6,6 +6,7 @@ import { UserProvider } from "@/context/UserContext";
 import { SavedProvider } from "@/context/SavedContext";
 import { OrganizerProvider } from "@/context/OrganizerContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Analytics } from "@vercel/analytics/react";
 import SmoothScroll from "@/components/SmoothScroll";
 import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
@@ -56,6 +57,7 @@ function App() {
           </SavedProvider>
         </UserProvider>
       </ThemeProvider>
+      <Analytics />
     </GoogleOAuthProvider>
   );
 }
