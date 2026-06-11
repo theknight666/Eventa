@@ -23,6 +23,7 @@ import ContactUs from "@/pages/ContactUs";
 import Partnerships from "@/pages/Partnerships";
 import VIPScanner from "@/pages/VIPScanner";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
                 </SmoothScroll>
                 <Toaster position="bottom-right" theme="system" />
                 <SpeedInsights />
+                <Analytics />
                 </ErrorBoundary>
               </BrowserRouter>
             </OrganizerProvider>
