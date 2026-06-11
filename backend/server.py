@@ -688,6 +688,7 @@ class EventInput(BaseModel):
 class RegisterInput(BaseModel):
     name: str
     email: str
+    phone: Optional[str] = ""
 
 
 def _start_iso_from(date_str: str) -> str:
@@ -1020,6 +1021,35 @@ async def admin_delete_organizer(slug: str, x_admin_key: str = Header(None)):
     return {"status": "ok"}
 
 
+from fastapi.responses import Response
+
+@api_router.get("/admin/events/{event_id}/registrations/csv")
+async def admin_export_registrations(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    cursor = db.registrations.find({"event_id": event_id}).sort([("created_at", -1)])
+    
+    import csv
+    import io
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Registration ID", "Name", "Email", "Phone", "Registration Date"])
+    
+    async for reg in cursor:
+        writer.writerow([
+            reg.get("id", ""),
+            reg.get("name", ""),
+            reg.get("email", ""),
+            reg.get("phone", ""),
+            reg.get("created_at", "")
+        ])
+        
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=registrations_{event_id}.csv"}
+    )
+
+
 @api_router.post("/events/{event_id}/view")
 async def track_view(event_id: str):
     ev = await db.events.find_one({"id": event_id}, {"owner_slug": 1})
@@ -1040,7 +1070,7 @@ async def register_attendee(event_id: str, body: RegisterInput):
     now = datetime.now(timezone.utc)
     await db.registrations.insert_one({
         "id": str(uuid.uuid4()), "event_id": event_id, "owner_slug": ev.get("owner_slug"),
-        "name": body.name, "email": body.email,
+        "name": body.name, "email": body.email, "phone": body.phone,
         "created_at": now.isoformat(), "date": now.date().isoformat(),
     })
     await db.events.update_one({"id": event_id}, {"$inc": {"attendees_count": 1}})

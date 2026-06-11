@@ -10,6 +10,7 @@ const inputCls =
 export default function RegisterDialog({ open, onOpenChange, event, onRegistered }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
@@ -20,10 +21,11 @@ export default function RegisterDialog({ open, onOpenChange, event, onRegistered
     }
     setLoading(true);
     try {
-      await registerForEvent(event.id, { name, email });
+      await registerForEvent(event.id, { name, email, phone });
       toast.success("You're registered! 🎉", { description: event.title });
       setName("");
       setEmail("");
+      setPhone("");
       onRegistered?.();
       onOpenChange(false);
       
@@ -58,6 +60,10 @@ export default function RegisterDialog({ open, onOpenChange, event, onRegistered
           <div>
             <label className="label-eyebrow text-muted-foreground mb-1.5 block">Email</label>
             <input data-testid="register-email" type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+          </div>
+          <div>
+            <label className="label-eyebrow text-muted-foreground mb-1.5 block">Phone Number</label>
+            <input data-testid="register-phone" type="tel" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" />
           </div>
           <button data-testid="register-submit" type="submit" disabled={loading} className="w-full rounded-2xl bg-foreground text-background py-3.5 font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
             <Ticket size={18} /> {loading ? "Confirming…" : ((event?.ticket_url || event?.event_url) ? "Continue to Official Site" : "Confirm Registration")}

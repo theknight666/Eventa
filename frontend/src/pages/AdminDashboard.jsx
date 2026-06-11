@@ -12,7 +12,8 @@ import {
   getAdminVerifiedOrganizers,
   adminVerifyOrganizer,
   adminRejectOrganizerVerification,
-  adminDeleteOrganizer
+  adminDeleteOrganizer,
+  adminDownloadRegistrationsCSV
 } from "../lib/api";
 
 export default function AdminDashboard() {
@@ -258,16 +259,31 @@ function AllEventsList({ items, refresh }) {
             <div className="font-medium truncate">{ev.title}</div>
             <div className="text-xs text-muted-foreground">ID: {ev.id} • Status: {ev.approval_status || "approved"}</div>
           </div>
-          <button
-            onClick={async () => { 
-              if(window.confirm("Delete this event forever?")) {
-                await adminDeleteEvent(ev.id); toast.success("Deleted"); refresh();
-              }
-            }}
-            className="text-destructive text-sm px-3 py-1 rounded-lg hover:bg-destructive/10 whitespace-nowrap"
-          >
-            Delete
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  await adminDownloadRegistrationsCSV(ev.id);
+                  toast.success("CSV Downloaded");
+                } catch (e) {
+                  toast.error("Download failed");
+                }
+              }}
+              className="text-foreground text-sm px-3 py-1 rounded-lg hover:bg-foreground/10 border border-border whitespace-nowrap"
+            >
+              CSV
+            </button>
+            <button
+              onClick={async () => { 
+                if(window.confirm("Delete this event forever?")) {
+                  await adminDeleteEvent(ev.id); toast.success("Deleted"); refresh();
+                }
+              }}
+              className="text-destructive text-sm px-3 py-1 rounded-lg hover:bg-destructive/10 whitespace-nowrap"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       ))}
     </div>

@@ -125,3 +125,20 @@ export const adminRejectOrganizerVerification = (slug) =>
 
 export const adminDeleteOrganizer = (slug) =>
   client.delete(`/admin/organizers/${slug}`, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminDownloadRegistrationsCSV = async (eventId) => {
+  const token = localStorage.getItem("adminToken");
+  const response = await fetch(`${API}/admin/events/${eventId}/registrations/csv`, {
+    headers: token ? { "x-admin-key": token } : {}
+  });
+  if (!response.ok) throw new Error("Failed to download CSV");
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `registrations_${eventId}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
