@@ -115,13 +115,13 @@ CITIES = [
 
 @app.on_event("startup")
 async def on_startup():
-    # Remove duplicates and assign dedup_keys to existing events
-    duplicates_removed = await deduplicate_database(db)
-    if duplicates_removed > 0:
-        logger.info(f"Removed {duplicates_removed} duplicate events from database.")
-        
-    # Grandfather existing events to be approved
-    await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
+    async def init_db_tasks():
+        duplicates_removed = await deduplicate_database(db)
+        if duplicates_removed > 0:
+            logger.info(f"Removed {duplicates_removed} duplicate events from database.")
+        await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
+
+    asyncio.create_task(init_db_tasks())
     
     # Kick off live-event scraper sync in the background (non-blocking)
     asyncio.create_task(_background_sync())
