@@ -1,8 +1,12 @@
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 
-client = AsyncIOMotorClient('mongodb://localhost:27017')
-db = client.eventa
+import os
+from dotenv import load_dotenv
+
+load_dotenv('backend/.env')
+client = AsyncIOMotorClient(os.environ['MONGO_URL'])
+db = client[os.environ.get('DB_NAME', 'eventa')]
 
 async def main():
     res1 = await db.registrations.delete_many({'email': {'$regex': '@example\\.com$'}})

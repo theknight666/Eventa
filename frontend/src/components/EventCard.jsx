@@ -101,11 +101,6 @@ export default function EventCard({ event, index = 0 }) {
             </button>
           </div>
 
-          <div className="absolute bottom-3 left-3">
-            <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${TICKET_STYLES[event.ticket_status]}`}>
-              {TICKET_LABEL[event.ticket_status]}
-            </span>
-          </div>
         </div>
 
         <div className="p-5">
@@ -117,9 +112,10 @@ export default function EventCard({ event, index = 0 }) {
             {event.title}
           </h3>
           <div className="mt-3 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
-              <span className="truncate">{event.organizer?.name}</span>
-              {event.organizer?.verified && <BadgeCheck size={15} className="text-blue-500 shrink-0" />}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${TICKET_STYLES[event.ticket_status]}`}>
+                {TICKET_LABEL[event.ticket_status]}
+              </span>
             </div>
             <div className="text-right shrink-0">
               {event.pricing === "free" ? (
