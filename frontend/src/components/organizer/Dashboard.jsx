@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Plus, Eye, Users, IndianRupee, CalendarDays, Pencil, Trash2, LogOut,
-  BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock, AlertCircle, CheckCircle2, XCircle
+  BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -76,6 +76,17 @@ export default function Dashboard() {
     update({ verification_status: "pending" });
     toast.success("Verification requested — our team will review within 24-48h");
     refresh();
+  };
+
+  const handleUpgradeClick = () => {
+    if (events.length === 0) {
+      toast.error("Create an event first!", { description: "You need at least one published event to feature it." });
+      setEditing(null);
+      setFormOpen(true);
+    } else {
+      document.getElementById("organizer-events-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      toast.info("Select an event", { description: "Click the sparkle icon next to the event you want to promote." });
+    }
   };
 
   const stats = data?.stats || {};
@@ -173,7 +184,7 @@ export default function Dashboard() {
           </div>
         </div>
         <button 
-          onClick={() => toast.info("Contacting sales...", { description: "Our team will reach out to you shortly!" })}
+          onClick={handleUpgradeClick}
           className="rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity shrink-0 shadow-md shadow-orange-500/20"
         >
           Upgrade Event
@@ -198,7 +209,7 @@ export default function Dashboard() {
             </button>
           </div>
         ) : (
-          <div className="rounded-3xl border border-border bg-card divide-y divide-border overflow-hidden" data-testid="organizer-events-list">
+          <div id="organizer-events-list" className="rounded-3xl border border-border bg-card divide-y divide-border overflow-hidden" data-testid="organizer-events-list">
             {events.map((ev) => (
               <div key={ev.id} className="flex items-center gap-4 p-4 sm:p-5" data-testid={`org-event-${ev.id}`}>
                 <img src={ev.cover_image} alt="" className="h-16 w-24 rounded-xl object-cover hidden sm:block" />
@@ -229,6 +240,19 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {ev.featured ? (
+                    <div className="h-9 w-9 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-500 flex items-center justify-center" title="Premium Featured Event">
+                      <Sparkles size={15} />
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => toast.info("Requesting promotion...", { description: `Our sales team will contact you about featuring "${ev.title}".` })} 
+                      className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-amber-500 hover:text-amber-500 transition-colors" 
+                      title="Make Your Event Featured"
+                    >
+                      <Sparkles size={15} />
+                    </button>
+                  )}
                   <Link to={`/event/${ev.id}`} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-view-${ev.id}`}>
                     <ExternalLink size={15} />
                   </Link>
