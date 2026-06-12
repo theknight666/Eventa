@@ -538,6 +538,11 @@ async def list_events(
             end = None
         if end is not None:
             query["start_iso"] = {"$gte": start.isoformat(), "$lte": end.isoformat()}
+    else:
+        # Default behavior: hide expired events (events that started before today 00:00:00)
+        now = datetime.now(timezone.utc)
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        query["start_iso"] = {"$gte": start_of_today.isoformat()}
             
     if lat is not None and lng is not None and radius_km is not None:
         # MongoDB $nearSphere query (distance in meters)

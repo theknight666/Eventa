@@ -52,6 +52,9 @@ export default function EventCard({ event, index = 0 }) {
     }
   };
 
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  const isExpired = new Date(event.start_iso) < startOfToday;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
@@ -60,6 +63,7 @@ export default function EventCard({ event, index = 0 }) {
       transition={{ duration: 0.5, ease, delay: (index % 3) * 0.07 }}
       whileHover={{ y: -6 }}
       data-testid={`event-card-${event.id}`}
+      className={isExpired ? "opacity-75 grayscale-[0.3]" : ""}
     >
       <Link to={`/event/${event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-colors">
         <div className="relative aspect-[16/10] overflow-hidden">
@@ -71,11 +75,16 @@ export default function EventCard({ event, index = 0 }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
 
-          <div className="absolute top-3 left-3 flex gap-2">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+            {isExpired && (
+              <span className="rounded-full px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider bg-rose-500 text-white shadow-sm">
+                Expired
+              </span>
+            )}
             <span className={`rounded-full px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-white bg-gradient-to-r ${meta.gradient}`}>
               {event.category}
             </span>
-            {event.featured && (
+            {event.featured && !isExpired && (
               <span className="rounded-full px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider glass text-white">
                 Featured
               </span>
