@@ -164,7 +164,8 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception at {request.url.path}: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "An internal server error occurred. Our team has been notified.", "error_type": type(exc).__name__}
+        content={"detail": "An internal server error occurred. Our team has been notified.", "error_type": type(exc).__name__, "error_msg": str(exc)},
+        headers={"Access-Control-Allow-Origin": "*"}
     )
 
 
@@ -553,12 +554,26 @@ async def list_events(
         sort = "distance"
 
     sort_field = {"date": ("start_iso", 1), "popular": ("attendees_count", -1), "rating": ("rating", -1)}.get(sort)
-    cursor = db.events.find(query)
-    if sort_field:
-        cursor = cursor.sort([sort_field])
-    cursor = cursor.skip(skip).limit(limit)
-    docs = [clean(d) async for d in cursor]
-    total = await db.events.count_documents(query)
+    
+    try:
+        cursor = db.events.find(query)
+        if sort_field:
+            cursor = cursor.sort([sort_field])
+        cursor = cursor.skip(skip).limit(limit)
+        docs = [clean(d) async for d in cursor]
+        total = await db.events.count_documents(query)
+    except Exception as e:
+        logger.error(f"Geo query failed, falling back: {e}")
+        # Remove location from query and try again
+        if "location" in query:
+            del query["location"]
+        cursor = db.events.find(query)
+        if sort_field:
+            cursor = cursor.sort([sort_field])
+        cursor = cursor.skip(skip).limit(limit)
+        docs = [clean(d) async for d in cursor]
+        total = await db.events.count_documents(query)
+        
     return {"events": docs, "total": total}
 
 
