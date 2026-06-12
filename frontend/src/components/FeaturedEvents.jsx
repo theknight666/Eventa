@@ -62,6 +62,29 @@ export default function FeaturedEvents() {
         />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-30 mix-blend-overlay pointer-events-none" />
 
+        {/* Floating Sparkles */}
+        {[
+          { top: "10%", left: "15%", delay: 0, size: 16 },
+          { top: "20%", left: "80%", delay: 1.5, size: 24 },
+          { top: "70%", left: "5%", delay: 0.8, size: 20 },
+          { top: "80%", left: "85%", delay: 2.5, size: 18 },
+          { top: "40%", left: "50%", delay: 3, size: 14 }
+        ].map((s, i) => (
+          <motion.div
+            key={i}
+            animate={{
+              opacity: [0, 0.8, 0],
+              scale: [0.5, 1.2, 0.5],
+              rotate: [0, 90, 180]
+            }}
+            transition={{ duration: 4 + (i % 2), repeat: Infinity, delay: s.delay, ease: "easeInOut" }}
+            className="absolute pointer-events-none text-amber-400/60 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]"
+            style={{ top: s.top, left: s.left }}
+          >
+            <Sparkles size={s.size} />
+          </motion.div>
+        ))}
+
         <div className="relative p-8 md:p-14">
           <div className="flex items-center gap-4 mb-10">
             <motion.div 
