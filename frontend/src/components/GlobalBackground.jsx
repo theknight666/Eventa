@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
 
 export default function GlobalBackground() {
   const mouseX = useMotionValue(0);
@@ -9,11 +9,13 @@ export default function GlobalBackground() {
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
+  // Tighter, darker "flashlight" mask (less spread)
+  const maskImage = useMotionTemplate`radial-gradient(250px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
+
   useEffect(() => {
     const handleMouseMove = (e) => {
-      // Center the orb on the cursor
-      mouseX.set(e.clientX - 300);
-      mouseY.set(e.clientY - 300);
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -21,38 +23,36 @@ export default function GlobalBackground() {
   }, [mouseX, mouseY]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-[#070707] transition-colors duration-500">
-      {/* Base Noise Texture */}
+    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-[#050505] transition-colors duration-500">
+      {/* Base Noise Texture for premium feel */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.25] mix-blend-overlay" />
       
-      {/* Interactive Cursor Glow */}
-      <motion.div
-        style={{
-          x: smoothX,
-          y: smoothY,
-        }}
-        className="absolute top-0 left-0 w-[600px] h-[600px] bg-amber-200/5 dark:bg-amber-400/5 rounded-full blur-[150px] mix-blend-screen"
-      />
+      {/* Interactive Cursor Spotlight over Classical Indian Jaali Pattern */}
+      <motion.div 
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
+      >
+        <svg width="100%" height="100%" className="absolute inset-0 opacity-80">
+          <defs>
+            <pattern id="jaali" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+              {/* Intricate Jaali (Classical Indian Lattice) Motif */}
+              <path d="M40 0 L80 40 L40 80 L0 40 Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="40" cy="40" r="20" fill="none" stroke="currentColor" strokeWidth="1" />
+              <path d="M20 20 Q 40 0 60 20 Q 80 40 60 60 Q 40 80 20 60 Q 0 40 20 20 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              <circle cx="40" cy="40" r="6" fill="currentColor" opacity="0.6" />
+              {/* Corner embellishments */}
+              <circle cx="0" cy="0" r="4" fill="currentColor" opacity="0.4" />
+              <circle cx="80" cy="0" r="4" fill="currentColor" opacity="0.4" />
+              <circle cx="0" cy="80" r="4" fill="currentColor" opacity="0.4" />
+              <circle cx="80" cy="80" r="4" fill="currentColor" opacity="0.4" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#jaali)" className="text-amber-500" />
+        </svg>
 
-      {/* Ambient Drifting Orbs */}
-      <motion.div 
-        animate={{
-          x: [0, 100, -50, 0],
-          y: [0, -100, 50, 0],
-          scale: [1, 1.2, 0.8, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-[20%] -left-[10%] w-[700px] h-[700px] bg-amber-500/5 rounded-full blur-[150px]"
-      />
-      <motion.div 
-        animate={{
-          x: [0, -100, 50, 0],
-          y: [0, 100, -50, 0],
-          scale: [1, 1.3, 0.9, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute top-[60%] -right-[10%] w-[800px] h-[800px] bg-orange-500/5 rounded-full blur-[150px]"
-      />
+        {/* Tighter amber overlay inside the flashlight */}
+        <div className="absolute inset-0 bg-amber-500/20 mix-blend-overlay" />
+      </motion.div>
     </div>
   );
 }
