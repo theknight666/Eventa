@@ -27,36 +27,21 @@ export default function GlobalBackground() {
       {/* Base Noise Texture */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
       
-      {/* Interactive Cursor Spotlight over Mandala */}
+      {/* Interactive Cursor Spotlight over Pattern */}
       <motion.div 
-        className="absolute inset-0 flex items-center justify-center opacity-40"
+        className="absolute inset-0 flex items-center justify-center opacity-80"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
-        <svg
-          width="1200" height="1200" viewBox="0 0 800 800"
-          className="stroke-amber-500 fill-none"
-        >
-          <circle cx="400" cy="400" r="380" strokeWidth="1" strokeDasharray="10 15" />
-          <circle cx="400" cy="400" r="360" strokeWidth="0.5" />
-          <circle cx="400" cy="400" r="280" strokeWidth="2" strokeDasharray="4 12" />
-          <circle cx="400" cy="400" r="140" strokeWidth="1.5" />
-          
-          {[...Array(24)].map((_, i) => (
-            <g key={i} transform={`rotate(${i * 15} 400 400)`}>
-              {/* Petals / Geometric shapes */}
-              <path d="M400 120 Q 440 260 400 400 Q 360 260 400 120 Z" strokeWidth="0.75" />
-              <path d="M400 40 L 415 100 L 400 120 L 385 100 Z" strokeWidth="1" />
-              <circle cx="400" cy="260" r="80" strokeWidth="0.5" strokeDasharray="3 6" />
-            </g>
-          ))}
-          
-          {[...Array(12)].map((_, i) => (
-            <g key={`inner-${i}`} transform={`rotate(${i * 30} 400 400)`}>
-              <path d="M400 260 Q 430 330 400 400 Q 370 330 400 260 Z" strokeWidth="1" />
-              <circle cx="400" cy="260" r="10" strokeWidth="2" />
-            </g>
-          ))}
-        </svg>
+        {/* Damask / Floral Repeating Pattern */}
+        <div 
+          className="absolute inset-0"
+          style={{ 
+            backgroundImage: "url('https://www.transparenttextures.com/patterns/arabesque.png')",
+            backgroundRepeat: "repeat",
+            backgroundSize: "300px 300px",
+            filter: "invert(0.5) sepia(1) saturate(5) hue-rotate(30deg) brightness(0.8)" // Creates a golden/amber hue on the pattern
+          }}
+        />
 
         {/* Ambient Hover Glow tied to the same spot */}
         <div className="absolute inset-0 bg-amber-600/30 mix-blend-screen" />
