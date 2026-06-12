@@ -264,10 +264,31 @@ export default function Hero({ stats, onSearch, onCity }) {
           const { latitude, longitude } = position.coords;
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
           const data = await res.json();
-          const city = data.address.city || data.address.town || data.address.village || data.address.state_district;
+          let city = data.address.city || data.address.town || data.address.village || data.address.state_district;
           if (city) {
-            toast.success(`Location found: ${city}`);
-            onCity?.(city);
+            if (city.toLowerCase().includes("district")) {
+              city = city.replace(/district/i, "").trim();
+            }
+            const cityAliases = {
+              "delhi": "New Delhi",
+              "new delhi": "New Delhi",
+              "bangalore": "Bengaluru",
+              "bengaluru": "Bengaluru",
+              "gurgaon": "Gurugram",
+              "gurugram": "Gurugram",
+              "bombay": "Mumbai",
+              "mumbai": "Mumbai",
+              "madras": "Chennai",
+              "chennai": "Chennai",
+              "calcutta": "Kolkata",
+              "kolkata": "Kolkata",
+              "poona": "Pune",
+              "pune": "Pune",
+            };
+            const normalizedCity = cityAliases[city.toLowerCase()] || city;
+
+            toast.success(`Location found: ${normalizedCity}`);
+            onCity?.(normalizedCity);
           } else {
             toast.error("Could not determine your city");
           }
