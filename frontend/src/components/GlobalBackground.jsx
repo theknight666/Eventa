@@ -9,8 +9,8 @@ export default function GlobalBackground() {
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  // Tighter, darker "flashlight" mask (less spread)
-  const maskImage = useMotionTemplate`radial-gradient(250px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
+  // Even tighter flashlight mask (180px)
+  const maskImage = useMotionTemplate`radial-gradient(180px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -32,7 +32,7 @@ export default function GlobalBackground() {
         className="absolute inset-0 z-0 pointer-events-none"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
-        <svg width="100%" height="100%" className="absolute inset-0 opacity-80">
+        <svg width="100%" height="100%" className="absolute inset-0 opacity-90">
           <defs>
             <pattern id="jaali" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
               {/* Intricate Jaali (Classical Indian Lattice) Motif */}
@@ -50,8 +50,8 @@ export default function GlobalBackground() {
           <rect width="100%" height="100%" fill="url(#jaali)" className="text-amber-500" />
         </svg>
 
-        {/* Tighter amber overlay inside the flashlight */}
-        <div className="absolute inset-0 bg-amber-500/20 mix-blend-overlay" />
+        {/* Bring back the very light amber glow effect inside the mask */}
+        <div className="absolute inset-0 bg-amber-400/20 mix-blend-screen" />
       </motion.div>
     </div>
   );
