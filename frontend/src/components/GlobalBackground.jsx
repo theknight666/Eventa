@@ -22,16 +22,16 @@ export default function GlobalBackground() {
   }, [mouseX, mouseY]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-[#050505] transition-colors duration-500">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.25] mix-blend-overlay" />
+    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-slate-50 dark:bg-[#050505] transition-colors duration-500">
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] dark:opacity-[0.25] mix-blend-multiply dark:mix-blend-overlay" />
       
       {/* 30% Visibility applied to the entire masked layer */}
       <motion.div 
-        className="absolute inset-0 z-0 pointer-events-none opacity-30"
+        className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
-        {/* text-amber-500 on the SVG ensures all stroke/fill="currentColor" are deeply amber */}
-        <svg width="100%" height="100%" className="absolute inset-0 text-amber-500">
+        {/* text-amber-600/500 ensures deeply amber lines on both modes */}
+        <svg width="100%" height="100%" className="absolute inset-0 text-amber-600 dark:text-amber-500">
           <defs>
             <pattern id="flower-mandala" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
               <g transform="translate(60, 60)">
@@ -74,8 +74,8 @@ export default function GlobalBackground() {
           <rect width="100%" height="100%" fill="url(#flower-mandala)" />
         </svg>
 
-        {/* Solid amber overlay to ensure the light itself is tinted */}
-        <div className="absolute inset-0 bg-amber-500/50 mix-blend-screen" />
+        {/* Multiply for light mode (darkens), Screen for dark mode (lightens) */}
+        <div className="absolute inset-0 bg-amber-500/50 mix-blend-multiply dark:mix-blend-screen" />
       </motion.div>
     </div>
   );
