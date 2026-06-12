@@ -19,17 +19,35 @@ export default function EventsNearYou() {
         if (!res.ok) throw new Error("Failed to fetch IP location");
         
         const data = await res.json();
-        const { latitude, longitude, city } = data;
-        
-        if (!latitude || !longitude) {
-          throw new Error("Invalid location data from IP");
-        }
+        const { latitude, longitude } = data;
+        let detectedCity = data.city || "your area";
 
-        setUserCity(city || "your area");
+        // Map common aliases to backend city names for fallback
+        const cityAliases = {
+          "delhi": "New Delhi",
+          "new delhi": "New Delhi",
+          "bangalore": "Bengaluru",
+          "bengaluru": "Bengaluru",
+          "gurgaon": "Gurugram",
+          "gurugram": "Gurugram",
+          "bombay": "Mumbai",
+          "mumbai": "Mumbai",
+          "madras": "Chennai",
+          "chennai": "Chennai",
+          "calcutta": "Kolkata",
+          "kolkata": "Kolkata",
+          "poona": "Pune",
+          "pune": "Pune",
+        };
+        const normalizedCity = cityAliases[detectedCity.toLowerCase()] || detectedCity;
+
+        setUserCity(normalizedCity);
         setLocationStatus("found");
 
         // 2. Fetch events within a precise 50km radius using backend geo-search
+        // Pass the normalized city as a fallback in case the backend geo-query fails
         const d = await getEvents({ 
+          city: normalizedCity,
           lat: latitude, 
           lng: longitude, 
           radius_km: 50, 
