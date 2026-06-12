@@ -105,6 +105,12 @@ export const adminApproveEvent = (id) =>
 export const adminRejectEvent = (id) =>
   client.put(`/admin/events/${id}/reject`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
 
+export const adminFeatureEvent = (id) =>
+  client.put(`/admin/events/${id}/feature`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
+export const adminUnfeatureEvent = (id) =>
+  client.put(`/admin/events/${id}/unfeature`, {}, { headers: getAdminHeaders() }).then((r) => r.data);
+
 export const adminDeleteEvent = (id) =>
   client.delete(`/admin/events/${id}`, { headers: getAdminHeaders() }).then((r) => r.data);
 

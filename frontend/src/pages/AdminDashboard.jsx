@@ -13,7 +13,9 @@ import {
   adminVerifyOrganizer,
   adminRejectOrganizerVerification,
   adminDeleteOrganizer,
-  adminDownloadRegistrationsCSV
+  adminDownloadRegistrationsCSV,
+  adminFeatureEvent,
+  adminUnfeatureEvent
 } from "../lib/api";
 
 export default function AdminDashboard() {
@@ -273,6 +275,21 @@ function AllEventsList({ items, refresh }) {
             >
               CSV
             </button>
+            {ev.featured ? (
+              <button
+                onClick={async () => { await adminUnfeatureEvent(ev.id); toast.success("Unfeatured"); refresh(); }}
+                className="text-amber-500 text-sm px-3 py-1 rounded-lg hover:bg-amber-500/10 whitespace-nowrap border border-amber-500/30"
+              >
+                Unfeature
+              </button>
+            ) : (
+              <button
+                onClick={async () => { await adminFeatureEvent(ev.id); toast.success("Featured"); refresh(); }}
+                className="text-blue-500 text-sm px-3 py-1 rounded-lg hover:bg-blue-500/10 whitespace-nowrap border border-blue-500/30"
+              >
+                Feature
+              </button>
+            )}
             <button
               onClick={async () => { 
                 if(window.confirm("Delete this event forever?")) {

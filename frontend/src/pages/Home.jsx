@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Hero from "../components/Hero";
 import TrendingEvents from "../components/TrendingEvents";
+import FeaturedEvents from "../components/FeaturedEvents";
 import EventsNearYou from "../components/EventsNearYou";
 import CuratedEvents from "../components/CuratedEvents";
 import CategoryGrid from "../components/CategoryGrid";
@@ -54,6 +55,7 @@ export default function Home() {
   return (
     <main>
       <Hero stats={stats} onSearch={onSearch} onCity={onCity} />
+      <FeaturedEvents />
       <TrendingEvents />
       <EventsNearYou />
       <CuratedEvents />

@@ -159,6 +159,27 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Premium Promotion Up-sell */}
+      <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-6 mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-testid="premium-upsell-card">
+        <div className="flex items-start gap-4">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
+            <BadgeCheck size={24} />
+          </div>
+          <div>
+            <div className="font-semibold text-amber-600 dark:text-amber-400">Make Your Event Featured</div>
+            <p className="text-sm text-muted-foreground mt-0.5 max-w-md">
+              Want to sell out faster? Premium featured events are pinned to the top of the homepage and receive up to 5x more views.
+            </p>
+          </div>
+        </div>
+        <button 
+          onClick={() => toast.info("Contacting sales...", { description: "Our team will reach out to you shortly!" })}
+          className="rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity shrink-0 shadow-md shadow-orange-500/20"
+        >
+          Upgrade Event
+        </button>
+      </div>
+
       {/* Analytics */}
       <div className="mb-12">
         <h2 className="font-display text-2xl font-bold tracking-tight mb-5">Analytics</h2>

@@ -1018,6 +1018,19 @@ async def admin_reject_event(event_id: str, x_admin_key: str = Header(None)):
     await db.events.update_one({"id": event_id}, {"$set": {"approval_status": "rejected"}})
     return {"status": "ok"}
 
+@api_router.put("/admin/events/{event_id}/feature")
+async def admin_feature_event(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.events.update_one({"id": event_id}, {"$set": {"featured": True}})
+    return {"status": "ok"}
+
+@api_router.put("/admin/events/{event_id}/unfeature")
+async def admin_unfeature_event(event_id: str, x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    await db.events.update_one({"id": event_id}, {"$set": {"featured": False}})
+    return {"status": "ok"}
+
+
 @api_router.delete("/admin/events/{event_id}")
 async def admin_delete_event(event_id: str, x_admin_key: str = Header(None)):
     get_admin_key(x_admin_key)
