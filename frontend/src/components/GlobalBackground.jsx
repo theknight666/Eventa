@@ -25,11 +25,13 @@ export default function GlobalBackground() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-[#050505] transition-colors duration-500">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.25] mix-blend-overlay" />
       
+      {/* 10% Visibility applied to the entire masked layer */}
       <motion.div 
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none opacity-10"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
-        <svg width="100%" height="100%" className="absolute inset-0 opacity-100">
+        {/* text-amber-500 on the SVG ensures all stroke/fill="currentColor" are deeply amber */}
+        <svg width="100%" height="100%" className="absolute inset-0 text-amber-500">
           <defs>
             <pattern id="flower-mandala" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
               <g transform="translate(60, 60)">
@@ -56,11 +58,11 @@ export default function GlobalBackground() {
               </g>
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#flower-mandala)" className="text-amber-500" />
+          <rect width="100%" height="100%" fill="url(#flower-mandala)" />
         </svg>
 
-        {/* Visibility fixed exactly at 10% (opacity-10) */}
-        <div className="absolute inset-0 bg-amber-400 opacity-10 mix-blend-screen" />
+        {/* Solid amber overlay to ensure the light itself is tinted */}
+        <div className="absolute inset-0 bg-amber-500/50 mix-blend-screen" />
       </motion.div>
     </div>
   );
