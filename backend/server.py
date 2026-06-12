@@ -463,7 +463,7 @@ async def get_overview():
     events_this_week = await db.events.count_documents({"start_iso": {"$lte": week}})
     total = await db.events.count_documents({})
     cities = len(await db.events.distinct("city"))
-    organizers = len(await db.events.distinct("organizer.name"))
+    organizers = await db.organizers.count_documents({})
     agg = db.events.aggregate([{"$group": {"_id": None, "att": {"$sum": "$attendees_count"}}}])
     attendees = 0
     async for row in agg:
