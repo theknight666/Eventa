@@ -27,7 +27,7 @@ export default function FeaturedEvents() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-[2.5rem] overflow-hidden bg-amber-50/80 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-[0_0_40px_rgba(245,158,11,0.1)] dark:shadow-[0_0_80px_rgba(245,158,11,0.15)] border border-amber-500/20 dark:border-amber-500/30"
+        className="relative rounded-[2.5rem] overflow-hidden bg-amber-50/80 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-[0_40px_120px_-20px_rgba(245,158,11,0.4),inset_0_2px_10px_rgba(255,255,255,0.7),0_0_0_1px_rgba(245,158,11,0.2)] dark:shadow-[0_40px_120px_-20px_rgba(245,158,11,0.5),inset_0_2px_5px_rgba(255,255,255,0.1),0_0_0_1px_rgba(245,158,11,0.3)] backdrop-blur-3xl transform-gpu"
       >
         {/* Premium Background Effects */}
         <motion.div 
