@@ -27,7 +27,7 @@ export default function FeaturedEvents() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 text-white shadow-[0_0_80px_rgba(245,158,11,0.15)] border border-amber-500/30"
+        className="relative rounded-[2.5rem] overflow-hidden bg-amber-50/80 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-[0_0_40px_rgba(245,158,11,0.1)] dark:shadow-[0_0_80px_rgba(245,158,11,0.15)] border border-amber-500/20 dark:border-amber-500/30"
       >
         {/* Premium Background Effects */}
         <motion.div 
@@ -38,7 +38,7 @@ export default function FeaturedEvents() {
             opacity: [0.5, 0.8, 0.5]
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-600/50 blur-[100px] rounded-full pointer-events-none" 
+          className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/40 dark:bg-amber-600/50 blur-[100px] rounded-full pointer-events-none" 
         />
         <motion.div 
           animate={{
@@ -48,7 +48,7 @@ export default function FeaturedEvents() {
             opacity: [0.5, 0.9, 0.5]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-orange-600/50 blur-[100px] rounded-full pointer-events-none" 
+          className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-orange-400/40 dark:bg-orange-600/50 blur-[100px] rounded-full pointer-events-none" 
         />
         <motion.div 
           animate={{
@@ -58,24 +58,24 @@ export default function FeaturedEvents() {
             opacity: [0.4, 0.7, 0.4]
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-700/40 blur-[120px] rounded-full pointer-events-none" 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/30 dark:bg-amber-700/40 blur-[120px] rounded-full pointer-events-none" 
         />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-30 mix-blend-overlay pointer-events-none" />
 
         <div className="relative p-8 md:p-14">
           <div className="flex items-center gap-4 mb-10">
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.5)]"
+              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] dark:shadow-[0_0_30px_rgba(245,158,11,0.5)]"
             >
               <Sparkles className="text-white" size={28} />
             </motion.div>
             <div>
-              <h2 className="font-display text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500">
+              <h2 className="font-display text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-amber-500 to-orange-600 dark:from-amber-200 dark:via-amber-400 dark:to-orange-500">
                 Premium Featured
               </h2>
-              <p className="text-amber-500/80 text-sm font-semibold tracking-wide uppercase mt-1">Exclusive top-tier experiences</p>
+              <p className="text-amber-700/80 dark:text-amber-500/80 text-sm font-semibold tracking-wide uppercase mt-1">Exclusive top-tier experiences</p>
             </div>
           </div>
 
@@ -92,7 +92,7 @@ export default function FeaturedEvents() {
               >
                 <Link
                   to={`/event/${ev.id}`}
-                  className="group block relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-2xl"
+                  className="group block relative rounded-3xl overflow-hidden border border-amber-500/20 bg-white/60 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors shadow-xl dark:shadow-2xl backdrop-blur-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">
                     <img
@@ -101,23 +101,23 @@ export default function FeaturedEvents() {
                       alt={ev.title}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
                     
                     <div className="absolute bottom-5 left-5 right-5">
-                      <div className="flex items-center gap-3 text-xs font-medium text-amber-300 mb-2">
+                      <div className="flex items-center gap-3 text-xs font-medium text-amber-300 mb-2 drop-shadow-md">
                         <span className="flex items-center gap-1.5"><Calendar size={14} /> {formatDate(ev.start_iso)}</span>
                         <span className="flex items-center gap-1.5"><MapPin size={14} /> {ev.city}</span>
                       </div>
-                      <h3 className="font-display text-2xl font-bold leading-tight line-clamp-2 text-white group-hover:text-amber-400 transition-colors">
+                      <h3 className="font-display text-2xl font-bold leading-tight line-clamp-2 text-white group-hover:text-amber-300 transition-colors drop-shadow-md">
                         {ev.title}
                       </h3>
                     </div>
                   </div>
-                  <div className="p-5 flex items-center justify-between border-t border-white/5">
-                    <span className="text-sm font-medium text-zinc-400 line-clamp-1 flex-1 pr-4">
+                  <div className="p-5 flex items-center justify-between border-t border-amber-500/10 dark:border-white/5">
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 line-clamp-1 flex-1 pr-4">
                       By {ev.organizer?.name || "Organizer"}
                     </span>
-                    <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-gradient-to-r group-hover:from-amber-400 group-hover:to-orange-500 group-hover:text-white transition-all shadow-lg group-hover:shadow-amber-500/50">
+                    <div className="h-10 w-10 rounded-full bg-amber-500/10 dark:bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-gradient-to-r group-hover:from-amber-400 group-hover:to-orange-500 group-hover:text-white text-amber-600 dark:text-white transition-all shadow-md group-hover:shadow-amber-500/50">
                       <ArrowRight size={16} />
                     </div>
                   </div>
