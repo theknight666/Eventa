@@ -10,17 +10,6 @@ export default function FeaturedEvents() {
   const [loading, setLoading] = useState(true);
   const containerRef = useRef(null);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  // 3D Scroll Transforms
-  const rotateX = useTransform(scrollYProgress, [0, 0.5, 1], [15, 0, -10]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.95]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.3, 1, 1, 0.3]);
-  const y = useTransform(scrollYProgress, [0, 0.5, 1], [50, 0, -50]);
-
   useEffect(() => {
     getEvents({ featured: true })
       .then((data) => {
@@ -33,10 +22,12 @@ export default function FeaturedEvents() {
   if (loading || events.length === 0) return null;
 
   return (
-    <section ref={containerRef} className="py-16 px-4 max-w-7xl mx-auto" style={{ perspective: "1200px" }}>
+    <section className="py-16 px-4 max-w-7xl mx-auto">
       <motion.div 
-        style={{ rotateX, scale, opacity, y }}
-        className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 text-white shadow-[0_0_80px_rgba(245,158,11,0.15)] border border-amber-500/30 transform-gpu"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="relative rounded-[2.5rem] overflow-hidden bg-zinc-950 text-white shadow-[0_0_80px_rgba(245,158,11,0.15)] border border-amber-500/30"
       >
         {/* Premium Background Effects */}
         <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-500/30 blur-[120px] rounded-full pointer-events-none" />
