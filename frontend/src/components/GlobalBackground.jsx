@@ -25,8 +25,36 @@ export default function GlobalBackground() {
       {/* Base Noise Texture */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] dark:opacity-[0.25] mix-blend-overlay" />
       
-      {/* Premium Fading Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_0%,#000_60%,transparent_100%)] dark:opacity-50 opacity-100" />
+      {/* Rotating Mandala Art */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] dark:opacity-20 pointer-events-none mix-blend-multiply dark:mix-blend-screen">
+        <motion.svg
+          animate={{ rotate: 360 }}
+          transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+          width="1000" height="1000" viewBox="0 0 800 800"
+          className="stroke-amber-700 dark:stroke-amber-400 fill-none"
+        >
+          <circle cx="400" cy="400" r="380" strokeWidth="1" strokeDasharray="10 15" />
+          <circle cx="400" cy="400" r="360" strokeWidth="0.5" />
+          <circle cx="400" cy="400" r="280" strokeWidth="2" strokeDasharray="4 12" />
+          <circle cx="400" cy="400" r="140" strokeWidth="1.5" />
+          
+          {[...Array(24)].map((_, i) => (
+            <g key={i} transform={`rotate(${i * 15} 400 400)`}>
+              {/* Petals / Geometric shapes */}
+              <path d="M400 120 Q 440 260 400 400 Q 360 260 400 120 Z" strokeWidth="0.75" />
+              <path d="M400 40 L 415 100 L 400 120 L 385 100 Z" strokeWidth="1" />
+              <circle cx="400" cy="260" r="80" strokeWidth="0.5" strokeDasharray="3 6" />
+            </g>
+          ))}
+          
+          {[...Array(12)].map((_, i) => (
+            <g key={`inner-${i}`} transform={`rotate(${i * 30} 400 400)`}>
+              <path d="M400 260 Q 430 330 400 400 Q 370 330 400 260 Z" strokeWidth="1" />
+              <circle cx="400" cy="260" r="10" strokeWidth="2" />
+            </g>
+          ))}
+        </motion.svg>
+      </div>
 
       {/* Interactive Cursor Glow */}
       <motion.div
