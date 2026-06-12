@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { motion, useMotionValue, useSpring, useMotionTemplate, useScroll, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function GlobalBackground() {
   const mouseX = useMotionValue(0);
@@ -9,17 +9,11 @@ export default function GlobalBackground() {
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  const { scrollY } = useScroll();
-  // Makes the background pattern move slightly as the user scrolls
-  const bgPosY = useTransform(scrollY, (y) => `${-y * 0.8}px`);
-
-  // Larger, softer "flashlight" mask
-  const maskImage = useMotionTemplate`radial-gradient(500px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
-
   useEffect(() => {
     const handleMouseMove = (e) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+      // Center the orb on the cursor
+      mouseX.set(e.clientX - 300);
+      mouseY.set(e.clientY - 300);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -31,28 +25,14 @@ export default function GlobalBackground() {
       {/* Base Noise Texture */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.25] mix-blend-overlay" />
       
-      {/* Interactive Cursor Spotlight over Pattern */}
-      <motion.div 
-        className="absolute inset-0 flex items-center justify-center opacity-100"
-        style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
-      >
-        {/* User's Damask / Floral Repeating Pattern */}
-        <motion.div 
-          className="absolute inset-0"
-          style={{ 
-            backgroundImage: "url('/damask-pattern.png')",
-            backgroundRepeat: "repeat",
-            backgroundSize: "600px",
-            backgroundPositionY: bgPosY,
-            backgroundPositionX: "0px",
-            opacity: 0.6
-          }}
-        />
-
-        {/* Lighter Ambient Hover Glow */}
-        <div className="absolute inset-0 bg-amber-200/20 mix-blend-overlay" />
-        <div className="absolute inset-0 bg-amber-400/10 mix-blend-screen" />
-      </motion.div>
+      {/* Interactive Cursor Glow */}
+      <motion.div
+        style={{
+          x: smoothX,
+          y: smoothY,
+        }}
+        className="absolute top-0 left-0 w-[600px] h-[600px] bg-amber-200/5 dark:bg-amber-400/5 rounded-full blur-[150px] mix-blend-screen"
+      />
 
       {/* Ambient Drifting Orbs */}
       <motion.div 

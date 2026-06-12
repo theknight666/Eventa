@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
 import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { getEvents } from "../lib/api";
 import { formatDate, FALLBACK_IMG } from "../data/meta";
@@ -19,16 +19,55 @@ export default function FeaturedEvents() {
       .finally(() => setLoading(false));
   }, []);
 
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  const bgPosY = useTransform(scrollYProgress, [0, 1], ["0px", "-200px"]);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothX = useSpring(mouseX, { damping: 30, stiffness: 200 });
+  const smoothY = useSpring(mouseY, { damping: 30, stiffness: 200 });
+  const maskImage = useMotionTemplate`radial-gradient(400px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  };
+
   if (loading || events.length === 0) return null;
 
   return (
     <section className="py-16 px-4 max-w-7xl mx-auto">
       <motion.div 
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="relative rounded-[2.5rem] overflow-hidden bg-amber-50/80 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-[0_40px_120px_-20px_rgba(245,158,11,0.4),inset_0_2px_10px_rgba(255,255,255,0.7),0_0_0_1px_rgba(245,158,11,0.2)] dark:shadow-[0_40px_120px_-20px_rgba(245,158,11,0.5),inset_0_2px_5px_rgba(255,255,255,0.1),0_0_0_1px_rgba(245,158,11,0.3)] backdrop-blur-3xl transform-gpu"
       >
+        {/* Damask Pattern with Cursor Spotlight */}
+        <motion.div 
+          className="absolute inset-0 z-0 pointer-events-none opacity-80 mix-blend-screen"
+          style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
+        >
+          <motion.div 
+            className="absolute inset-0"
+            style={{ 
+              backgroundImage: "url('/damask-pattern.png')",
+              backgroundRepeat: "repeat",
+              backgroundSize: "600px",
+              backgroundPositionY: bgPosY,
+              opacity: 0.7
+            }}
+          />
+          <div className="absolute inset-0 bg-amber-400/20 mix-blend-overlay" />
+        </motion.div>
+
         {/* Premium Background Effects */}
         <motion.div 
           animate={{
