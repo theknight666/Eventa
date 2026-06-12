@@ -120,6 +120,8 @@ async def on_startup():
         if duplicates_removed > 0:
             logger.info(f"Removed {duplicates_removed} duplicate events from database.")
         await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
+        # Create 2dsphere index for geospatial queries
+        await db.events.create_index([("location", "2dsphere")])
 
     asyncio.create_task(init_db_tasks())
     
@@ -487,6 +489,9 @@ async def list_events(
     industries: Optional[str] = None,
     featured: Optional[bool] = None,
     trending: Optional[bool] = None,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+    radius_km: Optional[int] = None,
     sort: str = "date",
     limit: int = 60,
     skip: int = 0,
@@ -532,9 +537,26 @@ async def list_events(
             end = None
         if end is not None:
             query["start_iso"] = {"$gte": start.isoformat(), "$lte": end.isoformat()}
+            
+    if lat is not None and lng is not None and radius_km is not None:
+        # MongoDB $nearSphere query (distance in meters)
+        query["location"] = {
+            "$nearSphere": {
+                "$geometry": {
+                    "type": "Point",
+                    "coordinates": [lng, lat]
+                },
+                "$maxDistance": radius_km * 1000
+            }
+        }
+        # When using $nearSphere, MongoDB automatically sorts by distance
+        sort = "distance"
 
-    sort_field = {"date": ("start_iso", 1), "popular": ("attendees_count", -1), "rating": ("rating", -1)}.get(sort, ("start_iso", 1))
-    cursor = db.events.find(query).sort([sort_field]).skip(skip).limit(limit)
+    sort_field = {"date": ("start_iso", 1), "popular": ("attendees_count", -1), "rating": ("rating", -1)}.get(sort)
+    cursor = db.events.find(query)
+    if sort_field:
+        cursor = cursor.sort([sort_field])
+    cursor = cursor.skip(skip).limit(limit)
     docs = [clean(d) async for d in cursor]
     total = await db.events.count_documents(query)
     return {"events": docs, "total": total}
@@ -723,6 +745,7 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
         "venue": inp.venue,
         "address": inp.address or f"{inp.venue}, {inp.city}, {inp.state}, India".strip(", "),
         "lat": 0.0, "lng": 0.0,
+        "location": {"type": "Point", "coordinates": [0.0, 0.0]},
         "event_type": inp.event_type,
         "pricing": inp.pricing,
         "price": inp.price if inp.pricing == "paid" else 0,

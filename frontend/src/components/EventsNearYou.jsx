@@ -12,76 +12,40 @@ export default function EventsNearYou() {
   const scroller = useRef(null);
 
   useEffect(() => {
-    if (!("geolocation" in navigator)) {
-      setLocationStatus("error");
-      setLoading(false);
-      return;
+    async function fetchLocationAndEvents() {
+      try {
+        // 1. Fetch IP-based location automatically
+        const res = await fetch("https://ipapi.co/json/");
+        if (!res.ok) throw new Error("Failed to fetch IP location");
+        
+        const data = await res.json();
+        const { latitude, longitude, city } = data;
+        
+        if (!latitude || !longitude) {
+          throw new Error("Invalid location data from IP");
+        }
+
+        setUserCity(city || "your area");
+        setLocationStatus("found");
+
+        // 2. Fetch events within a precise 50km radius using backend geo-search
+        const d = await getEvents({ 
+          lat: latitude, 
+          lng: longitude, 
+          radius_km: 50, 
+          limit: 15 
+        });
+        
+        setEvents(d.events || []);
+      } catch (error) {
+        console.error("Location or fetch error:", error);
+        setLocationStatus("error");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          // Reverse geocoding using Nominatim
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          if (!res.ok) throw new Error("Failed to reverse geocode");
-          
-          const data = await res.json();
-          // Try to get a city name from the address
-          let detectedCity =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.state_district ||
-            data.address?.county ||
-            "Mumbai"; // Fallback to a major city if undefined
-
-          // Clean up the city name if it has "District" or something similar
-          if (detectedCity.toLowerCase().includes("district")) {
-            detectedCity = detectedCity.replace(/district/i, "").trim();
-          }
-          
-          // Map common aliases to backend city names
-          const cityAliases = {
-            "delhi": "New Delhi",
-            "new delhi": "New Delhi",
-            "bangalore": "Bengaluru",
-            "bengaluru": "Bengaluru",
-            "gurgaon": "Gurugram",
-            "gurugram": "Gurugram",
-            "bombay": "Mumbai",
-            "mumbai": "Mumbai",
-            "madras": "Chennai",
-            "chennai": "Chennai",
-            "calcutta": "Kolkata",
-            "kolkata": "Kolkata",
-            "poona": "Pune",
-            "pune": "Pune",
-          };
-          
-          const normalizedCity = cityAliases[detectedCity.toLowerCase()] || detectedCity;
-
-          setUserCity(normalizedCity);
-          setLocationStatus("found");
-
-          // Fetch events for this city
-          const d = await getEvents({ city: normalizedCity, limit: 15 });
-          setEvents(d.events);
-        } catch (error) {
-          console.error("Geocoding error:", error);
-          setLocationStatus("error");
-        } finally {
-          setLoading(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        setLocationStatus("denied");
-        setLoading(false);
-      },
-      { timeout: 10000 }
-    );
+    fetchLocationAndEvents();
   }, []);
 
   const scroll = (dir) => {
@@ -104,7 +68,7 @@ export default function EventsNearYou() {
           </h2>
           {userCity && (
             <p className="text-muted-foreground mt-2 font-medium">
-              Showing events in and around <span className="text-foreground">{userCity}</span>
+              Showing events within 50km of <span className="text-foreground">{userCity}</span>
             </p>
           )}
         </div>

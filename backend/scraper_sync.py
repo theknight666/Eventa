@@ -179,6 +179,7 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                 "venue": venue,
                 "address": address,
                 "lat": 0.0, "lng": 0.0,
+                "location": {"type": "Point", "coordinates": [0.0, 0.0]},
                 "event_type": "offline",
                 "pricing": pricing,
                 "price": price,
