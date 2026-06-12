@@ -41,12 +41,32 @@ export default function EventsNearYou() {
           if (detectedCity.toLowerCase().includes("district")) {
             detectedCity = detectedCity.replace(/district/i, "").trim();
           }
+          
+          // Map common aliases to backend city names
+          const cityAliases = {
+            "delhi": "New Delhi",
+            "new delhi": "New Delhi",
+            "bangalore": "Bengaluru",
+            "bengaluru": "Bengaluru",
+            "gurgaon": "Gurugram",
+            "gurugram": "Gurugram",
+            "bombay": "Mumbai",
+            "mumbai": "Mumbai",
+            "madras": "Chennai",
+            "chennai": "Chennai",
+            "calcutta": "Kolkata",
+            "kolkata": "Kolkata",
+            "poona": "Pune",
+            "pune": "Pune",
+          };
+          
+          const normalizedCity = cityAliases[detectedCity.toLowerCase()] || detectedCity;
 
-          setUserCity(detectedCity);
+          setUserCity(normalizedCity);
           setLocationStatus("found");
 
           // Fetch events for this city
-          const d = await getEvents({ city: detectedCity, limit: 15 });
+          const d = await getEvents({ city: normalizedCity, limit: 15 });
           setEvents(d.events);
         } catch (error) {
           console.error("Geocoding error:", error);
