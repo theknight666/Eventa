@@ -17,6 +17,7 @@ import SavedEvents from "@/pages/SavedEvents";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GlobalBackground from "@/components/GlobalBackground";
 
 import About from "@/pages/About";
 import ContactUs from "@/pages/ContactUs";
@@ -33,6 +34,7 @@ function App() {
             <OrganizerProvider>
               <BrowserRouter>
                 <ErrorBoundary>
+                  <GlobalBackground />
                   <SmoothScroll>
                   <Preloader />
                   <Navbar />
