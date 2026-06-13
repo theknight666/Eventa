@@ -67,7 +67,7 @@ function App() {
                       <Footer />
                     </SmoothScroll>
                     <Toaster position="bottom-right" theme="system" />
-                    <SpeedInsights />
+                    {navigator.userAgent !== "ReactSnap" && <SpeedInsights />}
                   </ErrorBoundary>
                 </BrowserRouter>
               </OrganizerProvider>
