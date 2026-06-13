@@ -12,6 +12,8 @@ import uuid
 import random
 import time
 import logging
+import jwt
+from fastapi import Depends
 from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
@@ -958,7 +960,10 @@ async def organizer_register(body: OrganizerRegisterReq):
         new_org["password_hash"] = get_password_hash(body.password)
         
     await db.organizers.insert_one(new_org)
-    return clean(new_org)
+    
+    org_dict = clean(new_org)
+    org_dict["token"] = create_access_token({"sub": slug})
+    return org_dict
 
 @api_router.post("/organizer/login")
 async def organizer_login(body: OrganizerLogin):
@@ -982,7 +987,9 @@ async def organizer_login(body: OrganizerLogin):
         if not org.get("password_hash") or not verify_password(body.password, org["password_hash"]):
             raise HTTPException(status_code=401, detail="Invalid credentials")
             
-    return clean(dict(org))
+    org_dict = clean(dict(org))
+    org_dict["token"] = create_access_token({"sub": org["slug"]})
+    return org_dict
 
 @api_router.post("/organizer/forgot-password")
 async def organizer_forgot_password(req: ForgotPasswordReq):
@@ -1030,7 +1037,10 @@ async def organizer_events(slug: str):
 
 
 @api_router.post("/organizer/{slug}/events")
-async def create_event(slug: str, inp: EventInput):
+async def create_event(slug: str, inp: EventInput, token_slug: str = Depends(get_current_organizer)):
+    if slug != token_slug:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
     org = await db.organizers.find_one({"slug": slug})
     if not org:
         raise HTTPException(status_code=404, detail="Organizer not found")
@@ -1045,7 +1055,10 @@ async def create_event(slug: str, inp: EventInput):
 
 
 @api_router.put("/organizer/{slug}/events/{event_id}")
-async def update_event(slug: str, event_id: str, inp: EventInput):
+async def update_event(slug: str, event_id: str, inp: EventInput, token_slug: str = Depends(get_current_organizer)):
+    if slug != token_slug:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
     existing = await db.events.find_one({"id": event_id, "owner_slug": slug})
     if not existing:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -1071,7 +1084,10 @@ async def update_event(slug: str, event_id: str, inp: EventInput):
 
 
 @api_router.delete("/organizer/{slug}/events/{event_id}")
-async def delete_event(slug: str, event_id: str):
+async def delete_event(slug: str, event_id: str, token_slug: str = Depends(get_current_organizer)):
+    if slug != token_slug:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
     res = await db.events.delete_one({"id": event_id, "owner_slug": slug})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -1126,15 +1142,38 @@ async def organizer_dashboard(slug: str):
         "recent_registrations": recent,
     }
 
-
 # ======================= ADMIN PORTAL =======================
-from fastapi import Header
+
+JWT_SECRET = os.environ.get("JWT_SECRET", os.environ.get("ADMIN_SECRET", "superadmin123"))
+JWT_ALGORITHM = "HS256"
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=7))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def get_current_organizer(x_organizer_token: str = Header(None)):
+    if not x_organizer_token:
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing token")
+    try:
+        payload = jwt.decode(x_organizer_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        slug: str = payload.get("sub")
+        if slug is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return slug
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 def get_admin_key(x_admin_key: str = Header(None)):
-    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
-    if not x_admin_key or x_admin_key != secret:
+    if not x_admin_key:
         raise HTTPException(status_code=401, detail="Unauthorized Admin")
-    return True
+    try:
+        payload = jwt.decode(x_admin_key, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
 
 class AdminLoginReq(BaseModel):
     password: str
@@ -1143,7 +1182,8 @@ class AdminLoginReq(BaseModel):
 async def admin_login(req: AdminLoginReq):
     secret = os.environ.get("ADMIN_SECRET", "superadmin123")
     if req.password == secret:
-        return {"token": secret}
+        token = create_access_token({"sub": "admin", "role": "admin"}, timedelta(days=1))
+        return {"ok": True, "token": token}
     raise HTTPException(status_code=401, detail="Invalid admin password")
 
 @api_router.get("/admin/events/pending")
@@ -1275,6 +1315,11 @@ async def register_attendee(event_id: str, body: RegisterInput):
     ev = await db.events.find_one({"id": event_id})
     if not ev:
         raise HTTPException(status_code=404, detail="Event not found")
+        
+    existing_reg = await db.registrations.find_one({"event_id": event_id, "email": body.email})
+    if existing_reg:
+        raise HTTPException(status_code=400, detail="You are already registered for this event.")
+        
     now = datetime.now(timezone.utc)
     await db.registrations.insert_one({
         "id": str(uuid.uuid4()), "event_id": event_id, "owner_slug": ev.get("owner_slug"),
@@ -1295,6 +1340,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+async def startup_db_client():
+    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
+    if secret == "superadmin123" and os.environ.get("RENDER"):
+        logger.critical("CRITICAL: ADMIN_SECRET is set to default 'superadmin123' in production!")
+        raise RuntimeError("Insecure ADMIN_SECRET in production. Please set ADMIN_SECRET env var.")
+        
+    try:
+        await db.registrations.create_index([("event_id", 1), ("email", 1)], unique=True)
+    except Exception as e:
+        logger.warning(f"Failed to create unique index on registrations: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

@@ -70,14 +70,19 @@ export const getOrganizer = (slug) =>
   client.get(`/organizer/${slug}`).then((r) => r.data);
 export const requestVerification = (slug) =>
   client.post(`/organizer/${slug}/request-verification`).then((r) => r.data);
+const getOrgHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("eventa_organizer_token") : null;
+  return token ? { "x-organizer-token": token } : {};
+};
+
 export const getOrganizerEvents = (slug) =>
   client.get(`/organizer/${slug}/events`).then((r) => r.data);
 export const createOrganizerEvent = (slug, body) =>
-  client.post(`/organizer/${slug}/events`, body).then((r) => r.data);
+  client.post(`/organizer/${slug}/events`, body, { headers: getOrgHeaders() }).then((r) => r.data);
 export const updateOrganizerEvent = (slug, id, body) =>
-  client.put(`/organizer/${slug}/events/${id}`, body).then((r) => r.data);
+  client.put(`/organizer/${slug}/events/${id}`, body, { headers: getOrgHeaders() }).then((r) => r.data);
 export const deleteOrganizerEvent = (slug, id) =>
-  client.delete(`/organizer/${slug}/events/${id}`).then((r) => r.data);
+  client.delete(`/organizer/${slug}/events/${id}`, { headers: getOrgHeaders() }).then((r) => r.data);
 export const getDashboard = (slug) =>
   client.get(`/organizer/${slug}/dashboard`).then((r) => r.data);
 export const registerForEvent = (id, body) =>

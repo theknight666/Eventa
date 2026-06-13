@@ -18,9 +18,16 @@ export const OrganizerProvider = ({ children }) => {
     else if (typeof window !== 'undefined') localStorage.removeItem(KEY);
   }, [organizer]);
 
-  const login = (org) => setOrganizer(org);
+  const login = (org) => {
+    if (org.token) {
+      if (typeof window !== 'undefined') localStorage.setItem("eventa_organizer_token", org.token);
+      delete org.token;
+    }
+    setOrganizer(org);
+  };
   const logout = () => {
     setOrganizer(null);
+    if (typeof window !== 'undefined') localStorage.removeItem("eventa_organizer_token");
     toast.success("Successfully logged out");
   };
   const update = (patch) => setOrganizer((o) => (o ? { ...o, ...patch } : o));
