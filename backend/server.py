@@ -60,8 +60,19 @@ db = client[os.environ.get('DB_NAME', 'eventa')]
 
 app = FastAPI(title="Eventa — India Event Discovery")
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Unhandled exception on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected internal server error occurred."}
+    )
+
 cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
-allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")] if cors_origins_env != "*" else ["*"]
+if cors_origins_env == "*" and os.environ.get("RENDER"):
+    allowed_origins = ["https://eventa.in", "https://www.eventa.in"]
+else:
+    allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")] if cors_origins_env != "*" else ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -453,19 +464,39 @@ async def admin_sync_all(force: bool = False):
     """Manually trigger all live-event scrapers.
     Pass ?force=true to bypass the cooldown.
     """
-    res_ae = await sync_all_cities(db, force=force)
-    res_meetup = await sync_meetup_cities(db, force=force)
-    res_eb = await sync_eb_cities(db, force=force)
-    res_luma = await sync_luma_cities(db, force=force)
-    res_ts = await sync_ts_cities(db, force=force)
+    results = {}
     
-    return {
-        "allevents": res_ae,
-        "meetup": res_meetup,
-        "eventbrite": res_eb,
-        "luma": res_luma,
-        "townscript": res_ts
-    }
+    try:
+        results["allevents"] = await sync_all_cities(db, force=force)
+    except Exception as e:
+        logger.exception("AllEvents sync failed")
+        results["allevents"] = {"status": "error", "message": str(e)}
+
+    try:
+        results["meetup"] = await sync_meetup_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Meetup sync failed")
+        results["meetup"] = {"status": "error", "message": str(e)}
+
+    try:
+        results["eventbrite"] = await sync_eb_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Eventbrite sync failed")
+        results["eventbrite"] = {"status": "error", "message": str(e)}
+
+    try:
+        results["luma"] = await sync_luma_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Luma sync failed")
+        results["luma"] = {"status": "error", "message": str(e)}
+
+    try:
+        results["townscript"] = await sync_ts_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Townscript sync failed")
+        results["townscript"] = {"status": "error", "message": str(e)}
+        
+    return results
 
 
 @api_router.get("/categories")
