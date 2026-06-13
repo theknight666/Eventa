@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import SEO from "../../components/SEO";
+import SEO from "../components/SEO";
 import {
   adminLogin,
   getAdminPendingEvents,

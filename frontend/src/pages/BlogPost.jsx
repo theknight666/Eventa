@@ -45,7 +45,7 @@ export default function BlogPost() {
       const inner = txt.split('**').map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part);
       
       // Link parsing [Text](/link)
-      const linkMatch = txt.match(/\\[([^\]]+)\\]\\(([^)]+)\\)/);
+      const linkMatch = txt.match(/\[([^\]]+)\]\(([^)]+)\)/);
       if (linkMatch) {
         const parts = txt.split(linkMatch[0]);
         return (
