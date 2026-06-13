@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useSaved } from "@/context/SavedContext";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
+import { getEvents } from "@/lib/api";
 import LoginDialog from "./LoginDialog";
 import {
   DropdownMenu,
@@ -32,12 +33,19 @@ import { LayoutDashboard, History, Settings } from "lucide-react";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { saved } = useSaved();
-  const { user, login, logout } = useUser();
+  const { user, logout } = useUser();
   const router = useRouter();
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchRef = useRef(null);
 
   const handleLogoutConfirm = () => {
     logout();
@@ -64,11 +72,40 @@ export default function Navbar() {
     return () => window.removeEventListener("open-login", handler);
   }, []);
 
-  const scrollToSection = (e, id) => {
-    setMobileMenuOpen(false); // Close mobile menu if open
-    if (router.pathname !== "/") {
-      return; // Let standard anchor behavior handle navigation to home
+  // Search effect
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
     }
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await getEvents({ q: searchQuery, limit: 5 });
+        setSearchResults(res.events || []);
+      } catch (e) {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  // Click outside search
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const scrollToSection = (e, id) => {
+    setMobileMenuOpen(false);
+    if (router.pathname !== "/") return;
     e?.preventDefault();
     const el = document.getElementById(id);
     if (el) {
@@ -120,14 +157,64 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <button
-              data-testid="navbar-search-btn"
-              onClick={(e) => scrollToSection(e, "discover")}
-              aria-label="Search"
-              className="h-10 w-10 rounded-full glass flex items-center justify-center hover:scale-105 transition-transform"
-            >
-              <Search size={18} />
-            </button>
+            {/* Search Bar */}
+            <div className="relative hidden sm:block" ref={searchRef}>
+              <div className={`relative flex items-center transition-all duration-300 ${searchQuery || isSearchFocused ? "w-48 sm:w-64" : "w-10"}`}>
+                <button
+                  className={`absolute left-0 h-10 w-10 flex items-center justify-center transition-transform z-10 ${searchQuery || isSearchFocused ? "text-muted-foreground" : "glass rounded-full text-foreground hover:scale-105"}`}
+                  onClick={() => setIsSearchFocused(true)}
+                  aria-label="Search"
+                >
+                  <Search size={18} />
+                </button>
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  className={`h-10 w-full rounded-full glass text-sm bg-transparent outline-none transition-all duration-300 ${searchQuery || isSearchFocused ? "pl-10 pr-4 border border-border/50 opacity-100" : "px-0 border-transparent opacity-0 cursor-pointer pointer-events-none"}`}
+                />
+              </div>
+
+              <AnimatePresence>
+                {(searchQuery || isSearchFocused) && searchQuery.trim() && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 sm:left-0 mt-2 w-72 sm:w-80 bg-card border border-border rounded-2xl shadow-xl overflow-hidden z-50 max-h-[80vh] overflow-y-auto"
+                  >
+                    {isSearching ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">Searching...</div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="flex flex-col py-2">
+                        <div className="px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground bg-muted/30">Top Results</div>
+                        {searchResults.map((ev) => (
+                          <Link 
+                            key={ev.id} 
+                            href={`/event/${ev.slug || ev.id}`}
+                            onClick={() => {
+                              setSearchQuery("");
+                              setIsSearchFocused(false);
+                            }}
+                            className="px-4 py-3 hover:bg-muted transition-colors flex items-center gap-3"
+                          >
+                            <img src={ev.cover_image} onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1540575467063-178a50c2df87")} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-sm font-semibold truncate text-foreground leading-tight">{ev.title}</span>
+                              <span className="text-xs text-muted-foreground truncate mt-0.5">{ev.city} • {new Date(ev.start_iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-muted-foreground">No events found</div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             
             {user ? (
               <DropdownMenu>

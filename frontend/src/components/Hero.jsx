@@ -239,6 +239,25 @@ function Ticket3D() {
   );
 }
 
+const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => (
+  <>
+    <motion.div style={{ y, scale }} className="absolute inset-0 overflow-hidden pointer-events-none">
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline 
+        className="h-full w-full object-cover opacity-100"
+      >
+        <source src="/hero-bg.mp4" type="video/mp4" />
+      </video>
+    </motion.div>
+    <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-background pointer-events-none" />
+    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
+    <div className="absolute inset-0 aurora opacity-50" />
+  </>
+));
+
 export default function Hero({ stats, onSearch, onCity }) {
   const [q, setQ] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -314,20 +333,7 @@ export default function Hero({ stats, onSearch, onCity }) {
 
   return (
     <section className="relative min-h-[100svh] flex items-center overflow-hidden" data-testid="hero">
-      <motion.div style={{ y, scale }} className="absolute inset-0 overflow-hidden pointer-events-none">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="h-full w-full object-cover opacity-100"
-        >
-          <source src="/hero-bg.mp4" type="video/mp4" />
-        </video>
-      </motion.div>
-      <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-background pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
-      <div className="absolute inset-0 aurora opacity-50" />
+      <HeroBackground y={y} scale={scale} overlayOpacity={overlayOpacity} />
 
       <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-24 lg:pt-24 pb-4 lg:pb-4 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
         
