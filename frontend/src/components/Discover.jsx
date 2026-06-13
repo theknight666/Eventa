@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { SlidersHorizontal, X, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getEvents } from "../lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
@@ -25,26 +25,23 @@ const PRICE_OPTS = [
 
 function FilterGroup({ title, options, value, onChange, testid }) {
   return (
-    <div>
-      <p className="label-eyebrow text-muted-foreground mb-3">{title}</p>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => {
-          const on = value === o.id;
-          return (
-            <button
-              key={o.id}
-              data-testid={`filter-${testid}-${o.id}`}
-              onClick={() => onChange(on ? null : o.id)}
-              className={`rounded-xl px-3.5 py-2 text-sm font-medium border transition-all ${
-                on
-                  ? "bg-foreground text-background border-foreground"
-                  : "bg-card text-muted-foreground border-border hover:border-foreground/40"
-              }`}
-            >
+    <div className="flex flex-col gap-2">
+      <label className="label-eyebrow text-muted-foreground">{title}</label>
+      <div className="relative">
+        <select
+          data-testid={`filter-${testid}`}
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
+          className="w-full appearance-none rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground outline-none transition-all hover:border-foreground/40 focus:border-foreground/40"
+        >
+          <option value="">Any</option>
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>
               {o.label}
-            </button>
-          );
-        })}
+            </option>
+          ))}
+        </select>
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       </div>
     </div>
   );
