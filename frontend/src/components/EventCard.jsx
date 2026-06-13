@@ -115,7 +115,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
         <div className="p-5">
           <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
             <span className="flex items-center gap-1.5"><Calendar size={13} /> {formatDate(event.start_iso)}</span>
-            <span className="flex items-center gap-1.5"><MapPin size={13} /> {event.city}</span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis"><MapPin size={13} className="shrink-0" /> {event.area ? `${event.area}, ${event.city}` : event.city}</span>
           </div>
           <h3 className="font-display text-lg font-bold leading-snug tracking-tight line-clamp-2 min-h-[3.2rem]">
             {event.title}

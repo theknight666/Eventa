@@ -8,6 +8,7 @@ export default function EventsNearYou() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userCity, setUserCity] = useState(null);
+  const [userArea, setUserArea] = useState(null);
   const [locationStatus, setLocationStatus] = useState("detecting"); // detecting, found, denied, error
   const scroller = useRef(null);
 
@@ -17,6 +18,7 @@ export default function EventsNearYou() {
         let latitude = null;
         let longitude = null;
         let detectedCity = "your area";
+        let detectedArea = null;
 
         // Try precise geolocation first
         const getPreciseLocation = () => {
@@ -43,7 +45,8 @@ export default function EventsNearYou() {
             const geocodeRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
             if (geocodeRes.ok) {
               const geoData = await geocodeRes.json();
-              detectedCity = geoData.address?.suburb || geoData.address?.neighbourhood || geoData.address?.city || geoData.address?.town || geoData.address?.state_district || "your area";
+              detectedArea = geoData.address?.suburb || geoData.address?.neighbourhood || geoData.address?.town || null;
+              detectedCity = geoData.address?.city || geoData.address?.state_district || "your area";
             }
           } catch (e) {
             console.error("Reverse geocoding failed", e);
@@ -57,6 +60,7 @@ export default function EventsNearYou() {
             latitude = data.latitude;
             longitude = data.longitude;
             detectedCity = data.city || "your area";
+            detectedArea = null;
           }
         }
 
@@ -79,6 +83,7 @@ export default function EventsNearYou() {
         const normalizedCity = cityAliases[detectedCity.toLowerCase()] || detectedCity;
 
         setUserCity(normalizedCity);
+        setUserArea(detectedArea);
         setLocationStatus("found");
 
         const queryParams = { limit: 15 };
@@ -124,7 +129,7 @@ export default function EventsNearYou() {
           </h2>
           {userCity && (
             <p className="text-muted-foreground mt-2 font-medium">
-              Showing events within 50km of <span className="text-foreground">{userCity}</span>
+              Showing events within 50km of <span className="text-foreground">{userArea ? `${userArea}, ${userCity}` : userCity}</span>
             </p>
           )}
         </div>
@@ -148,7 +153,7 @@ export default function EventsNearYou() {
           <MapPin size={48} className="mx-auto text-muted-foreground mb-4 opacity-50" />
           <h3 className="text-2xl font-bold mb-2">No events found near you</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            We couldn't find any upcoming events in {userCity}. Check out the trending events instead or try searching in a different city.
+            We couldn't find any upcoming events in {userArea ? `${userArea}, ${userCity}` : userCity}. Check out the trending events instead or try searching in a different city.
           </p>
         </div>
       ) : (

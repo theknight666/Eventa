@@ -236,7 +236,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
             <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-white/85">
               <span className="flex items-center gap-2"><Calendar size={16} /> {formatDateLong(event.start_iso)}</span>
               <span className="flex items-center gap-2"><Clock size={16} /> {event.time}</span>
-              <span className="flex items-center gap-2"><MapPin size={16} /> {event.city}, {event.state}</span>
+              <span className="flex items-center gap-2"><MapPin size={16} /> {event.area ? `${event.area}, ` : ""}{event.city}, {event.state}</span>
               <span className="flex items-center gap-2"><Star size={16} /> {event.rating}</span>
             </div>
           </motion.div>
