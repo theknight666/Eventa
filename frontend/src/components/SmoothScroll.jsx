@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Lenis from "lenis";
 
 export default function SmoothScroll({ children }) {
-  const { pathname } = useLocation();
+  const { pathname } = useRouter();
 
   useEffect(() => {
     window.scrollTo(0, 0);
