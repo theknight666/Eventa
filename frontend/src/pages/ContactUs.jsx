@@ -8,8 +8,9 @@ export default function ContactUs() {
     <main className="min-h-[100svh] pt-24 pb-24 relative overflow-hidden">
       <SEO 
         title="Contact Us" 
-        description="Have a question about Eventa, want to list an event, or just want to say hi? We'd love to hear from you."
+        description="Get in touch with the Eventa team for support, partnerships, or general inquiries."
         url="https://eventa.in/contact"
+        keywords="contact eventa, eventa support, eventa customer service, event management contact"
       />
       <div className="absolute top-0 right-0 h-[600px] w-[600px] bg-foreground/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/2" />
       

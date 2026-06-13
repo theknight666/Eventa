@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import SEO from "../../components/SEO";
 import {
   adminLogin,
   getAdminPendingEvents,
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pt-28 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+      <SEO title="Admin Dashboard" noindex={true} />
       <div className="flex justify-between items-end mb-8">
         <div>
           <h1 className="text-4xl font-display font-black tracking-tight mb-2">Admin Dashboard</h1>

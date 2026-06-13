@@ -179,6 +179,23 @@ async def _background_all_scrapers():
             res_luma = await sync_luma_cities(db)
             res_ts = await sync_ts_cities(db)
             
+            # Auto-generate slugs for any newly fetched events
+            existing_slugs = set()
+            async for ev in db.events.find({"slug": {"$exists": True}}):
+                if ev.get("slug"): existing_slugs.add(ev["slug"])
+
+            async for ev in db.events.find({"slug": {"$exists": False}}):
+                base = f"{ev.get('title') or 'event'} {ev.get('city') or ''} {str(ev.get('start_iso', ''))[:4]}".strip()
+                slug = re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
+                if not slug: slug = "event"
+                final_slug = slug
+                counter = 1
+                while final_slug in existing_slugs:
+                    final_slug = f"{slug}-{counter}"
+                    counter += 1
+                existing_slugs.add(final_slug)
+                await db.events.update_one({"_id": ev["_id"]}, {"$set": {"slug": final_slug}})
+            
             logger.info(
                 f"Scraper cycle complete. Upserted: "
                 f"AE({res_ae.get('upserted',0)}), Meetup({res_meetup.get('upserted',0)}), "
@@ -507,9 +524,10 @@ async def get_sitemap():
     ]
     
     # Dynamic events
-    events = db.events.find({"approval_status": "approved"}, {"id": 1})
+    events = db.events.find({"approval_status": "approved"}, {"id": 1, "slug": 1})
     async for event in events:
-        urls.append(f"{base_url}/events/{event['id']}")
+        slug_or_id = event.get("slug") or event["id"]
+        urls.append(f"{base_url}/events/{slug_or_id}")
         
     # Organizers
     organizers = db.organizers.find({}, {"slug": 1})
@@ -521,8 +539,16 @@ async def get_sitemap():
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     ]
     
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
     for url in urls:
-        xml_lines.append(f"  <url><loc>{escape(url)}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>")
+        priority = "0.7"
+        if url == f"{base_url}/":
+            priority = "1.0"
+        elif "/events/" in url:
+            priority = "0.9"
+            
+        xml_lines.append(f"  <url><loc>{escape(url)}</loc><lastmod>{now_str}</lastmod><changefreq>daily</changefreq><priority>{priority}</priority></url>")
         
     xml_lines.append("</urlset>")
     
@@ -701,7 +727,7 @@ async def list_events(
 
 @api_router.get("/events/{event_id}")
 async def get_event(event_id: str):
-    doc = await db.events.find_one({"id": event_id})
+    doc = await db.events.find_one({"$or": [{"id": event_id}, {"slug": event_id}]})
     if not doc:
         raise HTTPException(status_code=404, detail="Event not found")
     return clean(doc)
@@ -709,11 +735,11 @@ async def get_event(event_id: str):
 
 @api_router.get("/events/{event_id}/related")
 async def related_events(event_id: str):
-    doc = await db.events.find_one({"id": event_id})
+    doc = await db.events.find_one({"$or": [{"id": event_id}, {"slug": event_id}]})
     if not doc:
         raise HTTPException(status_code=404, detail="Event not found")
     cursor = db.events.find({
-        "id": {"$ne": event_id},
+        "id": {"$ne": doc["id"]},
         "$or": [{"category": doc["category"]}, {"city": doc["city"]}],
     }).limit(4)
     return [clean(d) async for d in cursor]

@@ -9,8 +9,9 @@ export default function About() {
     <main className="min-h-[100svh] pt-24 pb-24 relative overflow-hidden">
       <SEO 
         title="About Us" 
-        description="Learn about Eventa, India's definitive platform for discovering startup, business, technology, culture, and networking events."
+        description="Learn more about Eventa, the leading platform for discovering and managing premium events in India."
         url="https://eventa.in/about"
+        keywords="about eventa, event management india, premium events platform, tech events company"
       />
       <div className="absolute top-0 inset-x-0 h-[500px] aurora opacity-20 pointer-events-none" />
 

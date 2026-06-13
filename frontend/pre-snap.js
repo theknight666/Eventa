@@ -15,7 +15,7 @@ async function main() {
     const res = await fetch('https://eventa-backend.onrender.com/api/events?featured=true');
     if (res.ok) {
       const data = await res.json();
-      eventRoutes = data.events.slice(0, 10).map(e => `/event/${e.id}`);
+      eventRoutes = data.events.slice(0, 10).map(e => `/event/${e.slug || e.id}`);
       console.log(`[pre-snap] Successfully fetched ${eventRoutes.length} event routes.`);
     } else {
       console.warn(`[pre-snap] Backend returned ${res.status}. Using fallback routes.`);

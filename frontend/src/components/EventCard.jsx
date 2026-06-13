@@ -64,7 +64,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
       data-testid={`event-card-${event.id}`}
       className={isExpired ? "opacity-75 grayscale-[0.3]" : ""}
     >
-      <Link to={`/event/${event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+      <Link to={`/event/${event.slug || event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
         <div className="relative aspect-[16/10] overflow-hidden">
           <img
             src={event.cover_image}

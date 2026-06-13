@@ -255,7 +255,7 @@ export default function Dashboard() {
                       <Sparkles size={15} />
                     </button>
                   )}
-                  <Link to={`/event/${ev.id}`} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-view-${ev.id}`}>
+                  <Link to={`/event/${ev.slug || ev.id}`} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-view-${ev.id}`}>
                     <ExternalLink size={15} />
                   </Link>
                   <button onClick={() => { setEditing(ev); setFormOpen(true); }} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-edit-${ev.id}`}>

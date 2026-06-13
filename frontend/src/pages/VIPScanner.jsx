@@ -3,6 +3,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { motion } from "framer-motion";
 import { Scan, ShieldCheck, Camera, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 export default function VIPScanner() {
   const [hasCamera, setHasCamera] = useState(true);
@@ -62,6 +63,7 @@ export default function VIPScanner() {
 
   return (
     <div className="min-h-[100svh] bg-black text-white relative overflow-hidden flex flex-col pt-24 pb-12">
+      <SEO title="VIP Scanner" noindex={true} />
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-black to-emerald-900/20 pointer-events-none" />
       <div className="absolute inset-0 aurora opacity-40 pointer-events-none" />
 

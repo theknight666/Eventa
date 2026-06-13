@@ -155,10 +155,11 @@ export default function EventDetail() {
     <div className="pb-28">
       <SEO 
         title={event.title} 
-        description={event.description.substring(0, 160)} 
-        url={window.location.href}
-        image={event.cover_image || FALLBACK_IMG}
+        description={event.description.substring(0, 160)}
+        url={`https://eventa.in/event/${event.slug || event.id}`}
+        image={event.cover_image}
         type="article"
+        keywords={`${event.title}, ${event.city} events, ${event.industry} events, startup events, ${event.category}`}
       >
         <script type="application/ld+json">
           {JSON.stringify([jsonLd, breadcrumbJsonLd])}

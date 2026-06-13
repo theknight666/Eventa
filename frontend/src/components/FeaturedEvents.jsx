@@ -122,7 +122,7 @@ export default function FeaturedEvents() {
                 className="transform-gpu"
               >
                 <Link
-                  to={`/event/${ev.id}`}
+                  to={`/event/${ev.slug || ev.id}`}
                   className="group block relative rounded-3xl overflow-hidden border border-amber-500/20 bg-white/60 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors shadow-xl dark:shadow-2xl backdrop-blur-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">

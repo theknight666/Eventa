@@ -59,6 +59,7 @@ export default function Home() {
         title="Premium Event Discovery" 
         description="Discover exclusive and premium events happening near you. Find the best nightlife, concerts, business summits, and curated experiences with Eventa."
         url="https://eventa.in/"
+        keywords="discover events India, tech events 2026, startup events near me, eventa events"
       >
         <script type="application/ld+json">
           {JSON.stringify({
@@ -66,11 +67,7 @@ export default function Home() {
             "@type": "Organization",
             "name": "Eventa",
             "url": "https://eventa.in",
-            "logo": "https://eventa.in/seo-planet.png",
-            "sameAs": [
-              "https://twitter.com/eventa",
-              "https://instagram.com/eventa"
-            ]
+            "logo": "https://eventa.in/seo-planet.png"
           })}
         </script>
       </SEO>

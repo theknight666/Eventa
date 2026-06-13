@@ -9,9 +9,11 @@ export default function Organizer() {
   return (
     <>
       <SEO 
-        title="Organizer Portal" 
-        description="Manage your events, view analytics, and track attendees with the Eventa Organizer Portal."
-        url="https://eventa.in/organizer"
+        title={organizer ? `${organizer.name} Events & Community` : "Organizer Portal"}
+        description={organizer ? (organizer.about || `Discover upcoming events by ${organizer.name} on Eventa.`) : "Manage your events, view analytics, and track attendees with the Eventa Organizer Portal."}
+        url={organizer ? `https://eventa.in/org/${organizer.slug}` : "https://eventa.in/organizer"}
+        image={organizer?.logo}
+        keywords={organizer ? `${organizer.name}, ${organizer.name} events, buy tickets ${organizer.name}, upcoming events` : "organizer, event management, eventa"}
       />
       {organizer ? <Dashboard /> : <OrganizerLogin />}
     </>
