@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
@@ -9,6 +9,17 @@ export default function FeaturedEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef(null);
+
+  const stars = useMemo(() => {
+    return [...Array(20)].map((_, i) => ({
+      id: i,
+      size: Math.random() * 2 + 1,
+      top: Math.random() * 100 + "%",
+      left: Math.random() * 100 + "%",
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 5
+    }));
+  }, []);
 
   useEffect(() => {
     getEvents({ featured: true })
@@ -30,78 +41,32 @@ export default function FeaturedEvents() {
         className="relative rounded-[2.5rem] overflow-hidden bg-amber-50/80 dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-[0_40px_120px_-20px_rgba(245,158,11,0.4),inset_0_2px_10px_rgba(255,255,255,0.7),0_0_0_1px_rgba(245,158,11,0.2)] dark:shadow-[0_40px_120px_-20px_rgba(245,158,11,0.5),inset_0_2px_5px_rgba(255,255,255,0.1),0_0_0_1px_rgba(245,158,11,0.3)] backdrop-blur-3xl transform-gpu"
       >
         {/* Premium Background Effects */}
-        <motion.div 
-          animate={{
-            x: [0, -120, 60, 0],
-            y: [0, 120, -60, 0],
-            scale: [1, 1.3, 0.9, 1],
-            opacity: [0.5, 0.8, 0.5]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/40 dark:bg-amber-600/50 blur-[100px] rounded-full pointer-events-none" 
-        />
-        <motion.div 
-          animate={{
-            x: [0, 120, -60, 0],
-            y: [0, -120, 60, 0],
-            scale: [1, 1.4, 0.8, 1],
-            opacity: [0.5, 0.9, 0.5]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-orange-400/40 dark:bg-orange-600/50 blur-[100px] rounded-full pointer-events-none" 
-        />
-        <motion.div 
-          animate={{
-            x: [0, -80, 120, 0],
-            y: [0, -80, 120, 0],
-            scale: [0.8, 1.6, 1, 0.8],
-            opacity: [0.4, 0.7, 0.4]
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/30 dark:bg-amber-700/40 blur-[120px] rounded-full pointer-events-none" 
-        />
+        <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/40 dark:bg-amber-600/50 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-orange-400/40 dark:bg-orange-600/50 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/30 dark:bg-amber-700/40 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-30 mix-blend-overlay pointer-events-none" />
 
         {/* Galaxy Starfield */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(40)].map((_, i) => {
-            const size = Math.random() * 2 + 1;
-            const top = Math.random() * 100 + "%";
-            const left = Math.random() * 100 + "%";
-            const duration = Math.random() * 10 + 10;
-            const delay = Math.random() * 5;
-            
-            return (
-              <motion.div
-                key={i}
-                animate={{
-                  y: [0, -30, 0],
-                  opacity: [0.1, 0.8, 0.1],
-                  scale: [1, 1.5, 1],
-                }}
-                transition={{ duration, repeat: Infinity, delay, ease: "easeInOut" }}
-                className="absolute rounded-full bg-amber-200 shadow-[0_0_8px_rgba(253,230,138,0.8)]"
-                style={{ top, left, width: size, height: size }}
-              />
-            );
-          })}
+          {stars.map((star) => (
+            <motion.div
+              key={star.id}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0.2, 0.7, 0.2],
+              }}
+              transition={{ duration: star.duration, repeat: Infinity, delay: star.delay, ease: "easeInOut" }}
+              className="absolute rounded-full bg-amber-200 shadow-[0_0_6px_rgba(253,230,138,0.6)]"
+              style={{ top: star.top, left: star.left, width: star.size, height: star.size }}
+            />
+          ))}
         </div>
 
         <div className="relative p-8 md:p-14">
           <div className="flex items-center gap-4 mb-10">
-            <motion.div 
-              animate={{ 
-                boxShadow: [
-                  "0px 0px 15px rgba(245,158,11,0.4)",
-                  "0px 0px 40px rgba(245,158,11,1)",
-                  "0px 0px 15px rgba(245,158,11,0.4)"
-                ]
-              }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg"
-            >
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.6)]">
               <Sparkles className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]" size={28} />
-            </motion.div>
+            </div>
             <div>
               <h2 className="font-display text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-amber-500 to-orange-600 dark:from-amber-200 dark:via-amber-400 dark:to-orange-500">
                 Premium Featured
