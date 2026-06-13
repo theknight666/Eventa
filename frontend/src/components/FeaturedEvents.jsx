@@ -90,9 +90,15 @@ export default function FeaturedEvents() {
         <div className="relative p-8 md:p-14">
           <div className="flex items-center gap-4 mb-10">
             <motion.div 
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] dark:shadow-[0_0_30px_rgba(245,158,11,0.5)]"
+              animate={{ 
+                boxShadow: [
+                  "0px 0px 15px rgba(245,158,11,0.4)",
+                  "0px 0px 40px rgba(245,158,11,0.9)",
+                  "0px 0px 15px rgba(245,158,11,0.4)"
+                ]
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center"
             >
               <Sparkles className="text-white" size={28} />
             </motion.div>
