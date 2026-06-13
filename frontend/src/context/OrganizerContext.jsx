@@ -7,15 +7,15 @@ const KEY = "eventa_organizer";
 export const OrganizerProvider = ({ children }) => {
   const [organizer, setOrganizer] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(KEY)) || null;
+      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY)) || null;
     } catch {
       return null;
     }
   });
 
   useEffect(() => {
-    if (organizer) localStorage.setItem(KEY, JSON.stringify(organizer));
-    else localStorage.removeItem(KEY);
+    if (organizer) if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(organizer));
+    else if (typeof window !== 'undefined') localStorage.removeItem(KEY);
   }, [organizer]);
 
   const login = (org) => setOrganizer(org);

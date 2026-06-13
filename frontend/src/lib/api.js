@@ -1,7 +1,8 @@
 import axios from "axios";
 import { toast } from "sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Fallback to React App for backwards compat during migration
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 export const API = `${BACKEND_URL}/api`;
 
 const client = axios.create({ baseURL: API });

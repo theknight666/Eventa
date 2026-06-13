@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -19,19 +19,19 @@ export default function Footer() {
           <div>
             <p className="label-eyebrow text-muted-foreground">Explore</p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/#trending" className="hover:text-foreground transition-colors">Trending Events</Link></li>
-              <li><Link to="/#categories" className="hover:text-foreground transition-colors">Categories</Link></li>
-              <li><Link to="/#cities" className="hover:text-foreground transition-colors">Featured Cities</Link></li>
-              <li><Link to="/#ai-picks" className="hover:text-foreground transition-colors">AI Recommendations</Link></li>
+              <li><Link href="/#trending" className="hover:text-foreground transition-colors">Trending Events</Link></li>
+              <li><Link href="/#categories" className="hover:text-foreground transition-colors">Categories</Link></li>
+              <li><Link href="/#cities" className="hover:text-foreground transition-colors">Featured Cities</Link></li>
+              <li><Link href="/#ai-picks" className="hover:text-foreground transition-colors">AI Recommendations</Link></li>
             </ul>
           </div>
           <div>
             <p className="label-eyebrow text-muted-foreground">Company</p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground flex flex-col">
-              <li><Link to="/organizer" className="hover:text-foreground transition-colors">For Organizers</Link></li>
-              <li><Link to="/partnerships" className="hover:text-foreground transition-colors">Partnerships</Link></li>
-              <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
-              <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+              <li><Link href="/organizer" className="hover:text-foreground transition-colors">For Organizers</Link></li>
+              <li><Link href="/partnerships" className="hover:text-foreground transition-colors">Partnerships</Link></li>
+              <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
+              <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
             </ul>
           </div>
         </div>

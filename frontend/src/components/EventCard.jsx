@@ -1,11 +1,12 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { Bookmark, MapPin, Calendar, Share2, BadgeCheck, Users } from "lucide-react";
 import { toast } from "sonner";
-import { useSaved } from "../context/SavedContext";
-import { useUser } from "../context/UserContext";
-import { CATEGORY_META, formatDate, formatINR, FALLBACK_IMG } from "../data/meta";
+import { useSaved } from "@/context/SavedContext";
+import { useUser } from "@/context/UserContext";
+import { CATEGORY_META, formatDate, formatINR, FALLBACK_IMG } from "@/data/meta";
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -19,8 +20,7 @@ const TICKET_LABEL = { available: "Tickets available", few_left: "Few left", sol
 const EventCard = React.memo(({ event, index = 0 }) => {
   const { isSaved, toggle } = useSaved();
   const { user } = useUser();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const saved = isSaved(event.id);
   const meta = CATEGORY_META[event.category] || { gradient: "from-slate-500 to-slate-700" };
 
@@ -28,7 +28,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      navigate(`?login=true`);
+      router.push(`?login=true`);
       return;
     }
     toggle(event.id);
@@ -64,7 +64,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
       data-testid={`event-card-${event.id}`}
       className={isExpired ? "opacity-75 grayscale-[0.3]" : ""}
     >
-      <Link to={`/event/${event.slug || event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+      <Link href={`/event/${event.slug || event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
         <div className="relative aspect-[16/10] overflow-hidden">
           <img
             src={event.cover_image}

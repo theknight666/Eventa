@@ -1,0 +1,19 @@
+{
+  "/": "pages/index.html",
+  "/_app": "pages/_app.js",
+  "/_document": "pages/_document.js",
+  "/_error": "pages/_error.js",
+  "/about": "pages/about.html",
+  "/admin": "pages/admin.html",
+  "/blog": "pages/blog.html",
+  "/blog/[slug]": "pages/blog/[slug].js",
+  "/contact": "pages/contact.html",
+  "/dashboard": "pages/dashboard.html",
+  "/event/[id]": "pages/event/[id].js",
+  "/events/[filter]": "pages/events/[filter].js",
+  "/organizer": "pages/organizer.html",
+  "/partnerships": "pages/partnerships.html",
+  "/saved": "pages/saved.html",
+  "/vip": "pages/vip.html",
+  "/404": "pages/404.html"
+}

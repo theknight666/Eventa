@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, Search, Building2, User, LogOut, Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import { useSaved } from "../context/SavedContext";
-import { useUser } from "../context/UserContext";
+import { useSaved } from "@/context/SavedContext";
+import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import LoginDialog from "./LoginDialog";
 import {
@@ -32,8 +33,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { saved } = useSaved();
   const { user, login, logout } = useUser();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,14 +45,12 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get("login") === "true") {
+    if (router.query.login === 'true') {
       setLoginOpen(true);
-      searchParams.delete("login");
-      const newUrl = location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
-      navigate(newUrl, { replace: true });
+      const { login, ...rest } = router.query;
+      router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
     }
-  }, [location.search, navigate, location.pathname]);
+  }, [router.query, router.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -68,7 +66,7 @@ export default function Navbar() {
 
   const scrollToSection = (e, id) => {
     setMobileMenuOpen(false); // Close mobile menu if open
-    if (location.pathname !== "/") {
+    if (router.pathname !== "/") {
       return; // Let standard anchor behavior handle navigation to home
     }
     e?.preventDefault();
@@ -96,8 +94,7 @@ export default function Navbar() {
             scrolled ? "glass shadow-lg shadow-black/5 px-4 sm:px-5" : "px-0"
           }`}
         >
-          <Link
-            to="/"
+          <Link href="/"
             data-testid="navbar-logo"
             className="font-display text-2xl font-extrabold tracking-tight"
           >
@@ -117,7 +114,7 @@ export default function Navbar() {
             <a data-testid="nav-ai" href="/#ai-picks" onClick={(e) => scrollToSection(e, "ai-picks")} className="hover:text-foreground transition-colors">
               AI Picks
             </a>
-            <Link data-testid="nav-organizer" to="/organizer" className="hover:text-foreground transition-colors">
+            <Link data-testid="nav-organizer" href="/organizer" className="hover:text-foreground transition-colors">
               For Organizers
             </Link>
           </nav>
@@ -149,15 +146,15 @@ export default function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push("/dashboard")} className="cursor-pointer">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push("/dashboard")} className="cursor-pointer">
                     <History className="mr-2 h-4 w-4" />
                     <span>History</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/saved")} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push("/saved")} className="cursor-pointer">
                     <Bookmark className="mr-2 h-4 w-4" />
                     <span>Saved Events</span>
                     {saved.length > 0 && (
@@ -207,7 +204,7 @@ export default function Navbar() {
               <a href="/#categories" onClick={(e) => scrollToSection(e, "categories")} className="text-muted-foreground hover:text-foreground">Categories</a>
               <a href="/#cities" onClick={(e) => scrollToSection(e, "cities")} className="text-muted-foreground hover:text-foreground">Cities</a>
               <a href="/#ai-picks" onClick={(e) => scrollToSection(e, "ai-picks")} className="text-muted-foreground hover:text-foreground">AI Picks</a>
-              <Link to="/organizer" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">For Organizers</Link>
+              <Link href="/organizer" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">For Organizers</Link>
               {!user && (
                 <button 
                   onClick={() => { setMobileMenuOpen(false); setLoginOpen(true); }} 

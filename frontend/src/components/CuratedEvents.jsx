@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Gift, Banknote, ChevronLeft, ChevronRight } from "lucide-react";
-import { getEvents } from "../lib/api";
+import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 

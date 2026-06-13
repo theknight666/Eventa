@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Globe, Users, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
-import SEO from "../components/SEO";
+import Link from "next/link";
+import SEO from "@/components/SEO";
 
 export default function About() {
   return (
@@ -90,7 +90,7 @@ export default function About() {
           <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
             Join thousands of professionals who use Eventa to discover their next big opportunity.
           </p>
-          <Link to="/" className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-8 py-4 text-sm font-semibold hover:scale-105 transition-transform">
+          <Link href="/" className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-8 py-4 text-sm font-semibold hover:scale-105 transition-transform">
             Discover Events <ArrowRight size={16} />
           </Link>
         </motion.div>

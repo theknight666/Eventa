@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Plus, Eye, Users, IndianRupee, CalendarDays, Pencil, Trash2, LogOut,
   BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
-import SEO from "../../components/SEO";
+import SEO from "@/components/SEO";
 import {
   getDashboard, getOrganizerEvents, deleteOrganizerEvent, requestVerification, getCategories,
-} from "../../lib/api";
-import { useOrganizer } from "../../context/OrganizerContext";
-import { formatINR, formatDate } from "../../data/meta";
+} from "@/lib/api";
+import { useOrganizer } from "@/context/OrganizerContext";
+import { formatINR, formatDate } from "@/data/meta";
 import AnalyticsCharts from "./AnalyticsCharts";
 import EventForm from "./EventForm";
 
@@ -255,7 +255,7 @@ export default function Dashboard() {
                       <Sparkles size={15} />
                     </button>
                   )}
-                  <Link to={`/event/${ev.slug || ev.id}`} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-view-${ev.id}`}>
+                  <Link href={`/event/${ev.slug || ev.id}`} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-view-${ev.id}`}>
                     <ExternalLink size={15} />
                   </Link>
                   <button onClick={() => { setEditing(ev); setFormOpen(true); }} className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:border-foreground/40" data-testid={`org-edit-${ev.id}`}>

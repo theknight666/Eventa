@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { useSaved } from "../context/SavedContext";
-import { getAttendeeHistory, getBulkEvents } from "../lib/api";
-import EventCard from "../components/EventCard";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useUser } from "@/context/UserContext";
+import { useSaved } from "@/context/SavedContext";
+import { getAttendeeHistory, getBulkEvents } from "@/lib/api";
+import EventCard from "@/components/EventCard";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { User, History, Bookmark, Settings, LogOut, ArrowLeft } from "lucide-react";
-import { GridSkeleton } from "../components/Skeletons";
+import { GridSkeleton } from "@/components/Skeletons";
 import { toast } from "sonner";
 
 export default function Dashboard() {
+  const router = useRouter();
   const { user, logout } = useUser();
   const { saved } = useSaved();
-  const navigate = useNavigate();
 
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -53,13 +54,20 @@ export default function Dashboard() {
     }
   }, [user, saved]);
 
+  
+  useEffect(() => {
+    if (!user) {
+      router.replace("/");
+    }
+  }, [user, router]);
+
   if (!user) {
-    return <Navigate to="/" />;
+    return null;
   }
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    router.push("/");
     toast.success("Logged out successfully");
   };
 
@@ -68,7 +76,7 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+            <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
               <ArrowLeft size={16} /> Back to Discover
             </Link>
             <div className="flex items-center gap-4">
@@ -151,7 +159,7 @@ export default function Dashboard() {
                 <p className="text-muted-foreground mt-2">
                   You haven't attended or registered for any events.
                 </p>
-                <Link to="/" className="mt-6 inline-flex rounded-xl bg-foreground text-background px-6 py-3 font-semibold text-sm hover:opacity-90 transition-opacity">
+                <Link href="/" className="mt-6 inline-flex rounded-xl bg-foreground text-background px-6 py-3 font-semibold text-sm hover:opacity-90 transition-opacity">
                   Browse Events
                 </Link>
               </div>
@@ -179,7 +187,7 @@ export default function Dashboard() {
                 <p className="text-muted-foreground mt-2">
                   Find events you love and bookmark them to keep them here.
                 </p>
-                <Link to="/" className="mt-6 inline-flex rounded-xl bg-foreground text-background px-6 py-3 font-semibold text-sm hover:opacity-90 transition-opacity">
+                <Link href="/" className="mt-6 inline-flex rounded-xl bg-foreground text-background px-6 py-3 font-semibold text-sm hover:opacity-90 transition-opacity">
                   Discover Events
                 </Link>
               </div>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
-import { getRecommendations, updateAttendeePreferences } from "../lib/api";
-import { useSaved } from "../context/SavedContext";
-import { useUser } from "../context/UserContext";
+import { getRecommendations, updateAttendeePreferences } from "@/lib/api";
+import { useSaved } from "@/context/SavedContext";
+import { useUser } from "@/context/UserContext";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 

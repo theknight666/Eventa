@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useGoogleLogin } from "@react-oauth/google";
-import { attendeeLogin, attendeeRegister, attendeeForgotPassword, attendeeResetPassword, updateAttendeePreferences } from "../lib/api";
-import { useUser } from "../context/UserContext";
+import { attendeeLogin, attendeeRegister, attendeeForgotPassword, attendeeResetPassword, updateAttendeePreferences } from "@/lib/api";
+import { useUser } from "@/context/UserContext";
 
 const inputCls =
   "w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm outline-none focus:border-foreground/50 transition-colors";

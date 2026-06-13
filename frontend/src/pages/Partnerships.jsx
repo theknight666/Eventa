@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Handshake, Building, TrendingUp, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
-import SEO from "../components/SEO";
+import Link from "next/link";
+import SEO from "@/components/SEO";
 
 export default function Partnerships() {
   return (
@@ -30,7 +30,7 @@ export default function Partnerships() {
           <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
             Reach India's most ambitious professionals. We partner with brands, venues, and media companies to create high-impact integrations and premium event experiences.
           </p>
-          <Link to="/contact" className="inline-flex items-center justify-center rounded-full bg-foreground text-background px-8 py-4 text-sm font-semibold hover:scale-105 transition-transform">
+          <Link href="/contact" className="inline-flex items-center justify-center rounded-full bg-foreground text-background px-8 py-4 text-sm font-semibold hover:scale-105 transition-transform">
             Start a Conversation
           </Link>
         </motion.div>

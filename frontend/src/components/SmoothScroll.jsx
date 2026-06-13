@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useRouter } from "next/router";
 import Lenis from "lenis";
 
 export default function SmoothScroll({ children }) {

@@ -1,8 +1,8 @@
 import React from "react";
-import { useOrganizer } from "../context/OrganizerContext";
-import OrganizerLogin from "../components/organizer/OrganizerLogin";
-import Dashboard from "../components/organizer/Dashboard";
-import SEO from "../components/SEO";
+import { useOrganizer } from "@/context/OrganizerContext";
+import OrganizerLogin from "@/components/organizer/OrganizerLogin";
+import Dashboard from "@/components/organizer/Dashboard";
+import SEO from "@/components/SEO";
 
 export default function Organizer() {
   const { organizer } = useOrganizer();

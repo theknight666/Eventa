@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { organizerLogin, organizerRegister, organizerForgotPassword, organizerResetPassword } from "../../lib/api";
-import { useOrganizer } from "../../context/OrganizerContext";
+import { organizerLogin, organizerRegister, organizerForgotPassword, organizerResetPassword } from "@/lib/api";
+import { useOrganizer } from "@/context/OrganizerContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
-import { getEvents } from "../lib/api";
-import { formatDate, FALLBACK_IMG } from "../data/meta";
+import { getEvents } from "@/lib/api";
+import { formatDate, FALLBACK_IMG } from "@/data/meta";
 
 export default function FeaturedEvents() {
   const [events, setEvents] = useState([]);
@@ -93,14 +93,14 @@ export default function FeaturedEvents() {
               animate={{ 
                 boxShadow: [
                   "0px 0px 15px rgba(245,158,11,0.4)",
-                  "0px 0px 40px rgba(245,158,11,0.9)",
+                  "0px 0px 40px rgba(245,158,11,1)",
                   "0px 0px 15px rgba(245,158,11,0.4)"
                 ]
               }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center"
+              className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg"
             >
-              <Sparkles className="text-white" size={28} />
+              <Sparkles className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]" size={28} />
             </motion.div>
             <div>
               <h2 className="font-display text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 via-amber-500 to-orange-600 dark:from-amber-200 dark:via-amber-400 dark:to-orange-500">
@@ -121,8 +121,7 @@ export default function FeaturedEvents() {
                 whileHover={{ y: -8, scale: 1.02, rotateY: 2, rotateX: -2 }}
                 className="transform-gpu"
               >
-                <Link
-                  to={`/event/${ev.slug || ev.id}`}
+                <Link href={`/event/${ev.slug || ev.id}`}
                   className="group block relative rounded-3xl overflow-hidden border border-amber-500/20 bg-white/60 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors shadow-xl dark:shadow-2xl backdrop-blur-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">

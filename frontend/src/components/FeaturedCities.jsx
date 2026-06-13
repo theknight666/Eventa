@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
 import { MapPin, Sparkles } from "lucide-react";
-import { FALLBACK_IMG } from "../data/meta";
+import { FALLBACK_IMG } from "@/data/meta";
 
 const ease = [0.22, 1, 0.36, 1];
 

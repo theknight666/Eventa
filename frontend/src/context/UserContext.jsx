@@ -6,7 +6,7 @@ const KEY = "eventa_user";
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
-      const stored = localStorage.getItem(KEY);
+      const stored = (typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -15,9 +15,9 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem(KEY, JSON.stringify(user));
+      if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(user));
     } else {
-      localStorage.removeItem(KEY);
+      if (typeof window !== 'undefined') localStorage.removeItem(KEY);
     }
   }, [user]);
 

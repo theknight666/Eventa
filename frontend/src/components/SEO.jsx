@@ -1,5 +1,5 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
+import Head from "next/head";
 
 export default function SEO({ title, description, url, image, type = "website", keywords, noindex = false, children }) {
   const siteName = "Eventa";
@@ -12,7 +12,7 @@ export default function SEO({ title, description, url, image, type = "website", 
   const seoImage = image || defaultImage;
 
   return (
-    <Helmet>
+    <Head>
       {/* Primary Meta Tags */}
       <title>{seoTitle}</title>
       <meta name="title" content={seoTitle} />
@@ -39,6 +39,6 @@ export default function SEO({ title, description, url, image, type = "website", 
 
       {/* JSON-LD or additional tags injected as children */}
       {children}
-    </Helmet>
+    </Head>
   );
 }

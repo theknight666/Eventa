@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { createOrganizerEvent, updateOrganizerEvent } from "../../lib/api";
+import { createOrganizerEvent, updateOrganizerEvent } from "@/lib/api";
 
 const inputCls =
   "w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm outline-none focus:border-foreground/50 transition-colors";

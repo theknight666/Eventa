@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlidersHorizontal, X, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
-import { getEvents } from "../lib/api";
+import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 

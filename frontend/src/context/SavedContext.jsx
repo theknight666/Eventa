@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useUser } from "./UserContext";
-import { getAttendeeSaved, toggleAttendeeSaved } from "../lib/api";
+import { getAttendeeSaved, toggleAttendeeSaved } from "@/lib/api";
 
 const SavedContext = createContext({ saved: [], toggle: () => {}, isSaved: () => false });
 const KEY = "eventa_saved";
@@ -9,7 +9,7 @@ export const SavedProvider = ({ children }) => {
   const { user } = useUser();
   const [saved, setSaved] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(KEY)) || [];
+      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY)) || [];
     } catch {
       return [];
     }
@@ -21,14 +21,14 @@ export const SavedProvider = ({ children }) => {
       getAttendeeSaved(user.email).then((data) => {
         if (data.saved) {
           setSaved(data.saved);
-          localStorage.setItem(KEY, JSON.stringify(data.saved));
+          if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(data.saved));
         }
       }).catch(console.error);
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem(KEY, JSON.stringify(saved));
+    if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(saved));
   }, [saved]);
 
   const toggle = async (id) => {

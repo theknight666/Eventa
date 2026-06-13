@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { getEvents } from "../lib/api";
+import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
@@ -14,15 +14,52 @@ export default function EventsNearYou() {
   useEffect(() => {
     async function fetchLocationAndEvents() {
       try {
-        // 1. Fetch IP-based location automatically
-        const res = await fetch("https://ipapi.co/json/");
-        if (!res.ok) throw new Error("Failed to fetch IP location");
-        
-        const data = await res.json();
-        const { latitude, longitude } = data;
-        let detectedCity = data.city || "your area";
+        let latitude = null;
+        let longitude = null;
+        let detectedCity = "your area";
 
-        // Map common aliases to backend city names for fallback
+        // Try precise geolocation first
+        const getPreciseLocation = () => {
+          return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+              reject(new Error("Geolocation not supported"));
+              return;
+            }
+            navigator.geolocation.getCurrentPosition(
+              (position) => resolve(position.coords),
+              (err) => reject(err),
+              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+          });
+        };
+
+        try {
+          const coords = await getPreciseLocation();
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+          
+          // Reverse geocode to get local area name
+          try {
+            const geocodeRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            if (geocodeRes.ok) {
+              const geoData = await geocodeRes.json();
+              detectedCity = geoData.address?.suburb || geoData.address?.neighbourhood || geoData.address?.city || geoData.address?.town || geoData.address?.state_district || "your area";
+            }
+          } catch (e) {
+            console.error("Reverse geocoding failed", e);
+          }
+        } catch (err) {
+          console.log("Precise geolocation failed or denied, falling back to IP based location.", err);
+          // Fallback to IP-based location
+          const res = await fetch("https://ipapi.co/json/");
+          if (res.ok) {
+            const data = await res.json();
+            latitude = data.latitude;
+            longitude = data.longitude;
+            detectedCity = data.city || "your area";
+          }
+        }
+
         const cityAliases = {
           "delhi": "New Delhi",
           "new delhi": "New Delhi",
