@@ -27,6 +27,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 from scraper_sync import sync_all_cities
+from meetup_sync import sync_meetup_cities
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
@@ -128,6 +129,9 @@ async def on_startup():
     # Kick off live-event scraper sync in the background (non-blocking)
     asyncio.create_task(_background_sync())
     
+    # Kick off meetup sync in the background
+    asyncio.create_task(_background_meetup_sync())
+    
     # Kick off periodic deduplication process
     asyncio.create_task(_background_dedup())
 
@@ -145,6 +149,21 @@ async def _background_sync():
             logger.error(f"Scraper background sync error: {e}")
         
         # Check again in 60 minutes. The scraper_sync logic handles the exact 6-hour cooldown constraint
+        await asyncio.sleep(3600)
+
+
+async def _background_meetup_sync():
+    """Run Meetup sync in a continuous loop in the background."""
+    while True:
+        try:
+            result = await sync_meetup_cities(db)
+            if result.get("skipped"):
+                logger.info(f"Meetup sync skipped: {result.get('error') or 'cooldown active'}")
+            else:
+                logger.info(f"Meetup sync done — {result['upserted']} events upserted")
+        except Exception as e:
+            logger.error(f"Meetup background sync error: {e}")
+        
         await asyncio.sleep(3600)
 
 
@@ -400,6 +419,17 @@ async def admin_sync(force: bool = False):
     Pass ?force=true to bypass the cooldown.
     """
     scraper_res = await sync_all_cities(db, force=force)
+    return {
+        "scraper": scraper_res
+    }
+
+
+@api_router.post("/admin/sync-meetup")
+async def admin_sync_meetup(force: bool = False):
+    """Manually trigger a Meetup scraper sync.
+    Pass ?force=true to bypass the cooldown.
+    """
+    scraper_res = await sync_meetup_cities(db, force=force)
     return {
         "scraper": scraper_res
     }
