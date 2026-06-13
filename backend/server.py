@@ -126,6 +126,30 @@ async def on_startup():
         await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
         # Create 2dsphere index for geospatial queries
         await db.events.create_index([("location", "2dsphere")])
+        
+        # Auto-migrate coordinates for existing scraped events
+        try:
+            from cities import CITY_COORDS
+            events_cursor = db.events.find({})
+            updated = 0
+            async for event in events_cursor:
+                city = event.get("city", "")
+                if city in CITY_COORDS:
+                    lat, lng = CITY_COORDS[city]
+                    if event.get("lat") == 0.0 and event.get("lng") == 0.0:
+                        await db.events.update_one(
+                            {"_id": event["_id"]},
+                            {"$set": {
+                                "lat": lat,
+                                "lng": lng,
+                                "location": {"type": "Point", "coordinates": [lng, lat]}
+                            }}
+                        )
+                        updated += 1
+            if updated > 0:
+                logger.info(f"Auto-migration complete. Updated {updated} events with coordinates.")
+        except Exception as e:
+            logger.error(f"Failed to auto-migrate coords: {e}")
 
     asyncio.create_task(init_db_tasks())
     
