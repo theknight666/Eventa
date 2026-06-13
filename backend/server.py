@@ -28,6 +28,9 @@ def get_password_hash(password):
 
 from scraper_sync import sync_all_cities
 from meetup_sync import sync_meetup_cities
+from eb_sync import sync_eb_cities
+from luma_sync import sync_luma_cities
+from townscript_sync import sync_ts_cities
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
 
 # Default cover image for organizer-created events
@@ -126,44 +129,34 @@ async def on_startup():
 
     asyncio.create_task(init_db_tasks())
     
-    # Kick off live-event scraper sync in the background (non-blocking)
-    asyncio.create_task(_background_sync())
-    
-    # Kick off meetup sync in the background
-    asyncio.create_task(_background_meetup_sync())
+    # Kick off consolidated live-event scraper sync in the background
+    asyncio.create_task(_background_all_scrapers())
     
     # Kick off periodic deduplication process
     asyncio.create_task(_background_dedup())
 
 
-async def _background_sync():
-    """Run Scraper sync in a continuous loop in the background."""
+async def _background_all_scrapers():
+    """Run all scrapers sequentially in a continuous loop in the background."""
     while True:
         try:
-            result = await sync_all_cities(db)
-            if result.get("skipped"):
-                logger.info(f"Scraper sync skipped: {result.get('error') or 'cooldown active'}")
-            else:
-                logger.info(f"Scraper sync done — {result['upserted']} events upserted")
+            res_ae = await sync_all_cities(db)
+            res_meetup = await sync_meetup_cities(db)
+            res_eb = await sync_eb_cities(db)
+            res_luma = await sync_luma_cities(db)
+            res_ts = await sync_ts_cities(db)
+            
+            logger.info(
+                f"Scraper cycle complete. Upserted: "
+                f"AE({res_ae.get('upserted',0)}), Meetup({res_meetup.get('upserted',0)}), "
+                f"EB({res_eb.get('upserted',0)}), Luma({res_luma.get('upserted',0)}), "
+                f"TS({res_ts.get('upserted',0)})"
+            )
         except Exception as e:
-            logger.error(f"Scraper background sync error: {e}")
+            logger.error(f"Background scraper orchestrator error: {e}")
         
-        # Check again in 60 minutes. The scraper_sync logic handles the exact 6-hour cooldown constraint
-        await asyncio.sleep(3600)
-
-
-async def _background_meetup_sync():
-    """Run Meetup sync in a continuous loop in the background."""
-    while True:
-        try:
-            result = await sync_meetup_cities(db)
-            if result.get("skipped"):
-                logger.info(f"Meetup sync skipped: {result.get('error') or 'cooldown active'}")
-            else:
-                logger.info(f"Meetup sync done — {result['upserted']} events upserted")
-        except Exception as e:
-            logger.error(f"Meetup background sync error: {e}")
-        
+        # Each individual scraper tracks its own 6-hour cooldown in the DB
+        # so this loop can run frequently (e.g. hourly) to catch off-cycle resets.
         await asyncio.sleep(3600)
 
 
@@ -413,25 +406,23 @@ async def event_sources():
     }
 
 
-@api_router.post("/admin/sync")
-async def admin_sync(force: bool = False):
-    """Manually trigger a live-event scraper sync.
+@api_router.post("/admin/sync-all")
+async def admin_sync_all(force: bool = False):
+    """Manually trigger all live-event scrapers.
     Pass ?force=true to bypass the cooldown.
     """
-    scraper_res = await sync_all_cities(db, force=force)
+    res_ae = await sync_all_cities(db, force=force)
+    res_meetup = await sync_meetup_cities(db, force=force)
+    res_eb = await sync_eb_cities(db, force=force)
+    res_luma = await sync_luma_cities(db, force=force)
+    res_ts = await sync_ts_cities(db, force=force)
+    
     return {
-        "scraper": scraper_res
-    }
-
-
-@api_router.post("/admin/sync-meetup")
-async def admin_sync_meetup(force: bool = False):
-    """Manually trigger a Meetup scraper sync.
-    Pass ?force=true to bypass the cooldown.
-    """
-    scraper_res = await sync_meetup_cities(db, force=force)
-    return {
-        "scraper": scraper_res
+        "allevents": res_ae,
+        "meetup": res_meetup,
+        "eventbrite": res_eb,
+        "luma": res_luma,
+        "townscript": res_ts
     }
 
 
