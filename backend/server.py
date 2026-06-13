@@ -125,7 +125,10 @@ async def on_startup():
             logger.info(f"Removed {duplicates_removed} duplicate events from database.")
         await db.events.update_many({"approval_status": {"$exists": False}}, {"$set": {"approval_status": "approved"}})
         # Create 2dsphere index for geospatial queries
-        await db.events.create_index([("location", "2dsphere")])
+        try:
+            await db.events.create_index([("location", "2dsphere")])
+        except Exception as e:
+            logger.error(f"Failed to create 2dsphere index: {e}")
         
         # Auto-migrate coordinates for existing scraped events
         try:
@@ -136,7 +139,10 @@ async def on_startup():
                 city = event.get("city", "")
                 if city in CITY_COORDS:
                     lat, lng = CITY_COORDS[city]
-                    if event.get("lat") == 0.0 and event.get("lng") == 0.0:
+                    # Update if coordinates are 0, missing, or null
+                    current_lat = event.get("lat")
+                    current_lng = event.get("lng")
+                    if current_lat in (0.0, 0, None) and current_lng in (0.0, 0, None):
                         await db.events.update_one(
                             {"_id": event["_id"]},
                             {"$set": {
@@ -542,6 +548,43 @@ async def get_overview():
         "total_events": total,
     }
 
+
+@api_router.get("/admin/force-migrate-coords")
+async def force_migrate_coords():
+    """Manual endpoint to force coordinate migration in production database."""
+    from cities import CITY_COORDS
+    events_cursor = db.events.find({})
+    updated = 0
+    skipped = 0
+    async for event in events_cursor:
+        city = event.get("city", "")
+        if city in CITY_COORDS:
+            lat, lng = CITY_COORDS[city]
+            current_lat = event.get("lat")
+            current_lng = event.get("lng")
+            if current_lat in (0.0, 0, None) and current_lng in (0.0, 0, None):
+                await db.events.update_one(
+                    {"_id": event["_id"]},
+                    {"$set": {
+                        "lat": lat,
+                        "lng": lng,
+                        "location": {"type": "Point", "coordinates": [lng, lat]}
+                    }}
+                )
+                updated += 1
+            else:
+                skipped += 1
+        else:
+            skipped += 1
+            
+    # Try fixing the index too
+    index_status = "ok"
+    try:
+        await db.events.create_index([("location", "2dsphere")])
+    except Exception as e:
+        index_status = str(e)
+        
+    return {"status": "ok", "updated": updated, "skipped": skipped, "index_status": index_status}
 
 @api_router.get("/events")
 async def list_events(
