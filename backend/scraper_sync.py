@@ -13,6 +13,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from cities import CITY_COORDS
 from dedup import generate_dedup_key
 import httpx
 from bs4 import BeautifulSoup
@@ -159,6 +160,8 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             attendees = random.randint(15, 850)
             formatted_city = city.replace("-", " ").title()
             
+            lat, lng = CITY_COORDS.get(formatted_city, (0.0, 0.0))
+            
             return {
                 "id": event_id,
                 "dedup_key": generate_dedup_key(title, dt.date().isoformat(), formatted_city),
@@ -178,8 +181,8 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                 "country": "India",
                 "venue": venue,
                 "address": address,
-                "lat": 0.0, "lng": 0.0,
-                "location": {"type": "Point", "coordinates": [0.0, 0.0]},
+                "lat": lat, "lng": lng,
+                "location": {"type": "Point", "coordinates": [lng, lat]},
                 "event_type": "offline",
                 "pricing": pricing,
                 "price": price,

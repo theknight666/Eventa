@@ -44,15 +44,16 @@ export default function EventsNearYou() {
         setUserCity(normalizedCity);
         setLocationStatus("found");
 
-        // 2. Fetch events within a precise 50km radius using backend geo-search
-        // Pass the normalized city as a fallback in case the backend geo-query fails
-        const d = await getEvents({ 
-          city: normalizedCity,
-          lat: latitude, 
-          lng: longitude, 
-          radius_km: 50, 
-          limit: 15 
-        });
+        const queryParams = { limit: 15 };
+        if (latitude && longitude) {
+            queryParams.lat = latitude;
+            queryParams.lng = longitude;
+            queryParams.radius_km = 50;
+        } else {
+            queryParams.city = normalizedCity;
+        }
+        
+        const d = await getEvents(queryParams);
         
         setEvents(d.events || []);
       } catch (error) {
