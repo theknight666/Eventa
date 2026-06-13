@@ -33,11 +33,10 @@ export default function CategoryGrid({ categories = [], active, onSelect }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.5, ease, delay: (i % 6) * 0.05 }}
-              whileHover={{ y: -4 }}
-              className={`group relative overflow-hidden rounded-2xl p-5 text-left border transition-colors ${
+              className={`group relative overflow-hidden rounded-2xl p-5 text-left border transition-all duration-300 hover:-translate-y-1 ${
                 isActive
                   ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-card hover:border-foreground/30"
+                  : "border-border bg-card hover:border-foreground/30 hover:shadow-md"
               }`}
             >
               <div
