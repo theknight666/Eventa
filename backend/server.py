@@ -60,13 +60,13 @@ db = client[os.environ.get('DB_NAME', 'eventa')]
 
 app = FastAPI(title="Eventa — India Event Discovery")
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.exception(f"Unhandled exception on {request.method} {request.url.path}: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "An unexpected internal server error occurred."}
-    )
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
 if cors_origins_env == "*" and os.environ.get("RENDER"):
@@ -304,7 +304,8 @@ class ResetPasswordReq(BaseModel):
     new_password: str
 
 @api_router.post("/attendee/register")
-async def attendee_register(req: AttendeeRegisterReq):
+@limiter.limit("5/minute")
+async def attendee_register(request: Request, req: AttendeeRegisterReq):
     attendee = await db.attendees.find_one({"email": req.email})
     if attendee:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -323,7 +324,8 @@ async def attendee_register(req: AttendeeRegisterReq):
     return clean(new_attendee)
 
 @api_router.post("/attendee/login")
-async def attendee_login(req: AttendeeLoginReq):
+@limiter.limit("5/minute")
+async def attendee_login(request: Request, req: AttendeeLoginReq):
     attendee = await db.attendees.find_one({
         "$or": [{"email": req.email}, {"name": req.email}]
     })
@@ -349,7 +351,8 @@ async def attendee_login(req: AttendeeLoginReq):
     return clean(attendee)
 
 @api_router.post("/attendee/forgot-password")
-async def attendee_forgot_password(req: ForgotPasswordReq):
+@limiter.limit("5/minute")
+async def attendee_forgot_password(request: Request, req: ForgotPasswordReq):
     attendee = await db.attendees.find_one({"email": req.email})
     if not attendee:
         return {"ok": True, "token": "dummy-token"}
@@ -358,7 +361,8 @@ async def attendee_forgot_password(req: ForgotPasswordReq):
     return {"ok": True, "token": token}
 
 @api_router.post("/attendee/reset-password")
-async def attendee_reset_password(req: ResetPasswordReq):
+@limiter.limit("5/minute")
+async def attendee_reset_password(request: Request, req: ResetPasswordReq):
     attendee = await db.attendees.find_one({"email": req.email, "reset_token": req.token})
     if not attendee:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
@@ -976,7 +980,8 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
 
 
 @api_router.post("/organizer/register")
-async def organizer_register(body: OrganizerRegisterReq):
+@limiter.limit("5/minute")
+async def organizer_register(request: Request, body: OrganizerRegisterReq):
     slug = slugify(body.name)
     org = await db.organizers.find_one({"email": body.email})
     if org:
@@ -997,7 +1002,8 @@ async def organizer_register(body: OrganizerRegisterReq):
     return org_dict
 
 @api_router.post("/organizer/login")
-async def organizer_login(body: OrganizerLogin):
+@limiter.limit("5/minute")
+async def organizer_login(request: Request, body: OrganizerLogin):
     org = await db.organizers.find_one({
         "$or": [{"email": body.email}, {"name": body.email}]
     })
@@ -1023,7 +1029,8 @@ async def organizer_login(body: OrganizerLogin):
     return org_dict
 
 @api_router.post("/organizer/forgot-password")
-async def organizer_forgot_password(req: ForgotPasswordReq):
+@limiter.limit("5/minute")
+async def organizer_forgot_password(request: Request, req: ForgotPasswordReq):
     org = await db.organizers.find_one({"email": req.email})
     if not org:
         return {"ok": True, "token": "dummy-token"}
@@ -1032,7 +1039,8 @@ async def organizer_forgot_password(req: ForgotPasswordReq):
     return {"ok": True, "token": token}
 
 @api_router.post("/organizer/reset-password")
-async def organizer_reset_password(req: ResetPasswordReq):
+@limiter.limit("5/minute")
+async def organizer_reset_password(request: Request, req: ResetPasswordReq):
     org = await db.organizers.find_one({"email": req.email, "reset_token": req.token})
     if not org:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
@@ -1062,7 +1070,9 @@ async def request_verification(slug: str):
 
 
 @api_router.get("/organizer/{slug}/events")
-async def organizer_events(slug: str):
+async def organizer_events(slug: str, token_slug: str = Depends(get_current_organizer)):
+    if slug != token_slug:
+        raise HTTPException(status_code=403, detail="Forbidden")
     cursor = db.events.find({"owner_slug": slug}).sort([("created_at", -1)])
     return [clean(d) async for d in cursor]
 
@@ -1128,7 +1138,9 @@ async def delete_event(slug: str, event_id: str, token_slug: str = Depends(get_c
 
 
 @api_router.get("/organizer/{slug}/dashboard")
-async def organizer_dashboard(slug: str):
+async def organizer_dashboard(slug: str, token_slug: str = Depends(get_current_organizer)):
+    if slug != token_slug:
+        raise HTTPException(status_code=403, detail="Forbidden")
     org = await db.organizers.find_one({"slug": slug})
     if not org:
         raise HTTPException(status_code=404, detail="Organizer not found")

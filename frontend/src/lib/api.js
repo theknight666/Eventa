@@ -76,7 +76,7 @@ const getOrgHeaders = () => {
 };
 
 export const getOrganizerEvents = (slug) =>
-  client.get(`/organizer/${slug}/events`).then((r) => r.data);
+  client.get(`/organizer/${slug}/events`, { headers: getOrgHeaders() }).then((r) => r.data);
 export const createOrganizerEvent = (slug, body) =>
   client.post(`/organizer/${slug}/events`, body, { headers: getOrgHeaders() }).then((r) => r.data);
 export const updateOrganizerEvent = (slug, id, body) =>
@@ -84,7 +84,7 @@ export const updateOrganizerEvent = (slug, id, body) =>
 export const deleteOrganizerEvent = (slug, id) =>
   client.delete(`/organizer/${slug}/events/${id}`, { headers: getOrgHeaders() }).then((r) => r.data);
 export const getDashboard = (slug) =>
-  client.get(`/organizer/${slug}/dashboard`).then((r) => r.data);
+  client.get(`/organizer/${slug}/dashboard`, { headers: getOrgHeaders() }).then((r) => r.data);
 export const registerForEvent = (id, body) =>
   client.post(`/events/${id}/register`, body).then((r) => r.data);
 export const trackView = (id) =>
