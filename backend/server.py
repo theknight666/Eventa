@@ -10,6 +10,7 @@ import re
 import json
 import uuid
 import random
+import time
 import logging
 from pathlib import Path
 from pydantic import BaseModel
@@ -129,6 +130,17 @@ async def on_startup():
             await db.events.create_index([("location", "2dsphere")])
         except Exception as e:
             logger.error(f"Failed to create 2dsphere index: {e}")
+            
+        # Create text index for search
+        try:
+            await db.events.create_index([
+                ("title", "text"), ("description", "text"), ("city", "text"), 
+                ("industry", "text"), ("venue", "text"), ("organizer.name", "text"),
+                ("tags", "text"), ("speakers.name", "text")
+            ])
+            logger.info("Text index verified/created.")
+        except Exception as e:
+            logger.error(f"Failed to create text index: {e}")
         
         # Auto-migrate coordinates for existing scraped events
         try:
@@ -159,67 +171,27 @@ async def on_startup():
 
     asyncio.create_task(init_db_tasks())
     
-    # Kick off consolidated live-event scraper sync in the background
-    asyncio.create_task(_background_all_scrapers())
-    
-    # Kick off periodic deduplication process
-    asyncio.create_task(_background_dedup())
-    
     # Kick off keep-alive ping for Render free tier
     asyncio.create_task(_keep_alive())
 
+class SimpleTTLCache:
+    def __init__(self, ttl_seconds=300):
+        self.ttl = ttl_seconds
+        self.cache = {}
 
-async def _background_all_scrapers():
-    """Run all scrapers sequentially in a continuous loop in the background."""
-    while True:
-        try:
-            res_ae = await sync_all_cities(db)
-            res_meetup = await sync_meetup_cities(db)
-            res_eb = await sync_eb_cities(db)
-            res_luma = await sync_luma_cities(db)
-            res_ts = await sync_ts_cities(db)
-            
-            # Auto-generate slugs for any newly fetched events
-            existing_slugs = set()
-            async for ev in db.events.find({"slug": {"$exists": True}}):
-                if ev.get("slug"): existing_slugs.add(ev["slug"])
+    def get(self, key):
+        if key in self.cache:
+            entry = self.cache[key]
+            if time.time() - entry['time'] < self.ttl:
+                return entry['value']
+            else:
+                del self.cache[key]
+        return None
 
-            async for ev in db.events.find({"slug": {"$exists": False}}):
-                base = f"{ev.get('title') or 'event'} {ev.get('city') or ''} {str(ev.get('start_iso', ''))[:4]}".strip()
-                slug = re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
-                if not slug: slug = "event"
-                final_slug = slug
-                counter = 1
-                while final_slug in existing_slugs:
-                    final_slug = f"{slug}-{counter}"
-                    counter += 1
-                existing_slugs.add(final_slug)
-                await db.events.update_one({"_id": ev["_id"]}, {"$set": {"slug": final_slug}})
-            
-            logger.info(
-                f"Scraper cycle complete. Upserted: "
-                f"AE({res_ae.get('upserted',0)}), Meetup({res_meetup.get('upserted',0)}), "
-                f"EB({res_eb.get('upserted',0)}), Luma({res_luma.get('upserted',0)}), "
-                f"TS({res_ts.get('upserted',0)})"
-            )
-        except Exception as e:
-            logger.error(f"Background scraper orchestrator error: {e}")
-        
-        # Each individual scraper tracks its own 6-hour cooldown in the DB
-        # so this loop can run frequently (e.g. hourly) to catch off-cycle resets.
-        await asyncio.sleep(3600)
+    def set(self, key, value):
+        self.cache[key] = {'value': value, 'time': time.time()}
 
-
-async def _background_dedup():
-    """Run deduplication continuously every 30 minutes."""
-    while True:
-        await asyncio.sleep(1800)  # 30 minutes
-        try:
-            removed = await deduplicate_database(db)
-            if removed > 0:
-                logger.info(f"Periodic dedup removed {removed} duplicate events.")
-        except Exception as e:
-            logger.error(f"Periodic dedup error: {e}")
+api_cache = SimpleTTLCache(ttl_seconds=300)
 
 async def _keep_alive():
     """Ping the server's external URL every 14 minutes to prevent Render free tier from sleeping."""
@@ -495,21 +467,35 @@ async def admin_sync_all(force: bool = False):
 
 
 @api_router.get("/categories")
-async def get_categories():
+async def get_categories(request: Request):
+    cache_key = "/categories"
+    cached_res = api_cache.get(cache_key)
+    if cached_res:
+        return cached_res
+
     counts = {}
     pipeline = [{"$group": {"_id": "$category", "count": {"$sum": 1}}}]
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
-    return [{**c, "count": counts.get(c["id"], 0)} for c in CATEGORIES]
+    res = [{**c, "count": counts.get(c["id"], 0)} for c in CATEGORIES]
+    api_cache.set(cache_key, res)
+    return res
 
 
 @api_router.get("/cities")
-async def get_cities():
+async def get_cities(request: Request):
+    cache_key = "/cities"
+    cached_res = api_cache.get(cache_key)
+    if cached_res:
+        return cached_res
+
     counts = {}
     pipeline = [{"$group": {"_id": "$city", "count": {"$sum": 1}}}]
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
-    return [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
+    res = [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
+    api_cache.set(cache_key, res)
+    return res
 
 
 @api_router.get("/sitemap.xml")
@@ -567,7 +553,12 @@ async def get_sitemap():
     return Response(content="\n".join(xml_lines), media_type="application/xml")
 
 @api_router.get("/overview")
-async def get_overview():
+async def get_overview(request: Request):
+    cache_key = "/overview"
+    cached_res = api_cache.get(cache_key)
+    if cached_res:
+        return cached_res
+
     now = datetime.now(timezone.utc)
     week = (now + timedelta(days=7)).isoformat()
     events_this_week = await db.events.count_documents({"start_iso": {"$lte": week}})
@@ -578,13 +569,15 @@ async def get_overview():
     attendees = 0
     async for row in agg:
         attendees = row["att"]
-    return {
+    res = {
         "events_this_week": max(events_this_week, 0),
         "cities_covered": cities,
         "registered_attendees": attendees,
         "active_organizers": organizers,
         "total_events": total,
     }
+    api_cache.set(cache_key, res)
+    return res
 
 
 @api_router.get("/admin/force-migrate-coords")
@@ -626,6 +619,7 @@ async def force_migrate_coords():
 
 @api_router.get("/events")
 async def list_events(
+    request: Request,
     q: Optional[str] = None,
     category: Optional[str] = None,
     city: Optional[str] = None,
@@ -644,6 +638,11 @@ async def list_events(
     limit: int = 60,
     skip: int = 0,
 ):
+    cache_key = f"/events?{request.url.query}"
+    cached_res = api_cache.get(cache_key)
+    if cached_res:
+        return cached_res
+
     query = {"approval_status": "approved"}
     if category:
         query["category"] = category
@@ -664,11 +663,7 @@ async def list_events(
         if ind_list:
             query["category"] = {"$in": ind_list}
     if q:
-        rx = {"$regex": re.escape(q), "$options": "i"}
-        query["$or"] = [
-            {"title": rx}, {"city": rx}, {"industry": rx}, {"venue": rx},
-            {"organizer.name": rx}, {"tags": rx}, {"speakers.name": rx},
-        ]
+        query["$text"] = {"$search": q}
     if date_filter:
         now = datetime.now(timezone.utc)
         start = now
@@ -734,7 +729,9 @@ async def list_events(
         docs = [clean(d) async for d in cursor]
         total = await db.events.count_documents(query)
         
-    return {"events": docs, "total": total}
+    res = {"events": docs, "total": total}
+    api_cache.set(cache_key, res)
+    return res
 
 
 @api_router.get("/events/{event_id}")
