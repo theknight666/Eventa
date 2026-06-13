@@ -66,6 +66,7 @@ export default function MyApp({ Component, pageProps }) {
                     </div>
                   )}
                   
+                  <Preloader />
                   <Toaster position="bottom-right" theme="system" />
                   <SpeedInsights />
                 </ErrorBoundary>
