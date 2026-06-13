@@ -4,7 +4,7 @@ const ThemeContext = createContext({ theme: "dark", toggle: () => {} });
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(
-    () => (typeof window !== 'undefined' ? localStorage.getItem : () => null)("eventa_theme") || "dark"
+    () => (typeof window !== 'undefined' ? localStorage.getItem.bind(localStorage) : () => null)("eventa_theme") || "dark"
   );
 
   useEffect(() => {

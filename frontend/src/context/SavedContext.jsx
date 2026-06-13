@@ -9,7 +9,7 @@ export const SavedProvider = ({ children }) => {
   const { user } = useUser();
   const [saved, setSaved] = useState(() => {
     try {
-      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY)) || [];
+      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem.bind(localStorage) : () => null)(KEY)) || [];
     } catch {
       return [];
     }

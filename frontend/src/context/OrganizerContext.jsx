@@ -7,7 +7,7 @@ const KEY = "eventa_organizer";
 export const OrganizerProvider = ({ children }) => {
   const [organizer, setOrganizer] = useState(() => {
     try {
-      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY)) || null;
+      return JSON.parse((typeof window !== 'undefined' ? localStorage.getItem.bind(localStorage) : () => null)(KEY)) || null;
     } catch {
       return null;
     }

@@ -6,7 +6,7 @@ const KEY = "eventa_user";
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
-      const stored = (typeof window !== 'undefined' ? localStorage.getItem : () => null)(KEY);
+      const stored = (typeof window !== 'undefined' ? localStorage.getItem.bind(localStorage) : () => null)(KEY);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
