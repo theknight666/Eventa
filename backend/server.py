@@ -134,6 +134,9 @@ async def on_startup():
     
     # Kick off periodic deduplication process
     asyncio.create_task(_background_dedup())
+    
+    # Kick off keep-alive ping for Render free tier
+    asyncio.create_task(_keep_alive())
 
 
 async def _background_all_scrapers():
@@ -170,6 +173,24 @@ async def _background_dedup():
                 logger.info(f"Periodic dedup removed {removed} duplicate events.")
         except Exception as e:
             logger.error(f"Periodic dedup error: {e}")
+
+async def _keep_alive():
+    """Ping the server's external URL every 14 minutes to prevent Render free tier from sleeping."""
+    url = os.environ.get("RENDER_EXTERNAL_URL")
+    if not url:
+        # If running locally or not on Render, just exit the task
+        return
+        
+    import httpx
+    while True:
+        await asyncio.sleep(14 * 60)  # 14 minutes
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.get(url)
+                logger.info(f"Keep-alive ping sent to {url}")
+        except Exception as e:
+            logger.error(f"Keep-alive ping error: {e}")
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
