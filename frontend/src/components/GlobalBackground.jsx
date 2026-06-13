@@ -27,7 +27,7 @@ export default function GlobalBackground() {
       
       {/* 30% Visibility applied to the entire masked layer */}
       <motion.div 
-        className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30"
+        className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30 transform-gpu will-change-transform"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
         {/* text-amber-600/500 ensures deeply amber lines on both modes */}

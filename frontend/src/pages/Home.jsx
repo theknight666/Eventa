@@ -8,6 +8,7 @@ import CategoryGrid from "../components/CategoryGrid";
 import FeaturedCities from "../components/FeaturedCities";
 import AIRecommendations from "../components/AIRecommendations";
 import Discover from "../components/Discover";
+import SEO from "../components/SEO";
 import { getStats, getCategories, getCities } from "../lib/api";
 
 const DEFAULT_FILTERS = {
@@ -54,6 +55,10 @@ export default function Home() {
 
   return (
     <main>
+      <SEO 
+        title="Premium Event Discovery" 
+        description="Discover exclusive and premium events happening near you. Find the best nightlife, concerts, business summits, and curated experiences with Eventa."
+      />
       <Hero stats={stats} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents />
       <TrendingEvents />
