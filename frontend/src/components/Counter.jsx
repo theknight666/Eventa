@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useInView, animate } from "framer-motion";
 
-export default function Counter({ to = 0, duration = 2, suffix = "" }) {
+export default function Counter({ to = 0, duration = 2, suffix = "", compact = false }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [val, setVal] = useState(0);
@@ -18,7 +18,10 @@ export default function Counter({ to = 0, duration = 2, suffix = "" }) {
 
   return (
     <span ref={ref}>
-      {new Intl.NumberFormat("en-IN").format(val)}
+      {new Intl.NumberFormat(
+        compact ? "en-US" : "en-IN", 
+        compact ? { notation: "compact", maximumFractionDigits: 1 } : {}
+      ).format(val)}
       {suffix}
     </span>
   );

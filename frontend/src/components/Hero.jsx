@@ -308,7 +308,7 @@ export default function Hero({ stats, onSearch, onCity }) {
   const counters = [
     { label: "Events This Week", value: stats?.events_this_week || 0 },
     { label: "Cities Covered", value: stats?.cities_covered || 0 },
-    { label: "Registered Attendees", value: stats?.registered_attendees || 0 },
+    { label: "Registered Attendees", value: stats?.registered_attendees || 0, compact: true },
     { label: "Active Organizers", value: stats?.active_organizers || 0 },
   ];
 
@@ -426,7 +426,7 @@ export default function Hero({ stats, onSearch, onCity }) {
             {counters.map((c) => (
               <div key={c.label} className="px-5 py-6">
                 <div className="font-display text-3xl font-extrabold tracking-tight">
-                  <Counter to={c.value} />
+                  <Counter to={c.value} compact={c.compact} />
                   {c.label === "Registered Attendees" && "+"}
                 </div>
                 <div className="mt-1.5 label-eyebrow text-muted-foreground text-[0.62rem]">
