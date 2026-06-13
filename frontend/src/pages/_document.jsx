@@ -28,8 +28,8 @@ export default function Document() {
           }}
         />
         
-        <link rel="icon" href="/seo-planet.png" />
-        <link rel="apple-touch-icon" href="/seo-planet.png" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
 
         <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
