@@ -6,6 +6,7 @@ import {
   BadgeCheck, ShieldCheck, MapPin, ExternalLink, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
+import SEO from "../../components/SEO";
 import {
   getDashboard, getOrganizerEvents, deleteOrganizerEvent, requestVerification, getCategories,
 } from "../../lib/api";
@@ -94,6 +95,7 @@ export default function Dashboard() {
 
   return (
     <div className="pt-28 pb-24 mx-auto max-w-5xl px-6" data-testid="organizer-dashboard">
+      <SEO title="Organizer Dashboard" noindex={true} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-10">
         <div>
@@ -212,7 +214,7 @@ export default function Dashboard() {
           <div id="organizer-events-list" className="rounded-3xl border border-border bg-card divide-y divide-border overflow-hidden" data-testid="organizer-events-list">
             {events.map((ev) => (
               <div key={ev.id} className="flex items-center gap-4 p-4 sm:p-5" data-testid={`org-event-${ev.id}`}>
-                <img src={ev.cover_image} alt="" className="h-16 w-24 rounded-xl object-cover hidden sm:block" />
+                <img src={ev.cover_image} alt={ev.title} className="h-16 w-24 rounded-xl object-cover hidden sm:block" />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold truncate flex items-center gap-2">
                     {ev.title}

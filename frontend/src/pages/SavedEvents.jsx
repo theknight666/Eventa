@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useSaved } from "../context/SavedContext";
+import SEO from "../components/SEO";
 import { useUser } from "../context/UserContext";
 import { getBulkEvents } from "../lib/api";
 import EventCard from "../components/EventCard";
@@ -44,6 +45,7 @@ export default function SavedEvents() {
 
   return (
     <main className="min-h-[100svh] pt-24 pb-24">
+      <SEO title="Saved Events" noindex={true} />
       <div className="mx-auto max-w-5xl px-6">
         <div className="mb-12">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">

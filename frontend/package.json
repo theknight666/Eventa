@@ -74,7 +74,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "postbuild": "react-snap",
+    "postbuild": "node pre-snap.js && react-snap",
     "test": "craco test"
   },
   "browserslist": {

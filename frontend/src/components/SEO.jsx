@@ -1,7 +1,7 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-export default function SEO({ title, description, url, image, type = "website", children }) {
+export default function SEO({ title, description, url, image, type = "website", keywords, noindex = false, children }) {
   const siteName = "Eventa";
   const defaultTitle = "Eventa - Discover and Book the Best Events";
   const defaultDescription = "Discover, book, and manage amazing events near you. Eventa is your premium platform for tech, business, and social events across India.";
@@ -17,6 +17,8 @@ export default function SEO({ title, description, url, image, type = "website", 
       <title>{seoTitle}</title>
       <meta name="title" content={seoTitle} />
       <meta name="description" content={seoDescription} />
+      <meta name="keywords" content={keywords || "events in India, tech events, startup events, Eventa"} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Canonical URL */}
       {url && <link rel="canonical" href={url} />}
