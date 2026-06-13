@@ -2,10 +2,16 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Handshake, Building, TrendingUp, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 export default function Partnerships() {
   return (
     <main className="min-h-[100svh] pt-24 pb-24 relative overflow-hidden">
+      <SEO 
+        title="Partnerships" 
+        description="Reach India's most ambitious professionals. Partner with Eventa to create high-impact integrations and premium event experiences."
+        url="https://eventa.in/partnerships"
+      />
       <div className="absolute top-0 left-0 h-[600px] w-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 -translate-x-1/4" />
       
       <div className="mx-auto max-w-5xl px-6 relative z-10">

@@ -1,10 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function ContactUs() {
   return (
     <main className="min-h-[100svh] pt-24 pb-24 relative overflow-hidden">
+      <SEO 
+        title="Contact Us" 
+        description="Have a question about Eventa, want to list an event, or just want to say hi? We'd love to hear from you."
+        url="https://eventa.in/contact"
+      />
       <div className="absolute top-0 right-0 h-[600px] w-[600px] bg-foreground/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/2" />
       
       <div className="mx-auto max-w-5xl px-6 relative z-10">

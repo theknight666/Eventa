@@ -2,10 +2,16 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Globe, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 export default function About() {
   return (
     <main className="min-h-[100svh] pt-24 pb-24 relative overflow-hidden">
+      <SEO 
+        title="About Us" 
+        description="Learn about Eventa, India's definitive platform for discovering startup, business, technology, culture, and networking events."
+        url="https://eventa.in/about"
+      />
       <div className="absolute top-0 inset-x-0 h-[500px] aurora opacity-20 pointer-events-none" />
 
       <div className="mx-auto max-w-5xl px-6 relative z-10">

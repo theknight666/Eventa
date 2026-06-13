@@ -126,6 +126,31 @@ export default function EventDetail() {
     }
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://eventa.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Events",
+        "item": "https://eventa.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": event.title,
+        "item": window.location.href
+      }
+    ]
+  };
+
   return (
     <div className="pb-28">
       <SEO 
@@ -136,7 +161,7 @@ export default function EventDetail() {
         type="article"
       >
         <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
+          {JSON.stringify([jsonLd, breadcrumbJsonLd])}
         </script>
       </SEO>
 

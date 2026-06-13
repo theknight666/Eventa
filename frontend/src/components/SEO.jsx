@@ -5,7 +5,7 @@ export default function SEO({ title, description, url, image, type = "website", 
   const siteName = "Eventa";
   const defaultTitle = "Eventa - Discover and Book the Best Events";
   const defaultDescription = "Discover, book, and manage amazing events near you. Eventa is your premium platform for tech, business, and social events across India.";
-  const defaultImage = "https://eventa.in/default-og.jpg"; // Replace with your actual default OG image URL
+  const defaultImage = "https://eventa.in/seo-planet.png"; 
 
   const seoTitle = title ? `${title} | ${siteName}` : defaultTitle;
   const seoDescription = description || defaultDescription;

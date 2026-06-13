@@ -58,7 +58,22 @@ export default function Home() {
       <SEO 
         title="Premium Event Discovery" 
         description="Discover exclusive and premium events happening near you. Find the best nightlife, concerts, business summits, and curated experiences with Eventa."
-      />
+        url="https://eventa.in/"
+      >
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Eventa",
+            "url": "https://eventa.in",
+            "logo": "https://eventa.in/seo-planet.png",
+            "sameAs": [
+              "https://twitter.com/eventa",
+              "https://instagram.com/eventa"
+            ]
+          })}
+        </script>
+      </SEO>
       <Hero stats={stats} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents />
       <TrendingEvents />
