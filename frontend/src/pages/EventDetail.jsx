@@ -151,6 +151,37 @@ export default function EventDetail() {
     ]
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "When is this event?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `This event starts on ${new Date(event.start_iso).toLocaleString()}.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is it held?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `It is held at ${event.venue}, ${event.city}.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does it cost?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `The pricing for this event is: ${event.pricing}.`
+        }
+      }
+    ]
+  };
+
   return (
     <div className="pb-28">
       <SEO 
@@ -162,7 +193,7 @@ export default function EventDetail() {
         keywords={`${event.title}, ${event.city} events, ${event.industry} events, startup events, ${event.category}`}
       >
         <script type="application/ld+json">
-          {JSON.stringify([jsonLd, breadcrumbJsonLd])}
+          {JSON.stringify([jsonLd, breadcrumbJsonLd, faqJsonLd])}
         </script>
       </SEO>
 

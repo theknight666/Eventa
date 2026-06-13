@@ -8,7 +8,15 @@ async function main() {
     pkg.reactSnap = { include: [] };
   }
   
-  const staticRoutes = ["/", "/about", "/contact", "/organizer", "/partnerships"];
+  const staticRoutes = [
+    "/", "/about", "/contact", "/organizer", "/partnerships",
+    "/blog", 
+    "/blog/best-tech-events-in-bangalore-2026",
+    "/blog/startup-networking-events-india",
+    "/blog/ai-conferences-india-2026",
+    "/events/technology", "/events/startup", "/events/ai",
+    "/events/bangalore", "/events/mumbai", "/events/delhi"
+  ];
   let eventRoutes = [];
 
   try {

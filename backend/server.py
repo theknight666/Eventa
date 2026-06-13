@@ -520,8 +520,20 @@ async def get_sitemap():
     # Static routes
     urls = [
         f"{base_url}/",
+        f"{base_url}/about",
+        f"{base_url}/contact",
         f"{base_url}/organizer",
+        f"{base_url}/blog",
+        f"{base_url}/blog/best-tech-events-in-bangalore-2026",
+        f"{base_url}/blog/startup-networking-events-india",
+        f"{base_url}/blog/ai-conferences-india-2026",
     ]
+    
+    # Categories and Cities
+    for cat in CATEGORIES:
+        urls.append(f"{base_url}/events/{cat['id'].lower().replace(' ', '-')}")
+    for city in CITIES:
+        urls.append(f"{base_url}/events/{city['name'].lower().replace(' ', '-')}")
     
     # Dynamic events
     events = db.events.find({"approval_status": "approved"}, {"id": 1, "slug": 1})

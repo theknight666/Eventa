@@ -20,7 +20,10 @@ import GlobalBackground from "@/components/GlobalBackground";
 
 // Lazy Loaded Pages
 const Home = lazy(() => import("@/pages/Home"));
+const BrowseEvents = lazy(() => import("@/pages/BrowseEvents"));
 const EventDetail = lazy(() => import("@/pages/EventDetail"));
+const BlogList = lazy(() => import("@/pages/BlogList"));
+const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const Organizer = lazy(() => import("@/pages/Organizer"));
 const SavedEvents = lazy(() => import("@/pages/SavedEvents"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -47,7 +50,10 @@ function App() {
                       <Suspense fallback={<Preloader />}>
                         <Routes>
                           <Route path="/" element={<Home />} />
+                          <Route path="/events/:filter" element={<BrowseEvents />} />
                           <Route path="/event/:id" element={<EventDetail />} />
+                          <Route path="/blog" element={<BlogList />} />
+                          <Route path="/blog/:slug" element={<BlogPost />} />
                           <Route path="/organizer" element={<Organizer />} />
                           <Route path="/saved" element={<SavedEvents />} />
                           <Route path="/dashboard" element={<Dashboard />} />
