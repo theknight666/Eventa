@@ -12,6 +12,7 @@ from typing import Optional
 
 from cities import CITY_COORDS
 from dedup import generate_dedup_key
+from category_utils import infer_category
 import httpx
 from bs4 import BeautifulSoup
 
@@ -143,13 +144,7 @@ async def scrape_ts_event(event_data: dict, city: str) -> Optional[dict]:
             
         desc = event_data.get("description", "")
         
-        category = "sports"
-        title_lower = title.lower()
-        if "workshop" in title_lower or "class" in title_lower or "learn" in title_lower: category = "education"
-        elif "music" in title_lower or "concert" in title_lower: category = "music"
-        elif "comedy" in title_lower or "show" in title_lower: category = "entertainment"
-        elif "marathon" in title_lower or "run" in title_lower or "trek" in title_lower: category = "sports"
-        elif "business" in title_lower or "startup" in title_lower: category = "business"
+        category = infer_category(title, desc)
             
         event_id = _stable_id(url, title)
         attendees = random.randint(50, 500)

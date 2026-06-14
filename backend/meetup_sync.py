@@ -15,6 +15,7 @@ from typing import Optional
 
 from cities import CITY_COORDS
 from dedup import generate_dedup_key
+from category_utils import infer_category
 import httpx
 from bs4 import BeautifulSoup
 
@@ -166,13 +167,7 @@ async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
             desc = event_data.get("description", "")
             
             # Category inference
-            category = "networking"
-            title_lower = title.lower()
-            if "startup" in title_lower or "founder" in title_lower: category = "startup"
-            elif "tech" in title_lower or "ai " in title_lower or "code" in title_lower or "developer" in title_lower: category = "technology"
-            elif "business" in title_lower or "expo" in title_lower: category = "business"
-            elif "music" in title_lower or "concert" in title_lower or "live" in title_lower: category = "music"
-            elif "comedy" in title_lower or "show" in title_lower: category = "entertainment"
+            category = infer_category(title, desc)
                 
             event_id = _stable_id(url, title)
             attendees = random.randint(10, 200)  # Meetups are typically smaller

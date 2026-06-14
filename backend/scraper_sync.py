@@ -15,6 +15,7 @@ from typing import Optional
 
 from cities import CITY_COORDS
 from dedup import generate_dedup_key
+from category_utils import infer_category
 import httpx
 from bs4 import BeautifulSoup
 
@@ -122,14 +123,24 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             price = 0
             pricing = "free"
             offers = data.get("offers")
+            direct_url = url
+            
             if isinstance(offers, dict):
                 p = offers.get("price")
+                u = offers.get("url")
+                if u and "allevents.in" not in u:
+                    direct_url = u
+                    
                 if p and str(p) != "0":
                     pricing = "paid"
                     try: price = int(float(p))
                     except: pass
             elif isinstance(offers, list) and len(offers) > 0:
                 p = offers[0].get("price")
+                u = offers[0].get("url")
+                if u and "allevents.in" not in u:
+                    direct_url = u
+                    
                 if p and str(p) != "0":
                     pricing = "paid"
                     try: price = int(float(p))
@@ -140,6 +151,14 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             org_name = "External Organizer"
             if isinstance(org, dict):
                 org_name = org.get("name", org_name)
+                org_url = org.get("url")
+                if org_url and "allevents.in" not in org_url and direct_url == url:
+                    direct_url = org_url
+            
+            # Also check the main event URL
+            data_url = data.get("url")
+            if data_url and "allevents.in" not in data_url and direct_url == url:
+                direct_url = data_url
                 
             img = data.get("image", IMG_DEFAULT[0])
             if isinstance(img, list) and img:
@@ -148,13 +167,7 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             desc = data.get("description", "")
             
             # Category inference
-            category = "networking"
-            title_lower = title.lower()
-            if "startup" in title_lower or "founder" in title_lower: category = "startup"
-            elif "tech" in title_lower or "ai " in title_lower or "code" in title_lower: category = "technology"
-            elif "business" in title_lower or "expo" in title_lower: category = "business"
-            elif "music" in title_lower or "concert" in title_lower or "live" in title_lower: category = "music"
-            elif "comedy" in title_lower or "show" in title_lower: category = "entertainment"
+            category = infer_category(title, desc)
                 
             event_id = _stable_id(url, title)
             attendees = random.randint(15, 850)
@@ -198,8 +211,8 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                 "attendees_count": attendees,
                 "rating": round(random.uniform(3.8, 4.9), 1),
                 "source": "scraper",
-                "event_url": url,
-                "ticket_url": url,
+                "event_url": direct_url,
+                "ticket_url": direct_url,
                 "views": attendees * 5,
                 "created_at": now.isoformat(),
             }
