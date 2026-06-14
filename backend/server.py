@@ -872,6 +872,38 @@ async def recommendations(req: RecommendRequest):
     return {"events": local_top}
 
 
+# ======================= AUTH & SECURITY =======================
+JWT_SECRET = os.environ.get("JWT_SECRET", os.environ.get("ADMIN_SECRET", "superadmin123"))
+JWT_ALGORITHM = "HS256"
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=7))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def get_current_organizer(x_organizer_token: str = Header(None)):
+    if not x_organizer_token:
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing token")
+    try:
+        payload = jwt.decode(x_organizer_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        slug: str = payload.get("sub")
+        if slug is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return slug
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+def get_admin_key(x_admin_key: str = Header(None)):
+    if not x_admin_key:
+        raise HTTPException(status_code=401, detail="Unauthorized Admin")
+    try:
+        payload = jwt.decode(x_admin_key, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
+
 # ======================= ORGANIZER PORTAL =======================
 SAMPLE_NAMES = [
     "Aarav Sharma", "Priya Patel", "Rohan Mehta", "Ananya Iyer", "Vikram Singh",
@@ -1186,37 +1218,6 @@ async def organizer_dashboard(slug: str, token_slug: str = Depends(get_current_o
     }
 
 # ======================= ADMIN PORTAL =======================
-
-JWT_SECRET = os.environ.get("JWT_SECRET", os.environ.get("ADMIN_SECRET", "superadmin123"))
-JWT_ALGORITHM = "HS256"
-
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=7))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-def get_current_organizer(x_organizer_token: str = Header(None)):
-    if not x_organizer_token:
-        raise HTTPException(status_code=401, detail="Unauthorized: Missing token")
-    try:
-        payload = jwt.decode(x_organizer_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        slug: str = payload.get("sub")
-        if slug is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return slug
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-def get_admin_key(x_admin_key: str = Header(None)):
-    if not x_admin_key:
-        raise HTTPException(status_code=401, detail="Unauthorized Admin")
-    try:
-        payload = jwt.decode(x_admin_key, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        if payload.get("role") != "admin":
-            raise HTTPException(status_code=403, detail="Forbidden")
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
 
 class AdminLoginReq(BaseModel):
     password: str
