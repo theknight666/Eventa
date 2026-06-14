@@ -1,27 +1,78 @@
+import re
+
 def infer_category(title: str, description: str = "") -> str:
     """
     Standardized categorization logic based on keywords in title and description.
+    Uses regex word boundaries to prevent substring matching issues 
+    (e.g., "architect" matching "tech") and prioritizes specific event types.
     """
     combined_text = f"{title} {description}".lower()
     
-    # Priority order is important here.
-    if "startup" in combined_text or "founder" in combined_text or "pitch" in combined_text or "venture" in combined_text or "angel investor" in combined_text:
-        return "startup"
-    elif "ai " in combined_text or "artificial intelligence" in combined_text or "machine learning" in combined_text or "llm" in combined_text or "agent " in combined_text:
-        return "ai"
-    elif "tech" in combined_text or "code" in combined_text or "developer" in combined_text or "hackathon" in combined_text or "software" in combined_text or "cloud " in combined_text:
-        return "technology"
-    elif "business" in combined_text or "expo" in combined_text or "summit" in combined_text or "marketing" in combined_text or "sales" in combined_text:
-        return "business"
-    elif "music" in combined_text or "concert" in combined_text or "live" in combined_text or "dj " in combined_text or "festival" in combined_text:
-        return "music"
-    elif "comedy" in combined_text or "standup" in combined_text or "show " in combined_text or "theater" in combined_text or "theatre" in combined_text:
-        return "entertainment"
-    elif "sports" in combined_text or "marathon" in combined_text or "run " in combined_text or "trek" in combined_text or "fitness" in combined_text or "yoga" in combined_text:
+    def has_any(words):
+        # Match any of the words/phrases with word boundaries
+        pattern = r'\b(?:' + '|'.join(map(re.escape, words)) + r')\b'
+        return re.search(pattern, combined_text) is not None
+
+    # Priority 1: Very specific event types (less likely to be used as buzzwords)
+    if has_any(["marathon", "run", "running", "5k", "10k", "half marathon", "trek", "trekking", "fitness", "yoga", "sports", "tournament", "championship", "cricket", "football", "badminton"]):
         return "sports"
-    elif "workshop" in combined_text or "class" in combined_text or "learn" in combined_text or "course" in combined_text or "education" in combined_text:
+        
+    if has_any(["music", "concert", "dj", "festival", "gig", "band", "live music", "orchestra"]):
+        return "music"
+        
+    if has_any(["comedy", "standup", "stand-up", "theater", "theatre", "movie", "film"]):
+        return "entertainment"
+
+    if has_any(["healthcare", "medical", "health", "doctor", "hospital", "clinic", "nursing", "pharmacy", "wellness", "biotech", "medtech"]):
+        return "healthcare"
+
+    if has_any(["legal", "law", "lawyer", "attorney", "compliance", "patent", "ip"]):
+        return "legal"
+
+    if has_any(["hr", "human resources", "talent", "recruitment", "hiring", "employee", "payroll", "workplace"]):
+        return "hr"
+
+    if has_any(["creator", "influencer", "youtube", "tiktok", "vlog", "content creation", "youtuber"]):
+        return "creator"
+
+    if has_any(["sustainability", "climate", "environment", "green", "renewable", "esg", "carbon", "eco"]):
+        return "sustainability"
+
+    if has_any(["government", "policy", "public sector", "municipal", "civic", "smart city", "diplomacy"]):
+        return "government"
+
+    if has_any(["real estate", "property", "housing", "realtor", "commercial real estate", "proptech", "architecture"]):
+        return "real-estate"
+
+    if has_any(["manufacturing", "factory", "industrial", "production", "hardware", "machinery", "supply chain"]):
+        return "manufacturing"
+
+    if has_any(["import", "export", "shipping", "logistics", "freight", "customs", "trade"]):
+        return "import-export"
+
+    if has_any(["ecommerce", "e-commerce", "d2c", "dropshipping", "shopify", "amazon seller", "retail"]):
+        return "ecommerce"
+
+    if has_any(["marketing", "seo", "growth hacking", "branding", "social media", "advertising", "content marketing"]):
+        return "marketing"
+
+    if has_any(["finance", "trading", "stock", "wealth", "investment", "crypto", "defi", "banking", "forex", "fintech"]):
+        return "finance"
+
+    # Priority 2: Professional and educational events
+    if has_any(["startup", "founder", "pitch", "venture", "angel investor", "seed round", "vc"]):
+        return "startup"
+
+    if has_any(["ai", "artificial intelligence", "machine learning", "llm", "agent", "deep learning", "generative ai"]):
+        return "ai"
+        
+    if has_any(["tech", "technology", "developer", "code", "hackathon", "software", "cloud", "saas", "api", "programming", "web3"]):
+        return "technology"
+        
+    if has_any(["workshop", "class", "learn", "course", "education", "training", "bootcamp"]):
         return "education"
-    elif "art " in combined_text or "exhibition" in combined_text or "gallery" in combined_text or "culture" in combined_text or "painting" in combined_text:
-        return "art"
+        
+    if has_any(["business", "expo", "summit", "sales", "b2b", "conference", "corporate", "networking"]):
+        return "business"
         
     return "networking"  # default fallback
