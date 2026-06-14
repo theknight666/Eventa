@@ -184,14 +184,17 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
       <SEO 
         title={event.title} 
         description={event.description.substring(0, 160)}
-        url={`https://eventa.in/event/${event.slug || event.id}`}
+        url={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://eventa.in'}/event/${event.slug || event.id}`}
         image={event.cover_image}
         type="article"
         keywords={`${event.title}, ${event.city} events, ${event.industry} events, startup events, ${event.category}`}
       >
-        <script type="application/ld+json">
-          {JSON.stringify([jsonLd, breadcrumbJsonLd, faqJsonLd])}
-        </script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([jsonLd, breadcrumbJsonLd, faqJsonLd])
+          }}
+        />
       </SEO>
 
       {/* Hero banner */}

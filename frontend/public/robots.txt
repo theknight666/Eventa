@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://eventa-backend.onrender.com/api/sitemap.xml
+Sitemap: https://eventa.in/sitemap.xml

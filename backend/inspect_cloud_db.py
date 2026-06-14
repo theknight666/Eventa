@@ -3,8 +3,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import json
 from bson import json_util
 
+import os
+
 async def main():
-    MONGO_URL = "mongodb+srv://eventa_admin:eventa@cluster0.imuwfa9.mongodb.net/?appName=Cluster0"
+    MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
     client = AsyncIOMotorClient(MONGO_URL)
     db = client['eventa']
     
