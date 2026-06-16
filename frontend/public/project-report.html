@@ -18,7 +18,7 @@
             mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
           },
           colors: {
-            background: "hsl(240, 10%, 4%)",
+            background: "#000000",
             foreground: "hsl(0, 0%, 98%)",
             card: "hsl(240, 10%, 6%)",
             border: "hsl(240, 6%, 20%)",
@@ -40,6 +40,13 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .glass:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.05);
     }
     .gradient-text {
       background: linear-gradient(to right, #fff, #888);
@@ -109,7 +116,7 @@
 
     <!-- 1. Frontend Architecture -->
     <details class="glass rounded-3xl overflow-hidden group" open>
-      <summary class="p-6 cursor-pointer hover:bg-white/[0.02] transition-colors flex items-center justify-between select-none">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
         <div class="flex items-center gap-4">
           <div class="bg-blue-500/20 text-blue-400 p-2.5 rounded-xl"><i data-lucide="layout-template"></i></div>
           <h2 class="text-2xl font-display font-bold">Frontend Ecosystem (Next.js)</h2>
@@ -175,7 +182,7 @@
 
     <!-- 2. Backend Architecture -->
     <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:bg-white/[0.02] transition-colors flex items-center justify-between select-none">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
         <div class="flex items-center gap-4">
           <div class="bg-emerald-500/20 text-emerald-400 p-2.5 rounded-xl"><i data-lucide="server-cog"></i></div>
           <h2 class="text-2xl font-display font-bold">Backend Ecosystem (FastAPI)</h2>
@@ -273,7 +280,7 @@
 
     <!-- 3. AI & Scraping -->
     <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:bg-white/[0.02] transition-colors flex items-center justify-between select-none">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
         <div class="flex items-center gap-4">
           <div class="bg-purple-500/20 text-purple-400 p-2.5 rounded-xl"><i data-lucide="bot"></i></div>
           <h2 class="text-2xl font-display font-bold">AI Aggregation Engine</h2>
@@ -301,7 +308,7 @@
 
     <!-- 4. Infrastructure & Libraries -->
     <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:bg-white/[0.02] transition-colors flex items-center justify-between select-none">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
         <div class="flex items-center gap-4">
           <div class="bg-orange-500/20 text-orange-400 p-2.5 rounded-xl"><i data-lucide="package"></i></div>
           <h2 class="text-2xl font-display font-bold">Libraries & Infrastructure</h2>
