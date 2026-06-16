@@ -119,6 +119,16 @@ export default function AdminDashboard() {
         </button>
       </div>
 
+      <div className="mb-8 p-6 bg-card rounded-3xl border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold font-display">Project Assessment & Features Report</h2>
+          <p className="text-sm text-muted-foreground mt-1">View the complete feature list, tech stack breakdown, SEO score, and launch readiness.</p>
+        </div>
+        <a href="/project-report.html" target="_blank" rel="noreferrer" className="bg-foreground text-background px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap hover:opacity-90 transition-opacity">
+          Open Report HTML
+        </a>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div className="flex gap-2 border-b border-border pb-1 overflow-x-auto w-full sm:w-auto overflow-y-hidden">
           <TabButton active={tab === "events"} onClick={() => setTab("events")}>Pending Events</TabButton>
