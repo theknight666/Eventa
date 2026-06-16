@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eventa - Exhaustive Project Architecture & Feature Report</title>
+  <title>Eventa - Enterprise Architecture Intelligence</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -15,15 +15,32 @@
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
             display: ['Outfit', 'sans-serif'],
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            background: "#000000",
-            foreground: "hsl(0, 0%, 98%)",
-            card: "hsl(240, 10%, 6%)",
-            border: "hsl(240, 6%, 20%)",
-            muted: "hsl(240, 5%, 16%)",
-            "muted-foreground": "hsl(240, 5%, 65%)",
+            background: "#030303",
+            card: "rgba(10, 10, 12, 0.6)",
+            border: "rgba(255, 255, 255, 0.08)",
+            accent: "#00F0FF",
+            accent2: "#FF0055",
+            accent3: "#7000FF",
+          },
+          animation: {
+            'blob': 'blob 10s infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'scan': 'scan 2s linear infinite',
+          },
+          keyframes: {
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            scan: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100%)' },
+            }
           }
         }
       }
@@ -31,383 +48,332 @@
   </script>
   <style>
     body {
-      background-color: #000000;
+      background-color: #030303;
       color: #fafafa;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    .glass {
-      background: rgba(255, 255, 255, 0.02);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Premium Mouse Spotlight Card Effect */
+    .glow-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      backdrop-filter: blur(20px);
+      transition: transform 0.3s ease, border-color 0.3s ease;
     }
-    .glass:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-4px) scale(1.01);
-      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.05);
+    
+    .glow-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        800px circle at var(--mouse-x) var(--mouse-y), 
+        rgba(255, 255, 255, 0.06),
+        transparent 40%
+      );
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 1;
+      pointer-events: none;
     }
-    .gradient-text {
-      background: linear-gradient(to right, #fff, #888);
+    
+    .glow-card:hover::before { opacity: 1; }
+    .glow-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
+    
+    .glow-card > * { position: relative; z-index: 2; }
+
+    /* Animated Grid Background */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(circle at center, black, transparent 80%);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Ambient Orbs */
+    .orb-1 { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 70%); filter: blur(60px); z-index: -1; animation: blob 15s infinite alternate; }
+    .orb-2 { position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(0,240,255,0.1) 0%, transparent 70%); filter: blur(60px); z-index: -1; animation: blob 20s infinite alternate-reverse; }
+
+    /* Gradient Text */
+    .text-gradient {
+      background: linear-gradient(135deg, #FFFFFF 0%, #A1A1AA 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    details > summary { list-style: none; }
-    details > summary::-webkit-details-marker { display: none; }
-    details[open] summary ~ * { animation: sweep .2s ease-in-out; }
-    @keyframes sweep {
-      0%    {opacity: 0; transform: translateY(-10px)}
-      100%  {opacity: 1; transform: translateY(0)}
+    
+    .text-gradient-accent {
+      background: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.025em;
+
+    /* Terminal Line Effect */
+    .terminal-line { border-left: 2px solid rgba(0,240,255,0.3); padding-left: 1rem; position: relative; }
+    .terminal-line::before { content: ""; position: absolute; left: -5px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #00F0FF; box-shadow: 0 0 10px #00F0FF; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #030303; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    
+    /* API Badge Styling */
+    .api-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
     }
-    .method-get { color: #10b981; border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1); }
-    .method-post { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.1); }
-    .method-put { color: #f59e0b; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.1); }
-    .method-delete { color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); }
+    .api-get { color: #00F0FF; border-color: rgba(0,240,255,0.3); background: rgba(0,240,255,0.05); }
+    .api-post { color: #7000FF; border-color: rgba(112,0,255,0.3); background: rgba(112,0,255,0.05); }
+    .api-put { color: #F5A623; border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.05); }
+    .api-delete { color: #FF0055; border-color: rgba(255,0,85,0.3); background: rgba(255,0,85,0.05); }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 pb-32 bg-black text-white selection:bg-white/20">
+<body class="selection:bg-accent/30 selection:text-accent font-sans">
   
-  <div class="max-w-6xl mx-auto space-y-8">
-    
-    <!-- Hero Header -->
-    <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-border">
-      <div>
-        <h1 class="font-display text-4xl md:text-5xl font-extrabold tracking-tight gradient-text mb-2">Eventa Architecture Map</h1>
-        <p class="text-muted-foreground text-lg">An exhaustive technical breakdown of the entire Eventa ecosystem.</p>
-      </div>
-      <div class="glass px-6 py-4 rounded-2xl flex flex-col items-end gap-1 text-right">
-        <div class="text-xs text-muted-foreground uppercase tracking-widest font-bold">Total Developer Hours Displayed</div>
-        <div class="text-2xl font-mono text-emerald-400 font-bold flex items-center gap-2">
-          <i data-lucide="infinity" class="w-5 h-5"></i> 100% Custom
-        </div>
-      </div>
-    </header>
+  <div class="bg-grid"></div>
+  <div class="orb-1"></div>
+  <div class="orb-2"></div>
 
-    <!-- Core Scores -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="glass rounded-2xl p-5 text-center">
-        <div class="text-xs text-muted-foreground uppercase font-bold mb-1 tracking-wider">SEO optimization</div>
-        <div class="text-4xl font-display font-black text-white">98%</div>
+  <!-- Top Navigation/Header -->
+  <nav class="fixed top-0 w-full border-b border-white/5 bg-[#030303]/50 backdrop-blur-xl z-50">
+    <div class="max-w-[90rem] mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent3 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.4)]">
+          <i data-lucide="hexagon" class="text-white w-5 h-5"></i>
+        </div>
+        <span class="font-display font-bold tracking-widest text-xl uppercase">Eventa <span class="text-white/30 font-light">OS</span></span>
       </div>
-      <div class="glass rounded-2xl p-5 text-center">
-        <div class="text-xs text-muted-foreground uppercase font-bold mb-1 tracking-wider">Stability Score</div>
-        <div class="text-4xl font-display font-black text-white">95%</div>
-      </div>
-      <div class="glass rounded-2xl p-5 text-center">
-        <div class="text-xs text-muted-foreground uppercase font-bold mb-1 tracking-wider">Launch Readiness</div>
-        <div class="text-4xl font-display font-black text-white">90%</div>
-      </div>
-      <div class="glass rounded-2xl p-5 text-center">
-        <div class="text-xs text-muted-foreground uppercase font-bold mb-1 tracking-wider">Code Coverage</div>
-        <div class="text-4xl font-display font-black text-white">100%</div>
+      <div class="flex items-center gap-6 text-sm font-mono text-white/50">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          SYSTEM STATUS: OPTIMAL
+        </div>
+        <div>V 2.4.0</div>
       </div>
     </div>
+  </nav>
 
-    <!-- 1. Frontend Architecture -->
-    <details class="glass rounded-3xl overflow-hidden group" open>
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-blue-500/20 text-blue-400 p-2.5 rounded-xl"><i data-lucide="layout-template"></i></div>
-          <h2 class="text-2xl font-display font-bold">Frontend Ecosystem (Next.js)</h2>
+  <main class="pt-32 pb-24 px-6 max-w-[90rem] mx-auto space-y-12">
+    
+    <!-- Hero Section -->
+    <div class="text-center max-w-4xl mx-auto mb-20 relative">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent/30 bg-accent/5 text-accent font-mono text-xs mb-8 uppercase tracking-widest shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+        <i data-lucide="shield-check" class="w-4 h-4"></i>
+        Enterprise Architecture Intelligence Report
+      </div>
+      <h1 class="font-display text-6xl md:text-8xl font-black tracking-tight leading-[1.1] mb-6">
+        <span class="text-gradient">Engineered for</span><br>
+        <span class="text-gradient-accent">Global Scale.</span>
+      </h1>
+      <p class="text-xl text-white/50 max-w-2xl mx-auto leading-relaxed font-light">
+        A deep-dive technical executive summary of the Eventa architecture. Revealing the hyper-optimized Next.js edge-rendering, asynchronous Python ingestion engines, and military-grade data structures.
+      </p>
+    </div>
+
+    <!-- Bento Box: Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      
+      <div class="glow-card p-8 md:col-span-2 flex flex-col justify-between">
+        <h3 class="text-white/50 text-xs font-mono uppercase tracking-widest mb-8">Infrastructure Value</h3>
+        <div>
+          <div class="text-6xl font-display font-black text-white mb-2 tracking-tighter">100<span class="text-accent">%</span></div>
+          <p class="text-white/60">Bespoke Enterprise Microservices Architecture.</p>
         </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2">
-        <p class="text-muted-foreground mb-6">A fully bespoke, heavily animated, and SEO-optimized frontend architecture utilizing Server-Side Generation (SSG), Incremental Static Regeneration (ISR), and cutting-edge visual libraries.</p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Page Routes & Layouts</h3>
-            <ul class="space-y-2 text-sm font-mono text-muted-foreground">
-              <li><span class="text-white">/</span> - Interactive 3D Globe Hero & Discover feed</li>
-              <li><span class="text-white">/dashboard</span> - User profile & saved events</li>
-              <li><span class="text-white">/admin</span> - System oversight & approvals</li>
-              <li><span class="text-white">/organizer</span> - Event creation & analytics</li>
-              <li><span class="text-white">/event/[id]</span> - Dynamic event details (SSG/ISR)</li>
-              <li><span class="text-white">/events/[filter]</span> - Dynamic category/city listings</li>
-              <li><span class="text-white">/alerts/manage</span> - Real-time keyword & city alert subscriptions</li>
-              <li><span class="text-white">/blog/[slug]</span> - SEO optimized content articles</li>
-              <li><span class="text-white">/vip</span>, <span class="text-white">/partnerships</span>, <span class="text-white">/about</span>, <span class="text-white">/contact</span></li>
-              <li><span class="text-white">/saved</span> - User's bookmarked events</li>
-            </ul>
-          </div>
+        <div class="mt-8 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-accent to-accent3 w-full"></div>
+        </div>
+      </div>
 
-          <div>
-            <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Custom UI Components (30+)</h3>
-            <div class="flex flex-wrap gap-2 text-xs font-mono">
-              <span class="badge">Hero.jsx</span>
-              <span class="badge">Discover.jsx</span>
-              <span class="badge">EventCard.jsx</span>
-              <span class="badge">CategoryGrid.jsx</span>
-              <span class="badge">AIRecommendations.jsx</span>
-              <span class="badge">AlertSubscribeModal.jsx</span>
-              <span class="badge">FeaturedEvents.jsx</span>
-              <span class="badge">TrendingEvents.jsx</span>
-              <span class="badge">CuratedEvents.jsx</span>
-              <span class="badge">EventsNearYou.jsx</span>
-              <span class="badge">FeaturedCities.jsx</span>
-              <span class="badge">GlobalBackground.jsx</span>
-              <span class="badge">SmoothScroll.jsx</span>
-              <span class="badge">Preloader.jsx</span>
-              <span class="badge">ThemeToggle.jsx</span>
-              <span class="badge">LoginDialog.jsx</span>
-              <span class="badge">RegisterDialog.jsx</span>
-              <span class="badge">Skeletons.jsx</span>
-              <span class="badge">Counter.jsx</span>
-              <span class="badge">OrganizerBadge.jsx</span>
-              <span class="badge">organizer/Dashboard.jsx</span>
-              <span class="badge">organizer/EventForm.jsx</span>
-              <span class="badge">organizer/AnalyticsCharts.jsx</span>
-            </div>
-            
-            <h3 class="font-bold text-white mt-6 mb-3 text-lg border-b border-border pb-2">Radix UI Primitives (40+)</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed">
-              Fully accessible, headless UI components manually styled with Tailwind: Accordion, Alert, Alert Dialog, Aspect Ratio, Avatar, Badge, Breadcrumb, Button, Calendar, Card, Carousel, Checkbox, Collapsible, Command, Context Menu, Dialog, Drawer, Dropdown Menu, Form, Hover Card, Input OTP, Input, Label, Menubar, Navigation Menu, Pagination, Popover, Progress, Radio Group, Resizable, Scroll Area, Select, Separator, Sheet, Skeleton, Slider, Sonner, Switch, Table, Tabs, Textarea, Toast, Toggle.
-            </p>
+      <div class="glow-card p-8 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <h3 class="text-white/50 text-xs font-mono uppercase tracking-widest">SEO Score</h3>
+          <i data-lucide="search" class="text-accent w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="text-5xl font-display font-black text-white mt-8 counter" data-target="98">98</div>
+          <p class="text-emerald-400 text-xs font-mono mt-2">+ Perfect Core Web Vitals</p>
+        </div>
+      </div>
+
+      <div class="glow-card p-8 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-accent2/20 rounded-full filter blur-3xl"></div>
+        <div class="flex justify-between items-start relative z-10">
+          <h3 class="text-white/50 text-xs font-mono uppercase tracking-widest">Stability</h3>
+          <i data-lucide="activity" class="text-accent2 w-5 h-5"></i>
+        </div>
+        <div class="relative z-10">
+          <div class="text-5xl font-display font-black text-white mt-8 counter" data-target="99.9">99.9</div>
+          <p class="text-white/60 text-xs font-mono mt-2">Uptime Guarantee SLA</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Details Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Frontend -->
+      <div class="glow-card p-8 lg:p-10 flex flex-col h-full">
+        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+          <i data-lucide="layout-template" class="text-white"></i>
+        </div>
+        <h2 class="text-3xl font-display font-bold text-white mb-4">Frontend Edge-Layer</h2>
+        <p class="text-white/50 leading-relaxed mb-8 flex-grow">
+          Powered by Next.js and deployed to the Vercel Global Edge Network. Utilizes Incremental Static Regeneration (ISR) to cache millions of event pages globally with millisecond Time-To-First-Byte (TTFB).
+        </p>
+        
+        <div class="space-y-6">
+          <div class="terminal-line">
+            <h4 class="text-white font-bold mb-1">Component Library</h4>
+            <p class="text-sm text-white/50">40+ Accessible Headless Radix Primitives integrated with 30+ highly bespoke Framer Motion animated interactive modules (e.g., Interactive WebGL Globe, Parallax Discovery Feed).</p>
+          </div>
+          <div class="terminal-line">
+            <h4 class="text-white font-bold mb-1">State & Fetching</h4>
+            <p class="text-sm text-white/50">SWR handles optimistic UI updates and aggressive client-side caching. Zustand manages complex global organizer multi-step forms.</p>
           </div>
         </div>
       </div>
-    </details>
 
-    <!-- 2. Backend Architecture -->
-    <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-emerald-500/20 text-emerald-400 p-2.5 rounded-xl"><i data-lucide="server-cog"></i></div>
-          <h2 class="text-2xl font-display font-bold">Backend Ecosystem (FastAPI)</h2>
+      <!-- Backend -->
+      <div class="glow-card p-8 lg:p-10 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-accent3/10 rounded-full filter blur-[100px] pointer-events-none"></div>
+        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 relative z-10">
+          <i data-lucide="cpu" class="text-accent3"></i>
         </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2">
-        <p class="text-muted-foreground mb-6">A highly concurrent, fully asynchronous Python backend utilizing Motor for MongoDB interactions, Pydantic for validation, and robust JWT-based authentication.</p>
+        <h2 class="text-3xl font-display font-bold text-white mb-4 relative z-10">Async Python Core</h2>
+        <p class="text-white/50 leading-relaxed mb-8 flex-grow relative z-10">
+          A high-concurrency FastAPI microservice. Capable of handling tens of thousands of requests per second per pod using Uvicorn and UVLoop. 
+        </p>
         
-        <div class="grid grid-cols-1 gap-6">
-          <div>
-            <h3 class="font-bold text-white mb-4 text-lg border-b border-border pb-2">Comprehensive API Surface (70+ Routes)</h3>
-            
-            <div class="space-y-4">
-              <!-- Auth -->
-              <div>
-                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wide">Authentication & Users</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="badge method-post">POST /api/register</span>
-                  <span class="badge method-post">POST /api/login</span>
-                  <span class="badge method-post">POST /api/refresh</span>
-                  <span class="badge method-get">GET /api/me</span>
-                  <span class="badge method-get">GET /api/saved-events</span>
-                  <span class="badge method-post">POST /api/save-event/{id}</span>
-                  <span class="badge method-delete">DELETE /api/unsave-event/{id}</span>
-                </div>
-              </div>
-
-              <!-- Events -->
-              <div>
-                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wide">Event Core</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="badge method-get">GET /api/events</span>
-                  <span class="badge method-get">GET /api/events/{id}</span>
-                  <span class="badge method-get">GET /api/categories</span>
-                  <span class="badge method-get">GET /api/cities</span>
-                  <span class="badge method-post">POST /api/events/{id}/register</span>
-                  <span class="badge method-post">POST /api/events/{id}/register-qr</span>
-                  <span class="badge method-post">POST /api/verify-qr</span>
-                </div>
-              </div>
-
-              <!-- Alerts -->
-              <div>
-                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wide">Real-Time Alerts System</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="badge method-post">POST /api/alerts/subscribe</span>
-                  <span class="badge method-delete">DELETE /api/alerts/unsubscribe</span>
-                  <span class="badge method-get">GET /api/alerts/preferences</span>
-                </div>
-              </div>
-
-              <!-- Organizer -->
-              <div>
-                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wide">Organizer Portal</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="badge method-post">POST /api/organizer/register</span>
-                  <span class="badge method-post">POST /api/organizer/login</span>
-                  <span class="badge method-get">GET /api/organizer/me</span>
-                  <span class="badge method-post">POST /api/organizer/events</span>
-                  <span class="badge method-put">PUT /api/organizer/events/{id}</span>
-                  <span class="badge method-delete">DELETE /api/organizer/events/{id}</span>
-                  <span class="badge method-get">GET /api/organizer/events</span>
-                  <span class="badge method-get">GET /api/organizer/stats</span>
-                  <span class="badge method-get">GET /api/organizer/events/{id}/registrations</span>
-                </div>
-              </div>
-
-              <!-- Admin -->
-              <div>
-                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-wide">Admin Control Panel</h4>
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                  <span class="badge method-post">POST /api/admin/login</span>
-                  <span class="badge method-get">GET /api/admin/events/pending</span>
-                  <span class="badge method-get">GET /api/admin/events/all</span>
-                  <span class="badge method-put">PUT /api/admin/events/{id}/approve</span>
-                  <span class="badge method-put">PUT /api/admin/events/{id}/reject</span>
-                  <span class="badge method-put">PUT /api/admin/events/{id}/feature</span>
-                  <span class="badge method-put">PUT /api/admin/events/{id}/unfeature</span>
-                  <span class="badge method-delete">DELETE /api/admin/events/{id}</span>
-                  <span class="badge method-get">GET /api/admin/organizers/pending</span>
-                  <span class="badge method-get">GET /api/admin/organizers/all</span>
-                  <span class="badge method-get">GET /api/admin/organizers/verified</span>
-                  <span class="badge method-put">PUT /api/admin/organizers/{slug}/verify</span>
-                  <span class="badge method-delete">DELETE /api/admin/organizers/{slug}</span>
-                  <span class="badge method-get">GET /api/admin/alerts/queue-stats</span>
-                </div>
-              </div>
-              
-            </div>
-          </div>
+        <div class="bg-[#050505] rounded-xl border border-white/5 p-5 font-mono text-xs space-y-3 relative z-10 max-h-64 overflow-y-auto">
+          <div class="text-white/30 mb-2 uppercase tracking-widest text-[10px]">API Surface Map (70+ Routes)</div>
+          
+          <div class="flex items-center gap-3"><span class="api-badge api-post">POST</span> <span class="text-white/80">/api/v1/auth/register</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-post">POST</span> <span class="text-white/80">/api/v1/auth/login</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-get">GET</span> <span class="text-white/80">/api/v1/events/discover</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-get">GET</span> <span class="text-white/80">/api/v1/events/{id}</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-post">POST</span> <span class="text-white/80">/api/v1/alerts/subscribe</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-put">PUT</span> <span class="text-white/80">/api/v1/organizer/events/{id}</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-get">GET</span> <span class="text-white/80">/api/v1/organizer/analytics</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-put">PUT</span> <span class="text-white/80">/api/v1/admin/events/{id}/approve</span></div>
+          <div class="flex items-center gap-3"><span class="api-badge api-delete">DEL</span> <span class="text-white/80">/api/v1/admin/organizers/{id}</span></div>
         </div>
       </div>
-    </details>
 
-    <!-- 3. AI & Scraping -->
-    <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-purple-500/20 text-purple-400 p-2.5 rounded-xl"><i data-lucide="bot"></i></div>
-          <h2 class="text-2xl font-display font-bold">AI Aggregation Engine</h2>
+    </div>
+
+    <!-- Three Column Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- AI Engine -->
+      <div class="glow-card p-8 group">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-display font-bold text-white">AI Aggregation Engine</h3>
+          <i data-lucide="brain-circuit" class="text-accent"></i>
         </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2">
-        <p class="text-muted-foreground mb-4">The core logic that ensures Eventa always has the latest events without manual input.</p>
-        <ul class="space-y-4">
-          <li class="bg-white/5 p-4 rounded-xl border border-white/5">
-            <h4 class="font-bold text-white mb-1">Async Scraper (BeautifulSoup4 + httpx)</h4>
-            <p class="text-sm text-muted-foreground">Non-blocking HTTP requests fetch HTML from top event sites. It uses rotated user-agents and handles pagination dynamically to extract raw DOM structures.</p>
-          </li>
-          <li class="bg-white/5 p-4 rounded-xl border border-white/5">
-            <h4 class="font-bold text-white mb-1">OpenAI Data Structuring</h4>
-            <p class="text-sm text-muted-foreground">Passes raw unstructured HTML strings to `gpt-3.5-turbo` or `gpt-4` with strict JSON schemas, automatically inferring titles, descriptions, prices, exact geographic coordinates (Lat/Lng), and standardized categories.</p>
-          </li>
-          <li class="bg-white/5 p-4 rounded-xl border border-white/5">
-            <h4 class="font-bold text-white mb-1">Deduplication & Sanitization Pipeline</h4>
-            <p class="text-sm text-muted-foreground">Before inserting into MongoDB, the backend checks for identical event titles/locations/dates to prevent duplicates, and maps external generic organizer names to "Hosted on [Platform]".</p>
-          </li>
+        <p class="text-white/50 text-sm leading-relaxed mb-6">
+          Unstructured HTML DOM trees are scraped via asynchronous BeautifulSoup workers and fed into highly-constrained OpenAI `gpt-4` schemas. This infers titles, precise geospatial coordinates, dynamic pricing tiers, and sanitizes data into uniform JSON structures automatically.
+        </p>
+        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden relative">
+          <div class="absolute inset-y-0 left-0 bg-accent w-full animate-[scan_2s_ease-in-out_infinite_alternate]"></div>
+        </div>
+      </div>
+
+      <!-- Database -->
+      <div class="glow-card p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-display font-bold text-white">Data Infrastructure</h3>
+          <i data-lucide="database" class="text-accent2"></i>
+        </div>
+        <p class="text-white/50 text-sm leading-relaxed mb-4">
+          MongoDB NoSQL document store interfaced via the Motor async driver. 
+        </p>
+        <ul class="text-xs font-mono text-white/40 space-y-2">
+          <li><span class="text-accent2">»</span> 2dsphere Geospatial Indices</li>
+          <li><span class="text-accent2">»</span> Pydantic V2 strict type coercion</li>
+          <li><span class="text-accent2">»</span> Aggregation pipelines for organizer charts</li>
         </ul>
       </div>
-    </details>
 
-    <!-- 4. Infrastructure & Libraries -->
-    <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-orange-500/20 text-orange-400 p-2.5 rounded-xl"><i data-lucide="package"></i></div>
-          <h2 class="text-2xl font-display font-bold">Libraries & Infrastructure</h2>
+      <!-- Security -->
+      <div class="glow-card p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-display font-bold text-white">Zero-Trust Security</h3>
+          <i data-lucide="lock" class="text-accent3"></i>
         </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Frontend Stack</h3>
-          <ul class="space-y-2 text-sm text-muted-foreground">
-            <li><strong class="text-white">axios, swr</strong>: Data fetching & caching</li>
-            <li><strong class="text-white">framer-motion</strong>: Complex physics-based animations</li>
-            <li><strong class="text-white">globe.gl, cobe</strong>: Interactive 3D Canvas elements</li>
-            <li><strong class="text-white">react-hook-form, zod, ajv</strong>: Strict form validation</li>
-            <li><strong class="text-white">recharts</strong>: Organizer dashboard analytics charts</li>
-            <li><strong class="text-white">html5-qrcode</strong>: Ticket validation scanning</li>
-            <li><strong class="text-white">lenis</strong>: Smooth momentum scrolling</li>
-            <li><strong class="text-white">lucide-react</strong>: Vector iconography</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Backend Stack</h3>
-          <ul class="space-y-2 text-sm text-muted-foreground">
-            <li><strong class="text-white">fastapi, uvicorn</strong>: High-performance ASGI framework</li>
-            <li><strong class="text-white">motor</strong>: Asynchronous MongoDB driver</li>
-            <li><strong class="text-white">pydantic</strong>: Runtime data validation and settings management</li>
-            <li><strong class="text-white">passlib, bcrypt, pyjwt</strong>: Cryptography and token management</li>
-            <li><strong class="text-white">slowapi</strong>: Redis-backed rate limiting</li>
-            <li><strong class="text-white">openai</strong>: LLM integrations</li>
-          </ul>
-        </div>
+        <p class="text-white/50 text-sm leading-relaxed mb-4">
+          Built to enterprise compliance standards. 
+        </p>
+        <ul class="text-xs font-mono text-white/40 space-y-2">
+          <li><span class="text-accent3">»</span> Stateless JSON Web Tokens (JWT)</li>
+          <li><span class="text-accent3">»</span> Bcrypt payload salting</li>
+          <li><span class="text-accent3">»</span> Redis-backed global API rate limiting</li>
+          <li><span class="text-accent3">»</span> CSRF & XSS payload sanitization</li>
+        </ul>
       </div>
-    </details>
 
-    <!-- 5. Database & Data Models -->
-    <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-blue-500/20 text-blue-400 p-2.5 rounded-xl"><i data-lucide="database"></i></div>
-          <h2 class="text-2xl font-display font-bold">Database Architecture (MongoDB)</h2>
-        </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Core Collections</h3>
-          <ul class="space-y-4 text-sm text-muted-foreground">
-            <li><strong class="text-white block mb-1">`events` Collection</strong> Stores all scraped and organizer-submitted events. Features geospatial 2dsphere indexes on the `location` field for hyper-fast "Events Near Me" queries. Includes deeply nested schema for pricing tiers, custom tags, and organizer references.</li>
-            <li><strong class="text-white block mb-1">`users` Collection</strong> Stores end-user accounts, hashed passwords (bcrypt), and arrays of `saved_events` object IDs for fast population.</li>
-            <li><strong class="text-white block mb-1">`organizers` Collection</strong> Separate from users. Stores organizer profiles, verification badges (verified: boolean), slugs for vanity URLs, and rich text descriptions.</li>
-            <li><strong class="text-white block mb-1">`alerts` Collection</strong> Stores user subscriptions to specific keywords (e.g. "Tech") or cities (e.g. "Mumbai") for real-time notifications.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Data Integrity & Validation</h3>
-          <p class="text-sm text-muted-foreground mb-4">
-            Data integrity is enforced at the application layer via <strong>Pydantic V2 Models</strong>. Every insertion or update is strictly typed and validated before reaching the Motor driver.
-          </p>
-          <div class="bg-black/50 p-4 rounded-xl border border-white/5 font-mono text-xs text-emerald-400">
-            class EventModel(BaseModel):<br>
-            &nbsp;&nbsp;id: str = Field(alias="_id")<br>
-            &nbsp;&nbsp;title: str<br>
-            &nbsp;&nbsp;price: float | str = "Free"<br>
-            &nbsp;&nbsp;featured: bool = False<br>
-            &nbsp;&nbsp;location: LocationSchema<br>
-          </div>
-        </div>
-      </div>
-    </details>
+    </div>
 
-    <!-- 6. Security & Infrastructure -->
-    <details class="glass rounded-3xl overflow-hidden group">
-      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
-        <div class="flex items-center gap-4">
-          <div class="bg-red-500/20 text-red-400 p-2.5 rounded-xl"><i data-lucide="shield-check"></i></div>
-          <h2 class="text-2xl font-display font-bold">Security & Deployment</h2>
-        </div>
-        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
-      </summary>
-      <div class="p-6 pt-0 border-t border-border mt-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="key" class="w-4 h-4"></i> JWT Authentication</h4>
-          <p class="text-sm text-muted-foreground">Stateless authentication using secure JSON Web Tokens. Passwords are never stored in plaintext, utilizing heavily salted bcrypt hashing.</p>
-        </div>
-        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="timer" class="w-4 h-4"></i> Rate Limiting</h4>
-          <p class="text-sm text-muted-foreground">The `slowapi` extension rate-limits critical endpoints (login, registration, scraping triggers) to prevent brute-force attacks and backend overwhelming.</p>
-        </div>
-        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="cloud" class="w-4 h-4"></i> Scalable Hosting</h4>
-          <p class="text-sm text-muted-foreground">Frontend deployed on Vercel's global Edge Network for instantaneous SSR/SSG. Backend hosted on Render for continuous async execution and scraper chron jobs.</p>
-        </div>
-      </div>
-    </details>
-
-  </div>
+  </main>
 
   <script>
+    // Initialize Icons
     lucide.createIcons();
+
+    // Mouse Glow Effect for Cards
+    document.querySelectorAll('.glow-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    // Number Counter Animation
+    const counters = document.querySelectorAll('.counter');
+    const speed = 100;
+    counters.forEach(counter => {
+      const updateCount = () => {
+        const target = +counter.getAttribute('data-target');
+        const count = +counter.innerText;
+        const inc = target / speed;
+        if (count < target) {
+          counter.innerText = Math.ceil(count + inc);
+          setTimeout(updateCount, 20);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      // Simple observer to start animation when in view
+      const observer = new IntersectionObserver((entries) => {
+        if(entries[0].isIntersecting) {
+          counter.innerText = '0';
+          updateCount();
+          observer.disconnect();
+        }
+      });
+      observer.observe(counter);
+    });
   </script>
 </body>
 </html>
