@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2 } from "lucide-react";
+import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2, BellRing } from "lucide-react";
+import AlertSubscribeModal from "./AlertSubscribeModal";
 import { toast } from "sonner";
 import Counter from "./Counter";
 import { useRef } from "react";
@@ -290,6 +291,7 @@ const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => {
 
 export default function Hero({ stats, onSearch, onCity }) {
   const [q, setQ] = useState("");
+  const [alertsOpen, setAlertsOpen] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 140]);
@@ -449,6 +451,14 @@ export default function Hero({ stats, onSearch, onCity }) {
                 {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
                 <span>Use my current location</span>
               </button>
+              <button 
+                type="button" 
+                onClick={() => setAlertsOpen(true)}
+                className="flex items-center gap-1.5 hover:text-foreground transition-colors ml-2"
+              >
+                <BellRing size={15} />
+                <span>Get Event Alerts</span>
+              </button>
             </div>
           </motion.form>
 
@@ -484,6 +494,7 @@ export default function Hero({ stats, onSearch, onCity }) {
         </motion.div>
 
       </div>
+      <AlertSubscribeModal open={alertsOpen} onOpenChange={setAlertsOpen} />
     </section>
   );
 }

@@ -1406,3 +1406,53 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("server:app", host="0.0.0.0", port=port)
+
+# ======================= ALERTS =======================
+
+from pydantic import BaseModel
+from typing import List
+from datetime import datetime, timezone
+from fastapi import Header, HTTPException
+
+class AlertSubscribeInput(BaseModel):
+    email: str
+    cities: List[str] = []
+    categories: List[str] = []
+    keywords: List[str] = []
+
+@api_router.post("/alerts/subscribe")
+async def subscribe_alerts(inp: AlertSubscribeInput):
+    # Simple upsert
+    now = datetime.now(timezone.utc).isoformat()
+    res = await db.alerts.update_one(
+        {"email": inp.email},
+        {"$set": {
+            "cities": inp.cities,
+            "categories": inp.categories,
+            "keywords": inp.keywords,
+            "is_active": True,
+            "updated_at": now
+        }, "$setOnInsert": {"created_at": now}},
+        upsert=True
+    )
+    return {"ok": True, "message": "Successfully subscribed to alerts"}
+
+@api_router.get("/alerts/unsubscribe")
+async def unsubscribe_alerts(email: str):
+    await db.alerts.update_one({"email": email}, {"$set": {"is_active": False}})
+    return {"ok": True, "message": "Unsubscribed successfully"}
+
+@api_router.get("/alerts/preferences")
+async def get_alert_preferences(email: str):
+    alert = await db.alerts.find_one({"email": email})
+    if not alert:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    return clean(alert)
+
+@api_router.get("/admin/alerts/queue-stats")
+async def get_alert_queue_stats(x_admin_key: str = Header(None)):
+    get_admin_key(x_admin_key)
+    pending = await db.alert_queue.count_documents({"sent": False})
+    total = await db.alert_queue.count_documents({})
+    subs = await db.alerts.count_documents({"is_active": True})
+    return {"pending_alerts": pending, "total_alerts_generated": total, "active_subscriptions": subs}

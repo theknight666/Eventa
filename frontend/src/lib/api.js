@@ -154,3 +154,10 @@ export const adminDownloadRegistrationsCSV = async (eventId) => {
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
 };
+
+
+// Alerts
+export const subscribeAlerts = (data) => client.post('/alerts/subscribe', data).then((r) => r.data);
+export const unsubscribeAlerts = (email) => client.get(`/alerts/unsubscribe?email=${encodeURIComponent(email)}`).then((r) => r.data);
+export const getAlertPreferences = (email) => client.get(`/alerts/preferences?email=${encodeURIComponent(email)}`).then((r) => r.data);
+export const getAlertQueueStats = () => client.get('/admin/alerts/queue-stats', { headers: getAdminHeaders() }).then((r) => r.data);
