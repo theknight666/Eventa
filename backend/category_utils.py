@@ -14,16 +14,16 @@ def infer_category(title: str, description: str = "") -> str:
         return re.search(pattern, combined_text) is not None
 
     # Priority 1: Very specific event types (less likely to be used as buzzwords)
-    if has_any(["marathon", "run", "running", "5k", "10k", "half marathon", "trek", "trekking", "fitness", "yoga", "sports", "tournament", "championship", "cricket", "football", "badminton"]):
+    if has_any(["marathon", "run", "running", "5k", "10k", "half marathon", "trek", "trekking", "sports", "tournament", "championship", "cricket", "football", "badminton"]):
         return "sports"
         
     if has_any(["music", "concert", "dj", "festival", "gig", "band", "live music", "orchestra", "party", "club"]):
         return "music"
         
-    if has_any(["comedy", "standup", "stand-up", "theater", "theatre", "movie", "film", "waterpark", "amusement park", "theme park", "carnival"]):
+    if has_any(["comedy", "standup", "stand-up", "theater", "theatre", "movie", "film", "waterpark", "water park", "amusement park", "theme park", "carnival", "aquaimagicaa", "imagicaa", "resort", "outing", "picnic", "adventure", "game", "gaming", "fun", "activity"]):
         return "entertainment"
 
-    if has_any(["healthcare", "medical", "health", "doctor", "hospital", "clinic", "nursing", "pharmacy", "wellness", "biotech", "medtech"]):
+    if has_any(["healthcare", "medical", "health", "doctor", "hospital", "clinic", "nursing", "pharmacy", "wellness", "biotech", "medtech", "fitness", "yoga", "meditation"]):
         return "healthcare"
 
     if has_any(["legal", "law", "lawyer", "attorney", "compliance", "patent", "ip"]):
