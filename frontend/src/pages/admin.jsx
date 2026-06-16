@@ -45,7 +45,7 @@ export default function AdminDashboard() {
       } else if (tab === "organizers") {
         const orgs = await getAdminPendingOrganizers();
         setPendingOrganizers(orgs);
-      } else if (tab === "all-events") {
+      } else if (tab === "all-events" || tab === "featured-events") {
         const evts = await getAdminAllEvents();
         setAllEvents(evts);
       } else if (tab === "all-organizers") {
@@ -135,6 +135,7 @@ export default function AdminDashboard() {
           <TabButton active={tab === "organizers"} onClick={() => setTab("organizers")}>Pending Verification</TabButton>
           <TabButton active={tab === "verified-organizers"} onClick={() => setTab("verified-organizers")}>Verified Organizers</TabButton>
           <TabButton active={tab === "all-events"} onClick={() => setTab("all-events")}>All Events</TabButton>
+          <TabButton active={tab === "featured-events"} onClick={() => setTab("featured-events")}>Featured Events</TabButton>
           <TabButton active={tab === "all-organizers"} onClick={() => setTab("all-organizers")}>All Organizers</TabButton>
         </div>
         <div className="w-full sm:w-72 shrink-0 relative">
@@ -167,6 +168,12 @@ export default function AdminDashboard() {
           {tab === "all-events" && (
             <AllEventsList 
               items={allEvents.filter(ev => ev.title?.toLowerCase().includes(searchQuery.toLowerCase()) || ev.id?.toLowerCase().includes(searchQuery.toLowerCase()))} 
+              refresh={loadData} 
+            />
+          )}
+          {tab === "featured-events" && (
+            <AllEventsList 
+              items={allEvents.filter(ev => ev.featured && (ev.title?.toLowerCase().includes(searchQuery.toLowerCase()) || ev.id?.toLowerCase().includes(searchQuery.toLowerCase())))} 
               refresh={loadData} 
             />
           )}
