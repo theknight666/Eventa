@@ -37,9 +37,8 @@ export default function GlobalBackground() {
               <g transform="translate(60, 60)">
                 <circle cx="0" cy="0" r="3" fill="currentColor" opacity="0.8" />
                 
-                {/* Inner Petals (Clockwise Kaleidoscope Rotation) */}
+                {/* Inner Petals */}
                 <g>
-                  <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="20s" repeatCount="indefinite" />
                   {[...Array(8)].map((_, i) => (
                     <g key={`inner-${i}`} transform={`rotate(${i * 45})`}>
                       <path d="M 0 -3 Q 15 -20 0 -30 Q -15 -20 0 -3 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.7" />
@@ -47,9 +46,8 @@ export default function GlobalBackground() {
                   ))}
                 </g>
 
-                {/* Outer Petals (Counter-Clockwise Kaleidoscope Rotation) */}
+                {/* Outer Petals */}
                 <g>
-                  <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="30s" repeatCount="indefinite" />
                   {[...Array(12)].map((_, i) => (
                     <g key={`outer-${i}`} transform={`rotate(${i * 30})`}>
                       <path d="M 0 -20 Q 25 -40 0 -55 Q -25 -40 0 -20 Z" fill="none" stroke="currentColor" strokeWidth="0.75" opacity="0.5" />
@@ -58,15 +56,10 @@ export default function GlobalBackground() {
                   ))}
                 </g>
 
-                {/* Concentric Rings with Pulsing Scale */}
+                {/* Concentric Rings */}
                 <g>
-                  <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="10s" repeatCount="indefinite" />
-                  <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.5">
-                    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="15s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="0" cy="0" r="55" fill="none" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 6" opacity="0.4">
-                    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="40s" repeatCount="indefinite" />
-                  </circle>
+                  <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.5" />
+                  <circle cx="0" cy="0" r="55" fill="none" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 6" opacity="0.4" />
                 </g>
               </g>
             </pattern>

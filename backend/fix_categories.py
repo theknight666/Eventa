@@ -20,7 +20,8 @@ async def process_event(ev, db, sem, counter):
                 }}
             )
             counter["updated"] += 1
-            print(f"[{counter['updated']}] Updated '{ev['title'][:30]}...' -> {new_cat}")
+            safe_title = ev['title'][:30].encode('ascii', 'ignore').decode('ascii')
+            print(f"[{counter['updated']}] Updated '{safe_title}...' -> {new_cat}")
             
         counter["processed"] += 1
         if counter["processed"] % 50 == 0:

@@ -241,6 +241,7 @@ function Ticket3D() {
 
 const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => (
   <>
+    <div className="absolute inset-0 bg-background -z-10" />
     <motion.div style={{ y, scale }} className="absolute inset-0 overflow-hidden pointer-events-none">
       <video 
         autoPlay 
