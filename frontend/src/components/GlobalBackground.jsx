@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { motion, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
 
 export default function GlobalBackground() {
@@ -21,28 +21,15 @@ export default function GlobalBackground() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [mouseX, mouseY]);
 
-  const [isTop, setIsTop] = useState(true);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsTop(window.scrollY < 200);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    // setTimeout to ensure it runs after hydration
-    setTimeout(handleScroll, 0);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-slate-50 dark:bg-[#050505] transition-colors duration-500">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] dark:opacity-[0.25] mix-blend-multiply dark:mix-blend-overlay" />
       
       {/* 30% Visibility applied to the entire masked layer */}
-      <div className={`absolute inset-0 transition-all duration-700 ${isTop ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
-        <motion.div 
-          className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30 transform-gpu will-change-transform"
-          style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
-        >
+      <motion.div 
+        className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30 transform-gpu will-change-transform"
+        style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
+      >
         {/* text-amber-600/500 ensures deeply amber lines on both modes */}
         <svg width="100%" height="100%" className="absolute inset-0 text-amber-600 dark:text-amber-500">
           <defs>
@@ -50,7 +37,7 @@ export default function GlobalBackground() {
               <g transform="translate(60, 60)">
                 <circle cx="0" cy="0" r="3" fill="currentColor" opacity="0.8" />
                 
-                {/* Inner Petals */}
+                {/* Inner Petals (Clockwise Kaleidoscope Rotation) */}
                 <g>
                   <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="20s" repeatCount="indefinite" />
                   {[...Array(8)].map((_, i) => (
@@ -60,7 +47,7 @@ export default function GlobalBackground() {
                   ))}
                 </g>
 
-                {/* Outer Petals */}
+                {/* Outer Petals (Counter-Clockwise Kaleidoscope Rotation) */}
                 <g>
                   <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="30s" repeatCount="indefinite" />
                   {[...Array(12)].map((_, i) => (
@@ -71,7 +58,7 @@ export default function GlobalBackground() {
                   ))}
                 </g>
 
-                {/* Concentric Rings */}
+                {/* Concentric Rings with Pulsing Scale */}
                 <g>
                   <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="10s" repeatCount="indefinite" />
                   <circle cx="0" cy="0" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.5">
@@ -89,8 +76,7 @@ export default function GlobalBackground() {
 
         {/* Multiply for light mode (darkens), Screen for dark mode (lightens) */}
         <div className="absolute inset-0 bg-amber-500/50 mix-blend-multiply dark:mix-blend-screen" />
-        </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 }
