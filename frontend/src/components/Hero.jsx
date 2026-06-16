@@ -239,25 +239,54 @@ function Ticket3D() {
   );
 }
 
-const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => (
-  <>
-    <div className="absolute inset-0 bg-background -z-10" />
-    <motion.div style={{ y, scale }} className="absolute inset-0 overflow-hidden pointer-events-none">
-      <video 
-        autoPlay 
-        loop 
-        muted 
-        playsInline 
-        className="h-full w-full object-cover opacity-100"
-      >
-        <source src="/hero-bg.mp4" type="video/mp4" />
-      </video>
-    </motion.div>
-    <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-background pointer-events-none" />
-    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
-    <div className="absolute inset-0 aurora opacity-50" />
-  </>
-));
+const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => {
+  const videoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const attemptPlay = () => {
+      if (video.paused) {
+        video.play().catch(e => console.log("Video play failed:", e));
+      }
+    };
+
+    attemptPlay();
+    
+    // Force play if browser tries to pause it out of nowhere
+    video.addEventListener('pause', attemptPlay);
+    video.addEventListener('suspend', attemptPlay);
+
+    return () => {
+      video.removeEventListener('pause', attemptPlay);
+      video.removeEventListener('suspend', attemptPlay);
+    };
+  }, []);
+
+  return (
+    <>
+      <div className="absolute inset-0 bg-background -z-10" />
+      <motion.div style={{ y, scale }} className="absolute inset-0 overflow-hidden pointer-events-none">
+        <video 
+          ref={videoRef}
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          disablePictureInPicture
+          preload="auto"
+          className="h-full w-full object-cover opacity-100"
+        >
+          <source src="/hero-bg.mp4" type="video/mp4" />
+        </video>
+      </motion.div>
+      <motion.div style={{ opacity: overlayOpacity }} className="absolute inset-0 bg-background pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/40 pointer-events-none" />
+      <div className="absolute inset-0 aurora opacity-50" />
+    </>
+  );
+});
 
 export default function Hero({ stats, onSearch, onCity }) {
   const [q, setQ] = useState("");
