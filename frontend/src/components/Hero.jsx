@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2, BellRing } from "lucide-react";
+import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2, Bell } from "lucide-react";
 import AlertSubscribeModal from "./AlertSubscribeModal";
 import { toast } from "sonner";
 import Counter from "./Counter";
@@ -454,9 +454,9 @@ export default function Hero({ stats, onSearch, onCity }) {
               <button 
                 type="button" 
                 onClick={() => setAlertsOpen(true)}
-                className="flex items-center gap-1.5 hover:text-foreground transition-colors ml-2"
+                className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors ml-4 sm:ml-auto"
               >
-                <BellRing size={15} />
+                <Bell size={15} />
                 <span>Get Event Alerts</span>
               </button>
             </div>
