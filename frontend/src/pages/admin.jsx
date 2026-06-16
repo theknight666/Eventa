@@ -107,7 +107,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-28 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+    <div className="min-h-screen text-foreground pt-28 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
       <SEO title="Admin Dashboard" noindex={true} />
       <div className="flex justify-between items-end mb-8">
         <div>
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <div className="mb-8 p-6 bg-card rounded-3xl border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="mb-8 p-6 bg-card rounded-3xl border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:-translate-y-1 hover:shadow-2xl hover:border-foreground/20 transition-all duration-300">
         <div>
           <h2 className="text-lg font-bold font-display">Project Assessment & Features Report</h2>
           <p className="text-sm text-muted-foreground mt-1">View the complete feature list, tech stack breakdown, SEO score, and launch readiness.</p>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-        <div className="flex gap-2 border-b border-border pb-1 overflow-x-auto w-full sm:w-auto overflow-y-hidden">
+        <div className="flex gap-2 pb-1 overflow-x-auto w-full sm:w-auto overflow-y-hidden scrollbar-hide">
           <TabButton active={tab === "events"} onClick={() => setTab("events")}>Pending Events</TabButton>
           <TabButton active={tab === "organizers"} onClick={() => setTab("organizers")}>Pending Verification</TabButton>
           <TabButton active={tab === "verified-organizers"} onClick={() => setTab("verified-organizers")}>Verified Organizers</TabButton>
@@ -199,8 +199,8 @@ function TabButton({ active, children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 font-medium whitespace-nowrap transition-colors rounded-t-xl ${
-        active ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"
+      className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all duration-300 rounded-full ${
+        active ? "bg-foreground text-background shadow-lg" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
       {children}
