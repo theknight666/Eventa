@@ -82,7 +82,7 @@ export default function AdminDashboard() {
         toast.success("Logged in as Admin");
       }
     } catch {
-      toast.error("Invalid admin password");
+      // The global API interceptor automatically shows the error toast
     }
   };
 
