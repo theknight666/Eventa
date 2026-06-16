@@ -31,8 +31,8 @@
   </script>
   <style>
     body {
-      background-color: theme('colors.background');
-      color: theme('colors.foreground');
+      background-color: #000000;
+      color: #fafafa;
       -webkit-font-smoothing: antialiased;
     }
     .glass {
@@ -76,7 +76,7 @@
     .method-delete { color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 pb-32">
+<body class="min-h-screen p-4 md:p-8 pb-32 bg-black text-white selection:bg-white/20">
   
   <div class="max-w-6xl mx-auto space-y-8">
     
@@ -339,6 +339,67 @@
             <li><strong class="text-white">slowapi</strong>: Redis-backed rate limiting</li>
             <li><strong class="text-white">openai</strong>: LLM integrations</li>
           </ul>
+        </div>
+      </div>
+    </details>
+
+    <!-- 5. Database & Data Models -->
+    <details class="glass rounded-3xl overflow-hidden group">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
+        <div class="flex items-center gap-4">
+          <div class="bg-blue-500/20 text-blue-400 p-2.5 rounded-xl"><i data-lucide="database"></i></div>
+          <h2 class="text-2xl font-display font-bold">Database Architecture (MongoDB)</h2>
+        </div>
+        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
+      </summary>
+      <div class="p-6 pt-0 border-t border-border mt-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Core Collections</h3>
+          <ul class="space-y-4 text-sm text-muted-foreground">
+            <li><strong class="text-white block mb-1">`events` Collection</strong> Stores all scraped and organizer-submitted events. Features geospatial 2dsphere indexes on the `location` field for hyper-fast "Events Near Me" queries. Includes deeply nested schema for pricing tiers, custom tags, and organizer references.</li>
+            <li><strong class="text-white block mb-1">`users` Collection</strong> Stores end-user accounts, hashed passwords (bcrypt), and arrays of `saved_events` object IDs for fast population.</li>
+            <li><strong class="text-white block mb-1">`organizers` Collection</strong> Separate from users. Stores organizer profiles, verification badges (verified: boolean), slugs for vanity URLs, and rich text descriptions.</li>
+            <li><strong class="text-white block mb-1">`alerts` Collection</strong> Stores user subscriptions to specific keywords (e.g. "Tech") or cities (e.g. "Mumbai") for real-time notifications.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-bold text-white mb-3 text-lg border-b border-border pb-2">Data Integrity & Validation</h3>
+          <p class="text-sm text-muted-foreground mb-4">
+            Data integrity is enforced at the application layer via <strong>Pydantic V2 Models</strong>. Every insertion or update is strictly typed and validated before reaching the Motor driver.
+          </p>
+          <div class="bg-black/50 p-4 rounded-xl border border-white/5 font-mono text-xs text-emerald-400">
+            class EventModel(BaseModel):<br>
+            &nbsp;&nbsp;id: str = Field(alias="_id")<br>
+            &nbsp;&nbsp;title: str<br>
+            &nbsp;&nbsp;price: float | str = "Free"<br>
+            &nbsp;&nbsp;featured: bool = False<br>
+            &nbsp;&nbsp;location: LocationSchema<br>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 6. Security & Infrastructure -->
+    <details class="glass rounded-3xl overflow-hidden group">
+      <summary class="p-6 cursor-pointer hover:text-white transition-colors flex items-center justify-between select-none">
+        <div class="flex items-center gap-4">
+          <div class="bg-red-500/20 text-red-400 p-2.5 rounded-xl"><i data-lucide="shield-check"></i></div>
+          <h2 class="text-2xl font-display font-bold">Security & Deployment</h2>
+        </div>
+        <i data-lucide="chevron-down" class="text-muted-foreground transition-transform group-open:rotate-180"></i>
+      </summary>
+      <div class="p-6 pt-0 border-t border-border mt-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="key" class="w-4 h-4"></i> JWT Authentication</h4>
+          <p class="text-sm text-muted-foreground">Stateless authentication using secure JSON Web Tokens. Passwords are never stored in plaintext, utilizing heavily salted bcrypt hashing.</p>
+        </div>
+        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="timer" class="w-4 h-4"></i> Rate Limiting</h4>
+          <p class="text-sm text-muted-foreground">The `slowapi` extension rate-limits critical endpoints (login, registration, scraping triggers) to prevent brute-force attacks and backend overwhelming.</p>
+        </div>
+        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+          <h4 class="font-bold text-white mb-2 flex items-center gap-2"><i data-lucide="cloud" class="w-4 h-4"></i> Scalable Hosting</h4>
+          <p class="text-sm text-muted-foreground">Frontend deployed on Vercel's global Edge Network for instantaneous SSR/SSG. Backend hosted on Render for continuous async execution and scraper chron jobs.</p>
         </div>
       </div>
     </details>
