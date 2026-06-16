@@ -451,10 +451,11 @@ export default function Hero({ stats, onSearch, onCity }) {
                 {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
                 <span>Use my current location</span>
               </button>
+              <div className="w-1 h-1 rounded-full bg-border" />
               <button 
                 type="button" 
                 onClick={() => setAlertsOpen(true)}
-                className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors ml-4 sm:ml-auto"
+                className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
               >
                 <Bell size={15} />
                 <span>Get Event Alerts</span>
