@@ -147,13 +147,23 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                     except: pass
             
             # Organizer
-            org = data.get("organizer", {})
-            org_name = "External Organizer"
+            org = data.get("organizer")
+            org_name = "Event Organizer"
+            org_url = None
             if isinstance(org, dict):
-                org_name = org.get("name", org_name)
+                org_name = org.get("name") or org_name
                 org_url = org.get("url")
-                if org_url and "allevents.in" not in org_url and direct_url == url:
-                    direct_url = org_url
+            elif isinstance(org, list) and len(org) > 0:
+                if isinstance(org[0], dict):
+                    org_name = org[0].get("name") or org_name
+                    org_url = org[0].get("url")
+                elif isinstance(org[0], str):
+                    org_name = org[0]
+            elif isinstance(org, str):
+                org_name = org
+                
+            if org_url and "allevents.in" not in org_url and direct_url == url:
+                direct_url = org_url
             
             # Also check the main event URL
             data_url = data.get("url")

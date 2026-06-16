@@ -17,10 +17,10 @@ def infer_category(title: str, description: str = "") -> str:
     if has_any(["marathon", "run", "running", "5k", "10k", "half marathon", "trek", "trekking", "fitness", "yoga", "sports", "tournament", "championship", "cricket", "football", "badminton"]):
         return "sports"
         
-    if has_any(["music", "concert", "dj", "festival", "gig", "band", "live music", "orchestra"]):
+    if has_any(["music", "concert", "dj", "festival", "gig", "band", "live music", "orchestra", "party", "club"]):
         return "music"
         
-    if has_any(["comedy", "standup", "stand-up", "theater", "theatre", "movie", "film"]):
+    if has_any(["comedy", "standup", "stand-up", "theater", "theatre", "movie", "film", "waterpark", "amusement park", "theme park", "carnival"]):
         return "entertainment"
 
     if has_any(["healthcare", "medical", "health", "doctor", "hospital", "clinic", "nursing", "pharmacy", "wellness", "biotech", "medtech"]):
@@ -41,7 +41,7 @@ def infer_category(title: str, description: str = "") -> str:
     if has_any(["government", "policy", "public sector", "municipal", "civic", "smart city", "diplomacy"]):
         return "government"
 
-    if has_any(["real estate", "property", "housing", "realtor", "commercial real estate", "proptech", "architecture"]):
+    if has_any(["real estate", "property", "housing", "realtor", "commercial real estate", "proptech", "architecture", "residential", "apartment", "villa", "realty"]):
         return "real-estate"
 
     if has_any(["manufacturing", "factory", "industrial", "production", "hardware", "machinery", "supply chain"]):

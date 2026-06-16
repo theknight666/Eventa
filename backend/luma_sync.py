@@ -134,10 +134,17 @@ async def scrape_luma_event(event_data: dict, city: str) -> Optional[dict]:
                 try: price = int(float(p))
                 except: pass
         
-        org = event_data.get("organizer", {})
+        org = event_data.get("organizer")
         org_name = "Luma Host"
         if isinstance(org, dict):
-            org_name = org.get("name", org_name)
+            org_name = org.get("name") or org_name
+        elif isinstance(org, list) and len(org) > 0:
+            if isinstance(org[0], dict):
+                org_name = org[0].get("name") or org_name
+            elif isinstance(org[0], str):
+                org_name = org[0]
+        elif isinstance(org, str):
+            org_name = org
             
         img = event_data.get("image", IMG_DEFAULT[0])
         if isinstance(img, list) and img:
