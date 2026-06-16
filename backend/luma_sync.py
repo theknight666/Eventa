@@ -238,6 +238,18 @@ async def sync_luma_cities(db, force: bool = False) -> dict:
                 if existing and existing["id"] != event["id"]:
                     continue
                     
+                existing_event = await db.events.find_one({"id": event["id"]})
+                if not existing_event:
+                    from ai_category import infer_category_ai
+                    cat = await infer_category_ai(event["title"], event["description"])
+                    event["category"] = cat
+                    event["industry"] = cat.replace("-", " ").title()
+                    event["tags"] = [cat]
+                else:
+                    event["category"] = existing_event.get("category", event["category"])
+                    event["industry"] = existing_event.get("industry", event["industry"])
+                    event["tags"] = existing_event.get("tags", event["tags"])
+                    
                 set_data = {k: v for k, v in event.items() if k not in ("attendees_count", "views", "created_at")}
                 set_on_insert = {
                     "attendees_count": event["attendees_count"],
