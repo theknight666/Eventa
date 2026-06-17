@@ -381,7 +381,7 @@ export default function Hero({ stats, onSearch, onCity }) {
             <span className="label-eyebrow text-foreground/80">AI-powered event discovery · India</span>
           </motion.div>
 
-          <h1 className="font-display font-extrabold tracking-tight text-balance text-4xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1] max-w-2xl">
+          <h1 className="font-display font-extrabold tracking-tight text-4xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1]">
             {"Discover India's Most".split(" ").map((w, i) => (
               <motion.span
                 key={i}
