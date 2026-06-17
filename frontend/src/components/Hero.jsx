@@ -421,26 +421,26 @@ export default function Hero({ stats, onSearch, onCity }) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease, delay: 0.7 }}
-            className="mt-10 max-w-xl w-full"
+            className="mt-8 max-w-xl w-full"
             data-testid="hero-search-form"
           >
-            <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-3 flex-1 px-4 py-1 sm:py-0">
-                <Search size={20} className="text-muted-foreground shrink-0" />
+            <div className="glass rounded-full p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-xl shadow-black/10">
+              <div className="flex items-center gap-2 flex-1 px-4 py-1 sm:py-0">
+                <Search size={18} className="text-muted-foreground shrink-0" />
                 <input
                   data-testid="hero-search-input"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search events, cities, speakers…"
-                  className="w-full bg-transparent py-3.5 outline-none placeholder:text-muted-foreground text-base"
+                  className="w-full bg-transparent py-2.5 outline-none placeholder:text-muted-foreground text-sm"
                 />
               </div>
               <button
                 type="submit"
                 data-testid="hero-search-submit"
-                className="w-full sm:w-auto rounded-xl bg-foreground text-background px-7 py-3.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                className="w-full sm:w-auto rounded-full bg-foreground text-background px-6 py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
-                <MapPin size={16} /> Explore
+                <MapPin size={15} /> Explore
               </button>
             </div>
             <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground px-2">
@@ -469,7 +469,7 @@ export default function Hero({ stats, onSearch, onCity }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.9 }}
-            className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl overflow-hidden glass max-w-xl"
+            className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl overflow-hidden glass max-w-xl"
             data-testid="hero-counters"
           >
             {counters.map((c) => (
