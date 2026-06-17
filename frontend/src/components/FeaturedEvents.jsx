@@ -114,13 +114,7 @@ export default function FeaturedEvents() {
                         const name = ev.organizer?.name || "Organizer";
                         const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
                         if (generic.includes(name.toLowerCase())) {
-                          const url = ev.ticket_url || ev.event_url || ev.source_url;
-                          if (url) {
-                            try {
-                              const host = new URL(url).hostname.replace("www.", "").split(".")[0];
-                              return host.charAt(0).toUpperCase() + host.slice(1);
-                            } catch(e) {}
-                          }
+                          return "External Organizer";
                         }
                         return name;
                       })()}

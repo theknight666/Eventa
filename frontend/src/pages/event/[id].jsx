@@ -390,13 +390,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
                     const name = event.organizer?.name || "Organizer";
                     const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
                     if (generic.includes(name.toLowerCase())) {
-                      const url = event.ticket_url || event.event_url || event.source_url;
-                      if (url) {
-                        try {
-                          const host = new URL(url).hostname.replace("www.", "").split(".")[0];
-                          return "Hosted on " + host.charAt(0).toUpperCase() + host.slice(1);
-                        } catch(e) {}
-                      }
+                      return "External Organizer";
                     }
                     return name;
                   })()}
