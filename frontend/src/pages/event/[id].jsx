@@ -119,7 +119,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
     },
     "organizer": {
       "@type": "Organization",
-      "name": event.organizer_name || "Eventa"
+      "name": event.organizer?.name || "Eventa"
     }
   };
 
@@ -386,23 +386,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
               <p className="label-eyebrow text-muted-foreground mb-3">Organizer</p>
               <div className="flex items-center gap-2">
                 <div className="font-semibold">
-                  {(() => {
-                    let name = event.organizer.name;
-                    if (["External Organizer", "Event Organizer", "Townscript Organizer", "Meetup Organizer"].includes(name)) {
-                      const sourceUrl = event.ticket_url || event.event_url || event.source_url;
-                      if (sourceUrl) {
-                        try {
-                          const hostname = new URL(sourceUrl).hostname.replace("www.", "");
-                          name = "Hosted on " + hostname;
-                        } catch (e) {
-                          name = "Event Organizer";
-                        }
-                      } else {
-                        name = "Event Organizer";
-                      }
-                    }
-                    return name;
-                  })()}
+                  {event.organizer?.name || "Organizer"}
                 </div>
                 {event.organizer.verified && <BadgeCheck size={17} className="text-blue-500" />}
               </div>

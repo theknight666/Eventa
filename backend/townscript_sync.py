@@ -13,6 +13,7 @@ from typing import Optional
 from cities import CITY_COORDS
 from dedup import generate_dedup_key
 from category_utils import infer_category
+from organizer_utils import extract_organizer_name
 import httpx
 from bs4 import BeautifulSoup
 
@@ -133,10 +134,7 @@ async def scrape_ts_event(event_data: dict, city: str) -> Optional[dict]:
                 try: price = int(float(p))
                 except: pass
         
-        org = event_data.get("organizer", {})
-        org_name = "Townscript Organizer"
-        if isinstance(org, dict):
-            org_name = org.get("name", org_name)
+        org_name = extract_organizer_name(jsonld_data=event_data)
             
         img = event_data.get("image", IMG_DEFAULT[0])
         if isinstance(img, list) and img:

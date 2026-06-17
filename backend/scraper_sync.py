@@ -16,6 +16,7 @@ from typing import Optional
 from cities import CITY_COORDS
 from dedup import generate_dedup_key
 from category_utils import infer_category
+from organizer_utils import extract_organizer_name
 import httpx
 from bs4 import BeautifulSoup
 
@@ -146,21 +147,16 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                     try: price = int(float(p))
                     except: pass
             
-            # Organizer
+            # Organizer — extract the REAL organizer name
+            org_name = extract_organizer_name(jsonld_data=data, soup=soup)
+            
+            # Extract org URL for direct linking
             org = data.get("organizer")
-            org_name = "Event Organizer"
             org_url = None
             if isinstance(org, dict):
-                org_name = org.get("name") or org_name
                 org_url = org.get("url")
-            elif isinstance(org, list) and len(org) > 0:
-                if isinstance(org[0], dict):
-                    org_name = org[0].get("name") or org_name
-                    org_url = org[0].get("url")
-                elif isinstance(org[0], str):
-                    org_name = org[0]
-            elif isinstance(org, str):
-                org_name = org
+            elif isinstance(org, list) and len(org) > 0 and isinstance(org[0], dict):
+                org_url = org[0].get("url")
                 
             if org_url and "allevents.in" not in org_url and direct_url == url:
                 direct_url = org_url
