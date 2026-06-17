@@ -463,44 +463,41 @@ async def event_sources():
     }
 
 
+from fastapi import BackgroundTasks
+
+async def run_sync_tasks(db, force: bool):
+    try:
+        await sync_all_cities(db, force=force)
+    except Exception as e:
+        logger.exception("AllEvents sync failed")
+        
+    try:
+        await sync_meetup_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Meetup sync failed")
+        
+    try:
+        await sync_eb_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Eventbrite sync failed")
+        
+    try:
+        await sync_luma_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Luma sync failed")
+        
+    try:
+        await sync_ts_cities(db, force=force)
+    except Exception as e:
+        logger.exception("Townscript sync failed")
+
 @api_router.post("/admin/sync-all")
-async def admin_sync_all(force: bool = False):
+async def admin_sync_all(background_tasks: BackgroundTasks, force: bool = False):
     """Manually trigger all live-event scrapers.
     Pass ?force=true to bypass the cooldown.
     """
-    results = {}
-    
-    try:
-        results["allevents"] = await sync_all_cities(db, force=force)
-    except Exception as e:
-        logger.exception("AllEvents sync failed")
-        results["allevents"] = {"status": "error", "message": str(e)}
-
-    try:
-        results["meetup"] = await sync_meetup_cities(db, force=force)
-    except Exception as e:
-        logger.exception("Meetup sync failed")
-        results["meetup"] = {"status": "error", "message": str(e)}
-
-    try:
-        results["eventbrite"] = await sync_eb_cities(db, force=force)
-    except Exception as e:
-        logger.exception("Eventbrite sync failed")
-        results["eventbrite"] = {"status": "error", "message": str(e)}
-
-    try:
-        results["luma"] = await sync_luma_cities(db, force=force)
-    except Exception as e:
-        logger.exception("Luma sync failed")
-        results["luma"] = {"status": "error", "message": str(e)}
-
-    try:
-        results["townscript"] = await sync_ts_cities(db, force=force)
-    except Exception as e:
-        logger.exception("Townscript sync failed")
-        results["townscript"] = {"status": "error", "message": str(e)}
-        
-    return results
+    background_tasks.add_task(run_sync_tasks, db, force)
+    return {"status": "ok", "message": "Sync started in background. This may take several minutes to complete."}
 
 
 @api_router.get("/categories")
