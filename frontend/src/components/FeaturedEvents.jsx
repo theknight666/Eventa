@@ -110,7 +110,20 @@ export default function FeaturedEvents() {
                   </div>
                   <div className="p-5 flex items-center justify-between border-t border-amber-500/10 dark:border-white/5">
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 line-clamp-1 flex-1 pr-4">
-                      By {ev.organizer?.name || "Organizer"}
+                      By {(() => {
+                        const name = ev.organizer?.name || "Organizer";
+                        const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
+                        if (generic.includes(name.toLowerCase())) {
+                          const url = ev.ticket_url || ev.event_url || ev.source_url;
+                          if (url) {
+                            try {
+                              const host = new URL(url).hostname.replace("www.", "").split(".")[0];
+                              return host.charAt(0).toUpperCase() + host.slice(1);
+                            } catch(e) {}
+                          }
+                        }
+                        return name;
+                      })()}
                     </span>
                     <div className="h-10 w-10 rounded-full bg-amber-500/10 dark:bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-gradient-to-r group-hover:from-amber-400 group-hover:to-orange-500 group-hover:text-white text-amber-600 dark:text-white transition-all shadow-md group-hover:shadow-amber-500/50">
                       <ArrowRight size={16} />

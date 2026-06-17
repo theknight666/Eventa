@@ -211,7 +211,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
           <div className="mb-12 lg:mb-20">
             <button
               data-testid="back-btn"
-              onClick={() => router.push(-1)}
+              onClick={() => router.back()}
               className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white hover:scale-105 transition-transform"
             >
               <ArrowLeft size={16} /> Back
@@ -386,7 +386,20 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
               <p className="label-eyebrow text-muted-foreground mb-3">Organizer</p>
               <div className="flex items-center gap-2">
                 <div className="font-semibold">
-                  {event.organizer?.name || "Organizer"}
+                  {(() => {
+                    const name = event.organizer?.name || "Organizer";
+                    const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
+                    if (generic.includes(name.toLowerCase())) {
+                      const url = event.ticket_url || event.event_url || event.source_url;
+                      if (url) {
+                        try {
+                          const host = new URL(url).hostname.replace("www.", "").split(".")[0];
+                          return "Hosted on " + host.charAt(0).toUpperCase() + host.slice(1);
+                        } catch(e) {}
+                      }
+                    }
+                    return name;
+                  })()}
                 </div>
                 {event.organizer.verified && <BadgeCheck size={17} className="text-blue-500" />}
               </div>
