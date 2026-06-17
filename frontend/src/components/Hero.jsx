@@ -370,7 +370,7 @@ export default function Hero({ stats, onSearch, onCity }) {
       <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-24 lg:pt-24 pb-4 lg:pb-4 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
         
         {/* Left Column: Text & CTA */}
-        <div className="flex-1 max-w-2xl w-full relative z-10">
+        <div className="flex-1 max-w-3xl w-full relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -381,18 +381,20 @@ export default function Hero({ stats, onSearch, onCity }) {
             <span className="label-eyebrow text-foreground/80">AI-powered event discovery · India</span>
           </motion.div>
 
-          <h1 className="font-display font-extrabold tracking-tight text-4xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1]">
-            {"Discover India's Most".split(" ").map((w, i) => (
-              <motion.span
-                key={i}
-                className="inline-block mr-[0.25em]"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease, delay: 0.1 + i * 0.08 }}
-              >
-                {w}
-              </motion.span>
-            ))}
+          <h1 className="font-display font-extrabold tracking-tight text-balance text-4xl sm:text-6xl lg:text-7xl xl:text-[5rem] leading-[1] max-w-3xl">
+            <span className="whitespace-nowrap">
+              {"Discover India's Most".split(" ").map((w, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block mr-[0.25em]"
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, ease, delay: 0.1 + i * 0.08 }}
+                >
+                  {w}
+                </motion.span>
+              ))}
+            </span>
             <br />
             <motion.span
               initial={{ opacity: 0, y: 40 }}
