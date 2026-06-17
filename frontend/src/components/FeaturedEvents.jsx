@@ -111,10 +111,14 @@ export default function FeaturedEvents() {
                   <div className="p-5 flex items-center justify-between border-t border-amber-500/10 dark:border-white/5">
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 line-clamp-1 flex-1 pr-4">
                       By {(() => {
-                        const name = ev.organizer?.name || "Organizer";
+                        const name = ev.organizer?.name || "";
                         const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
-                        if (generic.includes(name.toLowerCase())) {
-                          return "External Organizer";
+                        if (!name || generic.includes(name.toLowerCase())) {
+                          if (ev.venue && ev.venue.toLowerCase() !== "online" && ev.venue.length > 2) {
+                            // Clean up venue name slightly (e.g. "Olive Cafe and Bar: Chandigarh" -> "Olive Cafe and Bar")
+                            return ev.venue.split(":")[0].split(",")[0].trim();
+                          }
+                          return "Local Organizer";
                         }
                         return name;
                       })()}

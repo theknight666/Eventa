@@ -387,10 +387,13 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
               <div className="flex items-center gap-2">
                 <div className="font-semibold">
                   {(() => {
-                    const name = event.organizer?.name || "Organizer";
+                    const name = event.organizer?.name || "";
                     const generic = ["external organizer", "external organiser", "event organizer", "townscript organizer", "meetup organizer", "luma host", "eventbrite organizer"];
-                    if (generic.includes(name.toLowerCase())) {
-                      return "External Organizer";
+                    if (!name || generic.includes(name.toLowerCase())) {
+                      if (event.venue && event.venue.toLowerCase() !== "online" && event.venue.length > 2) {
+                        return event.venue.split(":")[0].split(",")[0].trim();
+                      }
+                      return "Local Organizer";
                     }
                     return name;
                   })()}
