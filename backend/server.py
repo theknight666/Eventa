@@ -507,6 +507,52 @@ async def admin_sync_all(background_tasks: BackgroundTasks, force: bool = False)
     return {"status": "ok", "message": "Sync started in background. This may take several minutes to complete."}
 
 
+@api_router.post("/admin/backfill-traction")
+async def admin_backfill_traction(background_tasks: BackgroundTasks, x_admin_key: str = Header(None)):
+    """One-time backfill: reset fake attendee counts, views, and ratings to real data.
+    Requires admin auth. Runs in background.
+    """
+    get_admin_key(x_admin_key)
+
+    async def _run_backfill(db):
+        logger.info("Starting traction backfill...")
+        scraped_sources = ["scraper", "meetup", "eventbrite", "luma", "townscript"]
+        updated = 0
+        async for event in db.events.find({"source": {"$in": scraped_sources}}):
+            event_id = event["id"]
+            real_regs = await db.registrations.count_documents({"event_id": event_id})
+            real_views = await db.views.count_documents({"event_id": event_id})
+            is_verified = event.get("organizer", {}).get("verified", False)
+            source = event.get("source", "")
+            score = compute_traction_score(
+                registrations=real_regs, views=real_views,
+                is_verified_organizer=is_verified, source=source,
+            )
+            await db.events.update_one(
+                {"_id": event["_id"]},
+                {"$set": {"attendees_count": real_regs, "views": real_views, "rating": score}}
+            )
+            updated += 1
+        # Also update organizer events
+        async for event in db.events.find({"source": "organizer"}):
+            event_id = event["id"]
+            real_regs = await db.registrations.count_documents({"event_id": event_id})
+            real_views = await db.views.count_documents({"event_id": event_id})
+            is_verified = event.get("organizer", {}).get("verified", False)
+            score = compute_traction_score(
+                registrations=real_regs, views=real_views,
+                is_verified_organizer=is_verified, source="organizer",
+            )
+            await db.events.update_one(
+                {"_id": event["_id"]},
+                {"$set": {"rating": score}}
+            )
+        logger.info(f"Traction backfill complete: {updated} scraped events fixed.")
+
+    background_tasks.add_task(_run_backfill, db)
+    return {"status": "ok", "message": "Backfill started in background. Check server logs for progress."}
+
+
 async def _recompute_traction_scores(db):
     """Recompute traction scores for all events based on REAL engagement data."""
     logger.info("Recomputing traction scores from real engagement data...")
