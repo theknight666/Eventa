@@ -17,6 +17,7 @@ from cities import CITY_COORDS
 from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
+from traction_utils import extract_attendees_from_jsonld, extract_attendees_from_html
 import httpx
 from bs4 import BeautifulSoup
 
@@ -156,7 +157,7 @@ async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
                     except: pass
             
             # Organizer — extract the REAL organizer name
-            org_name = extract_organizer_name(jsonld_data=event_data, soup=soup)
+            org_name = extract_organizer_name(jsonld_data=event_data, soup=soup, source_url=url)
                 
             img = event_data.get("image", IMG_DEFAULT[0])
             if isinstance(img, list) and img:
@@ -168,7 +169,10 @@ async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
             category = infer_category(title, desc)
                 
             event_id = _stable_id(url, title)
-            attendees = random.randint(10, 200)  # Meetups are typically smaller
+            # Extract REAL attendee count from source data
+            attendees = extract_attendees_from_jsonld(event_data)
+            if attendees == 0:
+                attendees = extract_attendees_from_html(soup, source="meetup")
             formatted_city = city.replace("-", " ").title()
             
             lat, lng = CITY_COORDS.get(formatted_city, (0.0, 0.0))
@@ -207,11 +211,11 @@ async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
                 "featured": False,
                 "trending": False,
                 "attendees_count": attendees,
-                "rating": round(random.uniform(4.0, 4.9), 1),
+                "rating": 0,
                 "source": "meetup",
                 "event_url": url,
                 "ticket_url": url,
-                "views": attendees * 5,
+                "views": 0,
                 "created_at": now.isoformat(),
             }
     except Exception as e:

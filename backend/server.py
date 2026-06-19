@@ -35,6 +35,7 @@ from eb_sync import sync_eb_cities
 from luma_sync import sync_luma_cities
 from townscript_sync import sync_ts_cities
 from dedup import generate_dedup_key, deduplicate_database, check_duplicate_exists
+from traction_utils import compute_traction_score
 
 # Default cover image for organizer-created events
 _DEFAULT_COVER = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"
@@ -490,6 +491,12 @@ async def run_sync_tasks(db, force: bool):
         await sync_ts_cities(db, force=force)
     except Exception as e:
         logger.exception("Townscript sync failed")
+    
+    # Recompute traction scores after all syncs complete
+    try:
+        await _recompute_traction_scores(db)
+    except Exception as e:
+        logger.exception("Traction score recomputation failed")
 
 @api_router.post("/admin/sync-all")
 async def admin_sync_all(background_tasks: BackgroundTasks, force: bool = False):
@@ -498,6 +505,34 @@ async def admin_sync_all(background_tasks: BackgroundTasks, force: bool = False)
     """
     background_tasks.add_task(run_sync_tasks, db, force)
     return {"status": "ok", "message": "Sync started in background. This may take several minutes to complete."}
+
+
+async def _recompute_traction_scores(db):
+    """Recompute traction scores for all events based on REAL engagement data."""
+    logger.info("Recomputing traction scores from real engagement data...")
+    updated = 0
+    async for event in db.events.find({}, {"id": 1, "source": 1, "organizer": 1, "views": 1}):
+        event_id = event["id"]
+        # Count real registrations on Eventa
+        registrations = await db.registrations.count_documents({"event_id": event_id})
+        views = event.get("views", 0)
+        is_verified = event.get("organizer", {}).get("verified", False)
+        source = event.get("source", "")
+        
+        score = compute_traction_score(
+            registrations=registrations,
+            views=views,
+            is_verified_organizer=is_verified,
+            source=source,
+        )
+        
+        await db.events.update_one(
+            {"id": event_id},
+            {"$set": {"rating": score}}
+        )
+        updated += 1
+    
+    logger.info(f"Traction scores recomputed for {updated} events.")
 
 
 @api_router.get("/categories")
@@ -902,12 +937,6 @@ def get_admin_key(x_admin_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or expired admin token")
 
 # ======================= ORGANIZER PORTAL =======================
-SAMPLE_NAMES = [
-    "Aarav Sharma", "Priya Patel", "Rohan Mehta", "Ananya Iyer", "Vikram Singh",
-    "Sneha Reddy", "Arjun Nair", "Kavya Rao", "Aditya Gupta", "Ishita Joshi",
-    "Karthik Menon", "Neha Verma", "Siddharth Bose", "Pooja Desai", "Rahul Khanna",
-    "Meera Pillai", "Aniket Kulkarni", "Divya Agarwal", "Manish Tiwari", "Riya Kapoor",
-]
 
 
 def slugify(name: str) -> str:
@@ -997,7 +1026,7 @@ def _build_organizer_event(inp: EventInput, org) -> dict:
         "featured": False,
         "trending": False,
         "attendees_count": 0,
-        "rating": 4.6,
+        "rating": 0,
         "owner_slug": org["slug"],
         "source": "organizer",
         "views": 0,

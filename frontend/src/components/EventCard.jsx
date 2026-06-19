@@ -135,7 +135,18 @@ const EventCard = React.memo(({ event, index = 0 }) => {
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Users size={12} /> {formatINR(event.attendees_count)} attending · ★ {event.rating}
+            <Users size={12} />
+            {event.attendees_count > 0 ? (
+              <>{formatINR(event.attendees_count)} attending</>
+            ) : (
+              <>Be the first!</>
+            )}
+            {" · "}
+            {event.rating > 0 ? (
+              <>★ {event.rating}</>
+            ) : (
+              <span className="text-amber-500 font-semibold">New</span>
+            )}
           </div>
         </div>
       </Link>

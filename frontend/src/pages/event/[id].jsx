@@ -240,7 +240,11 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
               <span className="flex items-center gap-2"><Calendar size={16} /> {formatDateLong(event.start_iso)}</span>
               <span className="flex items-center gap-2"><Clock size={16} /> {event.time}</span>
               <span className="flex items-center gap-2"><MapPin size={16} /> {event.area ? `${event.area}, ` : ""}{event.city}, {event.state}</span>
-              <span className="flex items-center gap-2"><Star size={16} /> {event.rating}</span>
+              {event.rating > 0 ? (
+                <span className="flex items-center gap-2"><Star size={16} /> {event.rating}</span>
+              ) : (
+                <span className="flex items-center gap-2 text-amber-400 font-semibold">✦ New Event</span>
+              )}
             </div>
           </motion.div>
         </div>
@@ -403,11 +407,15 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
               <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-xl bg-muted/50 p-3">
                   <div className="flex items-center gap-1.5 text-muted-foreground"><Users size={13} /> Attending</div>
-                  <div className="font-bold mt-1">{formatINR(event.attendees_count)}</div>
+                  <div className="font-bold mt-1">
+                    {event.attendees_count > 0 ? formatINR(event.attendees_count) : "Be the first!"}
+                  </div>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-3">
                   <div className="flex items-center gap-1.5 text-muted-foreground"><Star size={13} /> Rating</div>
-                  <div className="font-bold mt-1">{event.rating} / 5</div>
+                  <div className="font-bold mt-1">
+                    {event.rating > 0 ? `${event.rating} / 5` : <span className="text-amber-500">New</span>}
+                  </div>
                 </div>
               </div>
             </div>
