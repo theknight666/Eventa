@@ -819,8 +819,23 @@ async def list_events(
         if ind_list:
             query["category"] = {"$in": ind_list}
     if q:
-        exact_q = f'"{q}"' if not (q.startswith('"') and q.endswith('"')) else q
-        query["$text"] = {"$search": exact_q}
+        import re
+        words = q.split()
+        and_conditions = []
+        for word in words:
+            escaped_word = re.escape(word)
+            and_conditions.append({
+                "$or": [
+                    {"title": {"$regex": escaped_word, "$options": "i"}},
+                    {"description": {"$regex": escaped_word, "$options": "i"}},
+                    {"organizer.name": {"$regex": escaped_word, "$options": "i"}},
+                    {"tags": {"$regex": escaped_word, "$options": "i"}},
+                    {"industry": {"$regex": escaped_word, "$options": "i"}},
+                    {"venue": {"$regex": escaped_word, "$options": "i"}}
+                ]
+            })
+        if and_conditions:
+            query["$and"] = and_conditions
     if date_filter:
         now = datetime.now(timezone.utc)
         start = now
