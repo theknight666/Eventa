@@ -20,7 +20,7 @@ async function main() {
   let eventRoutes = [];
 
   try {
-    const res = await fetch('https://eventa-backend.onrender.com/api/events?featured=true');
+    const res = await fetch('https://eventa-a492.onrender.com/api/events?featured=true');
     if (res.ok) {
       const data = await res.json();
       eventRoutes = data.events.slice(0, 10).map(e => `/event/${e.slug || e.id}`);
