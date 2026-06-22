@@ -51,25 +51,44 @@ def _stable_id(link: str, title: str) -> str:
     return f"meetup-{hex_id}"
 
 async def fetch_meetup_urls(city: str) -> list[str]:
-    """Crawl Meetup city page to find event URLs."""
+    """Crawl Meetup city page with multiple keywords to find all event URLs."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
-    links = []
+    links = set()
+    keywords = ["tech", "business", "health", "music", "art", "education", "social", "sports"]
+    
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            url = f"https://www.meetup.com/find/?location=in--{city}&source=EVENTS"
-            resp = await client.get(url, headers=headers)
-            soup = BeautifulSoup(resp.text, "html.parser")
-            
-            for a in soup.find_all("a"):
-                href = a.get("href", "")
-                if href and "/events/" in href and "meetup.com" in href:
-                    # Clean up URL parameters to keep it standard
-                    clean_url = href.split("?")[0]
-                    links.append(clean_url)
+            for keyword in keywords:
+                url = f"https://www.meetup.com/find/?location=in--{city}&source=EVENTS&keywords={keyword}"
+                resp = await client.get(url, headers=headers)
+                soup = BeautifulSoup(resp.text, "html.parser")
+                
+                # 1. Parse a tags
+                for a in soup.find_all("a"):
+                    href = a.get("href", "")
+                    if href and "/events/" in href and "meetup.com" in href:
+                        clean_url = href.split("?")[0]
+                        links.add(clean_url)
+                        
+                # 2. Parse __APOLLO_STATE__ for hidden/loaded events
+                script = soup.find("script", id="__NEXT_DATA__")
+                if script:
+                    try:
+                        data = json.loads(script.string)
+                        apollo = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
+                        for k, v in apollo.items():
+                            if k.startswith("Event:"):
+                                event_url = v.get("eventUrl")
+                                if event_url:
+                                    links.add(event_url.split("?")[0])
+                    except Exception as e:
+                        logger.warning(f"Error parsing apollo state for {city} - {keyword}: {e}")
+                        
+                await asyncio.sleep(0.5)
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from meetup: {e}")
     
-    return list(set(links))
+    return list(links)
 
 async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
     """Visit URL and extract JSON-LD."""

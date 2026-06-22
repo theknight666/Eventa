@@ -47,7 +47,7 @@ def _stable_id(link: str, title: str) -> str:
     return f"luma-{hex_id}"
 
 async def fetch_luma_events_for_city(city: str) -> list[dict]:
-    """Crawl Luma city page to extract JSON-LD event items directly."""
+    """Crawl Luma city page to extract JSON-LD and NEXT_DATA event items directly."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     events_data = []
     try:
@@ -56,11 +56,11 @@ async def fetch_luma_events_for_city(city: str) -> list[dict]:
             resp = await client.get(url, headers=headers)
             soup = BeautifulSoup(resp.text, "html.parser")
             
+            # 1. Parse JSON-LD (if any)
             lds = soup.find_all('script', type='application/ld+json')
             for ld in lds:
                 try:
                     data = json.loads(ld.string)
-                    # Luma might use itemListElement or direct Event list
                     if isinstance(data, list):
                         for item in data:
                             if item.get('@type') == 'Event':
@@ -76,80 +76,129 @@ async def fetch_luma_events_for_city(city: str) -> list[dict]:
                                         events_data.append(item)
                 except Exception:
                     pass
+                    
+            # 2. Parse __NEXT_DATA__
+            script = soup.find('script', id='__NEXT_DATA__')
+            if script:
+                try:
+                    data = json.loads(script.string)
+                    events = data.get('props', {}).get('pageProps', {}).get('initialData', {}).get('data', {}).get('events', [])
+                    for ev in events:
+                        # Append as a special wrapped dict to indicate it's from NEXT_DATA
+                        events_data.append({"__luma_native": True, "data": ev})
+                except Exception as e:
+                    logger.warning(f"Error parsing luma NEXT_DATA: {e}")
+                    
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from luma: {e}")
     
     return events_data
 
 async def scrape_luma_event(event_data: dict, city: str) -> Optional[dict]:
-    """Format Luma JSON-LD to Eventa schema."""
+    """Format Luma JSON-LD or NEXT_DATA to Eventa schema."""
     try:
-        title = event_data.get("name")
-        if not title:
-            return None
-            
-        url = event_data.get("url", "")
-            
-        start_date_str = event_data.get("startDate")
         now = datetime.now(timezone.utc)
-        try:
-            dt = datetime.fromisoformat(start_date_str)
-        except:
-            dt = now + timedelta(days=random.randint(1, 14))
+        
+        # Handle __NEXT_DATA__ native Luma event format
+        if event_data.get("__luma_native"):
+            ev = event_data["data"]
+            title = ev.get("name")
+            if not title: return None
             
-        loc = event_data.get("location", {})
-        venue = "Luma Venue"
-        address = city.title()
-        event_type = "offline"
-        
-        if event_data.get("eventAttendanceMode") == "https://schema.org/OnlineEventAttendanceMode":
-            event_type = "online"
-            venue = "Online Event"
-        
-        if isinstance(loc, dict):
-            if loc.get("@type") == "VirtualLocation":
-                venue = "Online Event"
+            url = f"https://lu.ma/{ev.get('url')}" if ev.get("url") else ""
+            dt_str = ev.get("start_at")
+            try:
+                dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+            except:
+                dt = now + timedelta(days=random.randint(1, 14))
+                
+            venue = "Luma Venue"
+            address = city.title()
+            event_type = "offline"
+            
+            geo = ev.get("geo_address_info", {})
+            if geo:
+                venue = geo.get("address", venue)
+                address = geo.get("full_address", address)
+                
+            if ev.get("location_type") == "online":
                 event_type = "online"
-            else:
-                venue = loc.get("name", venue)
-                addr_obj = loc.get("address", {})
-                if isinstance(addr_obj, dict):
-                    address = addr_obj.get("streetAddress", address)
-                    if not address:
-                        address = addr_obj.get("addressLocality", city.title())
-                elif isinstance(addr_obj, str):
-                    address = addr_obj
+                venue = "Online Event"
+                
+            price = 0
+            pricing = "free"
+            ticket_info = ev.get("ticket_info", {})
+            if ticket_info and not ticket_info.get("is_free"):
+                pricing = "paid"
+                cents = ticket_info.get("price", {}).get("cents", 0)
+                if cents:
+                    price = int(cents / 100)
                     
-        price = 0
-        pricing = "free"
-        offers = event_data.get("offers")
-        if isinstance(offers, dict):
-            p = offers.get("price")
-            if p and str(p) != "0":
-                pricing = "paid"
-                try: price = int(float(p))
-                except: pass
-        elif isinstance(offers, list) and len(offers) > 0:
-            p = offers[0].get("price")
-            if p and str(p) != "0":
-                pricing = "paid"
-                try: price = int(float(p))
-                except: pass
-        
-        org_name = extract_organizer_name(jsonld_data=event_data, source_url=url)
+            img = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"
+            if ev.get("social_image_url"):
+                img = ev.get("social_image_url")
+                
+            desc = ""
             
-        img = event_data.get("image", IMG_DEFAULT[0])
-        if isinstance(img, list) and img:
-            img = img[0]
+            hosts = ev.get("hosts", [])
+            org_name = hosts[0].get("name", "Luma Host") if hosts else "Luma Host"
+            attendees = ev.get("guest_count", 0)
             
-        desc = event_data.get("description", "")
-        
-        # Category inference
+        else:
+            # Handle standard JSON-LD
+            title = event_data.get("name")
+            if not title: return None
+            url = event_data.get("url", "")
+            start_date_str = event_data.get("startDate")
+            try: dt = datetime.fromisoformat(start_date_str)
+            except: dt = now + timedelta(days=random.randint(1, 14))
+                
+            loc = event_data.get("location", {})
+            venue = "Luma Venue"
+            address = city.title()
+            event_type = "offline"
+            
+            if event_data.get("eventAttendanceMode") == "https://schema.org/OnlineEventAttendanceMode":
+                event_type = "online"
+                venue = "Online Event"
+            
+            if isinstance(loc, dict):
+                if loc.get("@type") == "VirtualLocation":
+                    venue = "Online Event"
+                    event_type = "online"
+                else:
+                    venue = loc.get("name", venue)
+                    addr_obj = loc.get("address", {})
+                    if isinstance(addr_obj, dict):
+                        address = addr_obj.get("streetAddress", address)
+                        if not address: address = addr_obj.get("addressLocality", city.title())
+                    elif isinstance(addr_obj, str): address = addr_obj
+                        
+            price = 0
+            pricing = "free"
+            offers = event_data.get("offers")
+            if isinstance(offers, dict):
+                p = offers.get("price")
+                if p and str(p) != "0":
+                    pricing = "paid"
+                    try: price = int(float(p))
+                    except: pass
+            elif isinstance(offers, list) and len(offers) > 0:
+                p = offers[0].get("price")
+                if p and str(p) != "0":
+                    pricing = "paid"
+                    try: price = int(float(p))
+                    except: pass
+            
+            org_name = extract_organizer_name(jsonld_data=event_data, source_url=url)
+            img = event_data.get("image", IMG_DEFAULT[0])
+            if isinstance(img, list) and img: img = img[0]
+            desc = event_data.get("description", "")
+            attendees = extract_attendees_from_jsonld(event_data)
+            
         category = infer_category(title, desc)
-            
         event_id = _stable_id(url, title)
-        # Extract REAL attendee count from source data
-        attendees = extract_attendees_from_jsonld(event_data)
+        
         formatted_city = city.replace("-", " ").title()
         
         lat, lng = CITY_COORDS.get(formatted_city, (0.0, 0.0))

@@ -45,10 +45,15 @@ CITIES = [
 
 SYNC_COOLDOWN_HOURS = 6
 
-def _stable_id(link: str, title: str) -> str:
+def _stable_id(link: str, title: str, source_platform: str = "ae") -> str:
+    # Use the link as the primary stable identifier. Fallback to title.
     key = link.strip() if link.strip() else title.strip()
     hex_id = uuid.uuid5(uuid.NAMESPACE_URL, key).hex[:14]
-    return f"live-{hex_id}"
+    if source_platform == "townscript":
+        prefix = "ts"
+    else:
+        prefix = source_platform if source_platform in ("meetup", "eventbrite", "luma") else "ae"
+    return f"{prefix}-{hex_id}"
 
 def _detect_original_source(direct_url: str, url: str, data: dict, soup) -> tuple[str, str]:
     """Detect the original source platform and URL."""
@@ -222,7 +227,7 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             # Category inference
             category = infer_category(title, desc)
                 
-            event_id = _stable_id(original_url, title)
+            event_id = _stable_id(original_url, title, source_platform)
             # Extract REAL attendee count from source data
             attendees = extract_attendees_from_jsonld(data)
             if attendees == 0:

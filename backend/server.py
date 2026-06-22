@@ -819,7 +819,8 @@ async def list_events(
         if ind_list:
             query["category"] = {"$in": ind_list}
     if q:
-        query["$text"] = {"$search": q}
+        exact_q = f'"{q}"' if not (q.startswith('"') and q.endswith('"')) else q
+        query["$text"] = {"$search": exact_q}
     if date_filter:
         now = datetime.now(timezone.utc)
         start = now

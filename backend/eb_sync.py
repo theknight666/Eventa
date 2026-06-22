@@ -47,30 +47,54 @@ def _stable_id(link: str, title: str) -> str:
     return f"eb-{hex_id}"
 
 async def fetch_eb_events_for_city(city: str) -> list[dict]:
-    """Crawl Eventbrite city page to extract JSON-LD event items directly."""
+    """Crawl Eventbrite city pages across categories and pagination to extract JSON-LD event items directly."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     events_data = []
+    seen_urls = set()
+    
+    categories = [
+        "all-events", "business--events", "science-and-tech--events", 
+        "music--events", "health--events", "arts--events", "sports-and-fitness--events"
+    ]
+    
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            url = f"https://www.eventbrite.com/d/india--{city}/all-events/"
-            resp = await client.get(url, headers=headers)
-            soup = BeautifulSoup(resp.text, "html.parser")
-            
-            lds = soup.find_all('script', type='application/ld+json')
-            for ld in lds:
-                try:
-                    data = json.loads(ld.string)
-                    if isinstance(data, dict) and 'itemListElement' in data:
-                        for el in data['itemListElement']:
-                            if 'item' in el:
-                                item = el['item']
-                                # Sometimes Eventbrite list returns bare URLs, sometimes objects
-                                if isinstance(item, dict) and item.get('@type') in ('Event', 'EducationEvent', 'BusinessEvent'):
-                                    events_data.append(item)
-                                elif isinstance(item, dict) and 'url' in item:
-                                    events_data.append(item)
-                except Exception:
-                    pass
+            for category in categories:
+                for page in range(1, 6): # Up to 5 pages per category
+                    url = f"https://www.eventbrite.com/d/india--{city}/{category}/?page={page}"
+                    resp = await client.get(url, headers=headers)
+                    if resp.status_code != 200:
+                        break
+                        
+                    soup = BeautifulSoup(resp.text, "html.parser")
+                    lds = soup.find_all('script', type='application/ld+json')
+                    page_found = False
+                    
+                    for ld in lds:
+                        try:
+                            data = json.loads(ld.string)
+                            if isinstance(data, dict) and 'itemListElement' in data:
+                                for el in data['itemListElement']:
+                                    if 'item' in el:
+                                        item = el['item']
+                                        item_url = item.get('url', '')
+                                        
+                                        if item_url and item_url not in seen_urls:
+                                            if isinstance(item, dict) and item.get('@type') in ('Event', 'EducationEvent', 'BusinessEvent'):
+                                                events_data.append(item)
+                                                seen_urls.add(item_url)
+                                                page_found = True
+                                            elif isinstance(item, dict) and 'url' in item:
+                                                events_data.append(item)
+                                                seen_urls.add(item_url)
+                                                page_found = True
+                        except Exception:
+                            pass
+                            
+                    if not page_found:
+                        break
+                        
+                    await asyncio.sleep(0.5)
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from eventbrite: {e}")
     
