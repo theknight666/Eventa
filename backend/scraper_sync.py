@@ -50,13 +50,66 @@ def _stable_id(link: str, title: str) -> str:
     hex_id = uuid.uuid5(uuid.NAMESPACE_URL, key).hex[:14]
     return f"live-{hex_id}"
 
+def _detect_original_source(direct_url: str, url: str, data: dict, soup) -> tuple[str, str]:
+    """Detect the original source platform and URL."""
+    potential_urls = []
+    if direct_url and direct_url != url and "allevents.in" not in direct_url:
+        potential_urls.append(direct_url)
+        
+    data_url = data.get("url")
+    if data_url and isinstance(data_url, str) and "allevents.in" not in data_url:
+        potential_urls.append(data_url)
+        
+    org = data.get("organizer", {})
+    if isinstance(org, dict):
+        org_url = org.get("url")
+        if org_url and isinstance(org_url, str) and "allevents.in" not in org_url:
+            potential_urls.append(org_url)
+    elif isinstance(org, list) and len(org) > 0 and isinstance(org[0], dict):
+        org_url = org[0].get("url")
+        if org_url and isinstance(org_url, str) and "allevents.in" not in org_url:
+            potential_urls.append(org_url)
+            
+    offers = data.get("offers")
+    if isinstance(offers, dict):
+        offer_url = offers.get("url")
+        if offer_url and isinstance(offer_url, str) and "allevents.in" not in offer_url:
+            potential_urls.append(offer_url)
+            
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if "allevents.in" not in href:
+            if any(p in href for p in ["meetup.com", "eventbrite.com", "lu.ma", "townscript.com", "insider.in", "bookmyshow.com", "ticketmaster"]):
+                potential_urls.append(href)
+                
+    for u in potential_urls:
+        u_lower = u.lower()
+        if "meetup.com" in u_lower:
+            return "meetup", u
+        elif "eventbrite.com" in u_lower or "eventbrite.co" in u_lower:
+            return "eventbrite", u
+        elif "lu.ma" in u_lower or "luma.com" in u_lower:
+            return "luma", u
+        elif "townscript.com" in u_lower:
+            return "townscript", u
+        elif "insider.in" in u_lower:
+            return "insider", u
+        elif "bookmyshow.com" in u_lower:
+            return "bookmyshow", u
+            
+    if potential_urls:
+        return "scraper", potential_urls[0]
+        
+    return "scraper", url
+
 async def fetch_urls(city: str) -> list[str]:
     """Crawl allevents.in city page to find event URLs using pagination."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     links = []
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            for page in range(1, 6):  # Scrape up to 5 pages
+            page = 1
+            while True:
                 url = f"https://allevents.in/{city}/all?page={page}"
                 resp = await client.get(url, headers=headers)
                 soup = BeautifulSoup(resp.text, "html.parser")
@@ -68,9 +121,16 @@ async def fetch_urls(city: str) -> list[str]:
                         page_links.append(href)
                         
                 if not page_links:
+                    logger.info(f"[{city}] No more events found on page {page}. Stopping pagination.")
                     break
                     
                 links.extend(page_links)
+                
+                if page >= 200:
+                    logger.warning(f"[{city}] Reached maximum safety limit of 200 pages. Stopping.")
+                    break
+                    
+                page += 1
                 await asyncio.sleep(1)  # Pacing between pages
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city}: {e}")
@@ -127,12 +187,12 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             offers = data.get("offers")
             direct_url = url
             
+            # Check offers for direct URL overrides
             if isinstance(offers, dict):
                 p = offers.get("price")
                 u = offers.get("url")
                 if u and "allevents.in" not in u:
                     direct_url = u
-                    
                 if p and str(p) != "0":
                     pricing = "paid"
                     try: price = int(float(p))
@@ -142,30 +202,16 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                 u = offers[0].get("url")
                 if u and "allevents.in" not in u:
                     direct_url = u
-                    
                 if p and str(p) != "0":
                     pricing = "paid"
                     try: price = int(float(p))
                     except: pass
             
-            # Organizer — extract the REAL organizer name
-            org_name = extract_organizer_name(jsonld_data=data, soup=soup, source_url=url)
+            # Detect original source and override direct_url
+            source_platform, original_url = _detect_original_source(direct_url, url, data, soup)
             
-            # Extract org URL for direct linking
-            org = data.get("organizer")
-            org_url = None
-            if isinstance(org, dict):
-                org_url = org.get("url")
-            elif isinstance(org, list) and len(org) > 0 and isinstance(org[0], dict):
-                org_url = org[0].get("url")
-                
-            if org_url and "allevents.in" not in org_url and direct_url == url:
-                direct_url = org_url
-            
-            # Also check the main event URL
-            data_url = data.get("url")
-            if data_url and "allevents.in" not in data_url and direct_url == url:
-                direct_url = data_url
+            # Organizer — extract the REAL organizer name using the original_url
+            org_name = extract_organizer_name(jsonld_data=data, soup=soup, source_url=original_url)
                 
             img = data.get("image", IMG_DEFAULT[0])
             if isinstance(img, list) and img:
@@ -176,11 +222,11 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
             # Category inference
             category = infer_category(title, desc)
                 
-            event_id = _stable_id(url, title)
+            event_id = _stable_id(original_url, title)
             # Extract REAL attendee count from source data
             attendees = extract_attendees_from_jsonld(data)
             if attendees == 0:
-                attendees = extract_attendees_from_html(soup, source="scraper")
+                attendees = extract_attendees_from_html(soup, source=source_platform)
             formatted_city = city.replace("-", " ").title()
             
             lat, lng = CITY_COORDS.get(formatted_city, (0.0, 0.0))
@@ -220,9 +266,9 @@ async def scrape_event_page(url: str, city: str) -> Optional[dict]:
                 "trending": False,
                 "attendees_count": attendees,
                 "rating": 0,
-                "source": "scraper",
-                "event_url": direct_url,
-                "ticket_url": direct_url,
+                "source": source_platform,
+                "event_url": original_url,
+                "ticket_url": original_url,
                 "views": 0,
                 "created_at": now.isoformat(),
             }

@@ -199,7 +199,9 @@ def _extract_meetup_attendees(soup) -> int:
 
 def _extract_allevents_attendees(soup) -> int:
     """Extract attendee count from AllEvents.in pages."""
+    import re
     selectors = [
+        ".interested-count-text",
         ".interested-count",
         ".going-count",
         "[class*='interested']",
@@ -211,13 +213,21 @@ def _extract_allevents_attendees(soup) -> int:
         try:
             el = soup.select_one(sel)
             if el:
-                count = _parse_count_text(el.get_text(strip=True))
+                text = el.get_text(strip=True)
+                count = _parse_count_text(text)
                 if count > 0:
                     return count
+                
+                # For cases like "206+ people are going"
+                match = re.search(r'(\d[\d,]*(?:\.\d+)?[kKmM]?)\s*(?:\+\s*)?(?:people|going|interested)', text, re.IGNORECASE)
+                if match:
+                    count = _parse_count_text(match.group(1))
+                    if count > 0:
+                        return count
         except Exception:
             continue
     
-    return _find_count_near_keyword(soup, ["interested", "going", "attending", "people interested"])
+    return _find_count_near_keyword(soup, ["interested", "going", "attending", "people interested", "people are going", "people going"])
 
 
 def _extract_eventbrite_attendees(soup) -> int:
