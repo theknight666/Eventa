@@ -357,7 +357,7 @@ export default function Hero({ stats, onSearch, onCity }) {
   };
 
   const counters = [
-    { label: "Events This Week", value: stats?.events_this_week || 0 },
+    { label: "Total Events", value: stats?.total_events || 0 },
     { label: "Cities Covered", value: stats?.cities_covered || 0 },
     { label: "Registered Attendees", value: stats?.registered_attendees || 0, compact: true },
     { label: "Active Organizers", value: stats?.active_organizers || 0 },
