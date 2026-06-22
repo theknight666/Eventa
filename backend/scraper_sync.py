@@ -136,7 +136,7 @@ async def fetch_urls(city: str) -> list[str]:
                     break
                     
                 page += 1
-                await asyncio.sleep(1)  # Pacing between pages
+                await asyncio.sleep(0.1)  # Speed up pagination
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city}: {e}")
     
@@ -300,12 +300,12 @@ async def sync_all_cities(db, force: bool = False) -> dict:
     upserted = 0
     errors = []
 
-    sem = asyncio.Semaphore(5)
+    sem = asyncio.Semaphore(20)
 
     async def _process_url(url, city):
         async with sem:
             try:
-                await asyncio.sleep(random.uniform(0.5, 1.5))
+                await asyncio.sleep(0.1)
                 event = await scrape_event_page(url, city)
                 if not event:
                     return None
