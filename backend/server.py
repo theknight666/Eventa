@@ -588,8 +588,15 @@ async def get_categories(request: Request):
     if cached_res:
         return cached_res
 
+    now = datetime.now(timezone.utc)
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    query = {"approval_status": "approved", "start_iso": {"$gte": start_of_today.isoformat()}}
+
     counts = {}
-    pipeline = [{"$group": {"_id": "$category", "count": {"$sum": 1}}}]
+    pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}}
+    ]
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
     res = [{**c, "count": counts.get(c["id"], 0)} for c in CATEGORIES]
@@ -604,8 +611,15 @@ async def get_cities(request: Request):
     if cached_res:
         return cached_res
 
+    now = datetime.now(timezone.utc)
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    query = {"approval_status": "approved", "start_iso": {"$gte": start_of_today.isoformat()}}
+
     counts = {}
-    pipeline = [{"$group": {"_id": "$city", "count": {"$sum": 1}}}]
+    pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$city", "count": {"$sum": 1}}}
+    ]
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
     res = [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
@@ -675,15 +689,42 @@ async def get_overview(request: Request):
         return cached_res
 
     now = datetime.now(timezone.utc)
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week = (now + timedelta(days=7)).isoformat()
-    events_this_week = await db.events.count_documents({"start_iso": {"$lte": week}})
-    total = await db.events.count_documents({})
-    cities = len(await db.events.distinct("city"))
+    
+    events_this_week = await db.events.count_documents({
+        "approval_status": "approved", 
+        "start_iso": {"$gte": start_of_today.isoformat(), "$lte": week}
+    })
+    
+    category_ids = [c["id"] for c in CATEGORIES]
+    total = await db.events.count_documents({
+        "approval_status": "approved", 
+        "start_iso": {"$gte": start_of_today.isoformat()},
+        "category": {"$in": category_ids}
+    })
+    
+    # Still count unique cities based on approved events
+    cities = len(await db.events.distinct("city", {"approval_status": "approved", "start_iso": {"$gte": start_of_today.isoformat()}}))
     organizers = await db.organizers.count_documents({})
-    agg = db.events.aggregate([{"$group": {"_id": None, "att": {"$sum": "$attendees_count"}}}])
+    
+    # Estimate realistic real-world attendees based on expected attendance size
+    # since in-app registrations for scraped events are typically 0
+    cursor = db.events.find({
+        "approval_status": "approved",
+        "start_iso": {"$gte": start_of_today.isoformat()},
+        "category": {"$in": category_ids}
+    }, {"attendees_count": 1, "attendance_size": 1})
+    
     attendees = 0
-    async for row in agg:
-        attendees = row["att"]
+    size_map = {"mega": 5000, "large": 1000, "medium": 200, "small": 50}
+    
+    async for row in cursor:
+        actual = row.get("attendees_count", 0)
+        size = row.get("attendance_size", "small")
+        expected = size_map.get(size, 100)
+        attendees += max(actual, expected)
+        
     res = {
         "events_this_week": max(events_this_week, 0),
         "cities_covered": cities,
