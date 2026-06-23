@@ -479,68 +479,64 @@ export default function Hero({ stats, cities = [], onSearch, onCity }) {
                 <span>Use current location</span>
               </button>
               
-              {detectedCity && (
-                <>
-                  <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
-                        <MapPin size={14} className="text-emerald-500" />
-                        {detectedCity}
-                        <ChevronDown size={14} className="opacity-50" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-64 bg-background/95 backdrop-blur-md max-h-80 overflow-y-auto no-scrollbar">
-                      <div className="p-2 sticky top-0 bg-background/95 backdrop-blur-md z-10 border-b border-border/50 mb-1">
-                        <div className="flex items-center gap-2 px-2.5 bg-muted/50 rounded-md border border-border/50 focus-within:border-primary/50 transition-colors">
-                          <Search size={14} className="text-muted-foreground shrink-0" />
-                          <input 
-                            type="text" 
-                            placeholder="Search cities..." 
-                            className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
-                            value={citySearch}
-                            onChange={(e) => setCitySearch(e.target.value)}
-                            onKeyDown={(e) => {
-                              e.stopPropagation();
-                              if (e.key === "Enter" && citySearch.trim()) {
-                                onCity?.(citySearch.trim());
-                              }
-                            }}
-                            onClick={(e) => e.preventDefault()}
-                          />
-                        </div>
-                      </div>
-                      
-                      {detectedCity && (
-                        <DropdownMenuItem onClick={() => onCity?.(detectedCity)} className="font-medium text-emerald-500 hover:text-emerald-600 focus:text-emerald-600 focus:bg-emerald-500/10 mb-1">
-                          <MapPin size={14} className="mr-2 shrink-0" />
-                          <span className="truncate">Events in {detectedCity}</span>
-                        </DropdownMenuItem>
-                      )}
-                      
-                      {filteredCities.length > 0 ? (
-                        filteredCities.map((city) => (
-                          <DropdownMenuItem key={city.name} onClick={() => onCity?.(city.name)}>
-                            {city.name}
-                          </DropdownMenuItem>
-                        ))
-                      ) : (
-                        <div className="p-4 text-sm text-center text-muted-foreground">No predefined cities found.</div>
-                      )}
+              <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
+                    <MapPin size={14} className={detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
+                    {detectedCity || "Select City"}
+                    <ChevronDown size={14} className="opacity-50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64 bg-background/95 backdrop-blur-md max-h-80 overflow-y-auto no-scrollbar">
+                  <div className="p-2 sticky top-0 bg-background/95 backdrop-blur-md z-10 border-b border-border/50 mb-1">
+                    <div className="flex items-center gap-2 px-2.5 bg-muted/50 rounded-md border border-border/50 focus-within:border-primary/50 transition-colors">
+                      <Search size={14} className="text-muted-foreground shrink-0" />
+                      <input 
+                        type="text" 
+                        placeholder="Search cities..." 
+                        className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
+                        value={citySearch}
+                        onChange={(e) => setCitySearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === "Enter" && citySearch.trim()) {
+                            onCity?.(citySearch.trim());
+                          }
+                        }}
+                        onClick={(e) => e.preventDefault()}
+                      />
+                    </div>
+                  </div>
+                  
+                  {detectedCity && (
+                    <DropdownMenuItem onClick={() => onCity?.(detectedCity)} className="font-medium text-emerald-500 hover:text-emerald-600 focus:text-emerald-600 focus:bg-emerald-500/10 mb-1">
+                      <MapPin size={14} className="mr-2 shrink-0" />
+                      <span className="truncate">Events in {detectedCity}</span>
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {filteredCities.length > 0 ? (
+                    filteredCities.map((city) => (
+                      <DropdownMenuItem key={city.name} onClick={() => onCity?.(city.name)}>
+                        {city.name}
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-sm text-center text-muted-foreground">No predefined cities found.</div>
+                  )}
 
-                      {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
-                        <>
-                          <div className="h-px bg-border/50 my-1 mx-2" />
-                          <DropdownMenuItem onClick={() => onCity?.(citySearch.trim())} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
-                            <Search size={14} className="mr-2 shrink-0" />
-                            <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
+                  {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
+                    <>
+                      <div className="h-px bg-border/50 my-1 mx-2" />
+                      <DropdownMenuItem onClick={() => onCity?.(citySearch.trim())} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
+                        <Search size={14} className="mr-2 shrink-0" />
+                        <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
               <button 
