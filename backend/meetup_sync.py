@@ -50,17 +50,28 @@ def _stable_id(link: str, title: str) -> str:
     hex_id = uuid.uuid5(uuid.NAMESPACE_URL, key).hex[:14]
     return f"meetup-{hex_id}"
 
+MEETUP_CITY_ALIASES = {
+    "gurugram": ["gurugram", "gurgaon"],
+    "bengaluru": ["bengaluru", "bangalore"],
+    "mumbai": ["mumbai", "bombay"],
+    "pune": ["pune", "poona"],
+    "kolkata": ["kolkata", "calcutta"],
+    "chennai": ["chennai", "madras"]
+}
+
 async def fetch_meetup_urls(city: str) -> list[str]:
     """Crawl Meetup city page with multiple keywords to find all event URLs."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     links = set()
-    keywords = ["tech", "business", "health", "music", "art", "education", "social", "sports"]
+    keywords = ["", "tech", "business", "health", "music", "art", "education", "social", "sports"]
+    aliases = MEETUP_CITY_ALIASES.get(city, [city])
     
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            for keyword in keywords:
-                url = f"https://www.meetup.com/find/?location=in--{city}&source=EVENTS&keywords={keyword}"
-                resp = await client.get(url, headers=headers)
+            for alias in aliases:
+                for keyword in keywords:
+                    url = f"https://www.meetup.com/find/?location=in--{alias}&source=EVENTS&keywords={keyword}"
+                    resp = await client.get(url, headers=headers)
                 soup = BeautifulSoup(resp.text, "html.parser")
                 
                 # 1. Parse a tags
