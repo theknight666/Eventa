@@ -289,13 +289,15 @@ const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => {
   );
 });
 
-export default function Hero({ stats, onSearch, onCity }) {
+export default function Hero({ stats, cities = [], onSearch, onCity }) {
   const [q, setQ] = useState("");
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [detectedCity, setDetectedCity] = useState("");
+  const [citySearch, setCitySearch] = useState("");
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 140]);
+  const filteredCities = cities?.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase())) || [];
 
   useEffect(() => {
     fetch('https://ipapi.co/json/')
@@ -488,13 +490,38 @@ export default function Hero({ stats, onSearch, onCity }) {
                         <ChevronDown size={14} className="opacity-50" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48 bg-background/95 backdrop-blur-md">
-                      <DropdownMenuItem onClick={() => onCity?.(detectedCity)}>
-                        Events in {detectedCity}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onCity?.("Delhi")}>Delhi</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onCity?.("Mumbai")}>Mumbai</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onCity?.("Bangalore")}>Bangalore</DropdownMenuItem>
+                    <DropdownMenuContent align="start" className="w-64 bg-background/95 backdrop-blur-md max-h-80 overflow-y-auto no-scrollbar">
+                      <div className="p-2 sticky top-0 bg-background/95 backdrop-blur-md z-10 border-b border-border/50 mb-1">
+                        <div className="flex items-center gap-2 px-2.5 bg-muted/50 rounded-md border border-border/50 focus-within:border-primary/50 transition-colors">
+                          <Search size={14} className="text-muted-foreground shrink-0" />
+                          <input 
+                            type="text" 
+                            placeholder="Search cities..." 
+                            className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
+                            value={citySearch}
+                            onChange={(e) => setCitySearch(e.target.value)}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            onClick={(e) => e.preventDefault()}
+                          />
+                        </div>
+                      </div>
+                      
+                      {detectedCity && (
+                        <DropdownMenuItem onClick={() => onCity?.(detectedCity)} className="font-medium text-emerald-500 hover:text-emerald-600 focus:text-emerald-600 focus:bg-emerald-500/10 mb-1">
+                          <MapPin size={14} className="mr-2 shrink-0" />
+                          <span className="truncate">Events in {detectedCity}</span>
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {filteredCities.length > 0 ? (
+                        filteredCities.map((city) => (
+                          <DropdownMenuItem key={city.name} onClick={() => onCity?.(city.name)}>
+                            {city.name}
+                          </DropdownMenuItem>
+                        ))
+                      ) : (
+                        <div className="p-4 text-sm text-center text-muted-foreground">No cities found.</div>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>

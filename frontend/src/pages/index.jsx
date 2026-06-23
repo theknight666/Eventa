@@ -64,7 +64,7 @@ export default function Home({ initialStats, initialCategories, initialCities, i
           })}
         </script>
       </SEO>
-      <Hero stats={initialStats} onSearch={onSearch} onCity={onCity} />
+      <Hero stats={initialStats} cities={initialCities} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents initialEvents={initialFeatured} />
       <TrendingEvents initialEvents={initialTrending} />
       <EventsNearYou />
