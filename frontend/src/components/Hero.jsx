@@ -289,7 +289,7 @@ const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => {
   );
 });
 
-export default function Hero({ stats, cities = [], onSearch, onCity }) {
+export default function Hero({ stats, cities = [], activeCity, onSearch, onCity }) {
   const [q, setQ] = useState("");
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -483,8 +483,8 @@ export default function Hero({ stats, cities = [], onSearch, onCity }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
-                    <MapPin size={14} className={detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
-                    {detectedCity || "Select City"}
+                    <MapPin size={14} className={activeCity || detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
+                    {activeCity || detectedCity || "Detecting..."}
                     <ChevronDown size={14} className="opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
