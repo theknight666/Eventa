@@ -13,35 +13,19 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from cities import CITY_COORDS
+from cities import CITY_COORDS, CITIES, CITY_STATE, CITY_ALIASES
 from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
 from traction_utils import extract_attendees_from_jsonld, extract_attendees_from_html
 import httpx
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
 # Fallback images matching serpapi_sync
 IMG_DEFAULT = ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"]
-
-CITY_STATE = {
-    "Mumbai": "Maharashtra", "New Delhi": "Delhi", "Bengaluru": "Karnataka",
-    "Hyderabad": "Telangana", "Pune": "Maharashtra", "Chennai": "Tamil Nadu",
-    "Ahmedabad": "Gujarat", "Kolkata": "West Bengal", "Gurugram": "Haryana",
-    "Noida": "Uttar Pradesh", "Jaipur": "Rajasthan", "Surat": "Gujarat",
-    "Indore": "Madhya Pradesh", "Kochi": "Kerala", "Chandigarh": "Chandigarh",
-    "Lucknow": "Uttar Pradesh", "Varanasi": "Uttar Pradesh", "Goa": "Goa",
-    "Nagpur": "Maharashtra", "Vadodara": "Gujarat", "Coimbatore": "Tamil Nadu"
-}
-
-CITIES = [
-    "mumbai", "bengaluru", "new-delhi", "pune", "hyderabad", "chennai",
-    "kolkata", "ahmedabad", "jaipur", "gurugram", "noida", "surat",
-    "indore", "kochi", "chandigarh", "lucknow", "varanasi", "goa",
-    "nagpur", "vadodara", "coimbatore"
-]
 
 SYNC_COOLDOWN_HOURS = 6
 

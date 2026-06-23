@@ -10,7 +10,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from cities import CITY_COORDS
+from cities import CITY_COORDS, CITIES, CITY_STATE, CITY_ALIASES
 from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
@@ -21,23 +21,6 @@ from bs4 import BeautifulSoup
 logger = logging.getLogger(__name__)
 
 IMG_DEFAULT = ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"]
-
-CITY_STATE = {
-    "Mumbai": "Maharashtra", "New Delhi": "Delhi", "Bengaluru": "Karnataka",
-    "Hyderabad": "Telangana", "Pune": "Maharashtra", "Chennai": "Tamil Nadu",
-    "Ahmedabad": "Gujarat", "Kolkata": "West Bengal", "Gurugram": "Haryana",
-    "Noida": "Uttar Pradesh", "Jaipur": "Rajasthan", "Surat": "Gujarat",
-    "Indore": "Madhya Pradesh", "Kochi": "Kerala", "Chandigarh": "Chandigarh",
-    "Lucknow": "Uttar Pradesh", "Varanasi": "Uttar Pradesh", "Goa": "Goa",
-    "Nagpur": "Maharashtra", "Vadodara": "Gujarat", "Coimbatore": "Tamil Nadu"
-}
-
-CITIES = [
-    "mumbai", "bengaluru", "new-delhi", "pune", "hyderabad", "chennai",
-    "kolkata", "ahmedabad", "jaipur", "gurugram", "noida", "surat",
-    "indore", "kochi", "chandigarh", "lucknow", "varanasi", "goa",
-    "nagpur", "vadodara", "coimbatore"
-]
 
 SYNC_COOLDOWN_HOURS = 6
 
@@ -59,9 +42,11 @@ async def fetch_eb_events_for_city(city: str) -> list[dict]:
     
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            for category in categories:
-                for page in range(1, 6): # Up to 5 pages per category
-                    url = f"https://www.eventbrite.com/d/india--{city}/{category}/?page={page}"
+            aliases = CITY_ALIASES.get(city, [city])
+            for alias in aliases:
+                for category in categories:
+                    for page in range(1, 101): # Up to 100 pages per category
+                        url = f"https://www.eventbrite.com/d/india--{alias}/{category}/?page={page}"
                     resp = await client.get(url, headers=headers)
                     if resp.status_code != 200:
                         break

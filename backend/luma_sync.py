@@ -10,7 +10,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from cities import CITY_COORDS
+from cities import CITY_COORDS, CITIES, CITY_STATE, CITY_ALIASES
 from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
@@ -21,23 +21,6 @@ from bs4 import BeautifulSoup
 logger = logging.getLogger(__name__)
 
 IMG_DEFAULT = ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"]
-
-CITY_STATE = {
-    "Mumbai": "Maharashtra", "New Delhi": "Delhi", "Bengaluru": "Karnataka",
-    "Hyderabad": "Telangana", "Pune": "Maharashtra", "Chennai": "Tamil Nadu",
-    "Ahmedabad": "Gujarat", "Kolkata": "West Bengal", "Gurugram": "Haryana",
-    "Noida": "Uttar Pradesh", "Jaipur": "Rajasthan", "Surat": "Gujarat",
-    "Indore": "Madhya Pradesh", "Kochi": "Kerala", "Chandigarh": "Chandigarh",
-    "Lucknow": "Uttar Pradesh", "Varanasi": "Uttar Pradesh", "Goa": "Goa",
-    "Nagpur": "Maharashtra", "Vadodara": "Gujarat", "Coimbatore": "Tamil Nadu"
-}
-
-CITIES = [
-    "mumbai", "bengaluru", "new-delhi", "pune", "hyderabad", "chennai",
-    "kolkata", "ahmedabad", "jaipur", "gurugram", "noida", "surat",
-    "indore", "kochi", "chandigarh", "lucknow", "varanasi", "goa",
-    "nagpur", "vadodara", "coimbatore"
-]
 
 SYNC_COOLDOWN_HOURS = 6
 
@@ -52,42 +35,45 @@ async def fetch_luma_events_for_city(city: str) -> list[dict]:
     events_data = []
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            url = f"https://lu.ma/{city}"
-            resp = await client.get(url, headers=headers)
-            soup = BeautifulSoup(resp.text, "html.parser")
-            
-            # 1. Parse JSON-LD (if any)
-            lds = soup.find_all('script', type='application/ld+json')
-            for ld in lds:
-                try:
-                    data = json.loads(ld.string)
-                    if isinstance(data, list):
-                        for item in data:
-                            if item.get('@type') == 'Event':
-                                events_data.append(item)
-                    elif isinstance(data, dict):
-                        if data.get('@type') == 'Event':
-                            events_data.append(data)
-                        elif 'itemListElement' in data:
-                            for el in data['itemListElement']:
-                                if 'item' in el:
-                                    item = el['item']
-                                    if isinstance(item, dict) and item.get('@type') == 'Event':
-                                        events_data.append(item)
-                except Exception:
-                    pass
-                    
-            # 2. Parse __NEXT_DATA__
-            script = soup.find('script', id='__NEXT_DATA__')
-            if script:
-                try:
-                    data = json.loads(script.string)
-                    events = data.get('props', {}).get('pageProps', {}).get('initialData', {}).get('data', {}).get('events', [])
-                    for ev in events:
-                        # Append as a special wrapped dict to indicate it's from NEXT_DATA
-                        events_data.append({"__luma_native": True, "data": ev})
-                except Exception as e:
-                    logger.warning(f"Error parsing luma NEXT_DATA: {e}")
+            aliases = CITY_ALIASES.get(city, [city])
+            for alias in aliases:
+                url = f"https://lu.ma/{alias}"
+                resp = await client.get(url, headers=headers)
+                soup = BeautifulSoup(resp.text, "html.parser")
+                
+                # 1. Parse JSON-LD (if any)
+                lds = soup.find_all('script', type='application/ld+json')
+                for ld in lds:
+                    try:
+                        data = json.loads(ld.string)
+                        if isinstance(data, list):
+                            for item in data:
+                                if item.get('@type') == 'Event':
+                                    events_data.append(item)
+                        elif isinstance(data, dict):
+                            if data.get('@type') == 'Event':
+                                events_data.append(data)
+                            elif 'itemListElement' in data:
+                                for el in data['itemListElement']:
+                                    if 'item' in el:
+                                        item = el['item']
+                                        if isinstance(item, dict) and item.get('@type') == 'Event':
+                                            events_data.append(item)
+                    except Exception:
+                        pass
+                        
+                # 2. Parse __NEXT_DATA__
+                script = soup.find('script', id='__NEXT_DATA__')
+                if script:
+                    try:
+                        data = json.loads(script.string)
+                        events = data.get('props', {}).get('pageProps', {}).get('initialData', {}).get('data', {}).get('events', [])
+                        for ev in events:
+                            # Append as a special wrapped dict to indicate it's from NEXT_DATA
+                            events_data.append({"__luma_native": True, "data": ev})
+                    except Exception as e:
+                        logger.warning(f"Error parsing luma NEXT_DATA for {alias}: {e}")
+
                     
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from luma: {e}")

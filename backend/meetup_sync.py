@@ -13,7 +13,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from cities import CITY_COORDS
+from cities import CITY_COORDS, CITIES, CITY_STATE, CITY_ALIASES
 from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
@@ -26,23 +26,6 @@ logger = logging.getLogger(__name__)
 # Fallback images matching scraper_sync
 IMG_DEFAULT = ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=srgb&fm=jpg&q=85&w=1400"]
 
-CITY_STATE = {
-    "Mumbai": "Maharashtra", "New Delhi": "Delhi", "Bengaluru": "Karnataka",
-    "Hyderabad": "Telangana", "Pune": "Maharashtra", "Chennai": "Tamil Nadu",
-    "Ahmedabad": "Gujarat", "Kolkata": "West Bengal", "Gurugram": "Haryana",
-    "Noida": "Uttar Pradesh", "Jaipur": "Rajasthan", "Surat": "Gujarat",
-    "Indore": "Madhya Pradesh", "Kochi": "Kerala", "Chandigarh": "Chandigarh",
-    "Lucknow": "Uttar Pradesh", "Varanasi": "Uttar Pradesh", "Goa": "Goa",
-    "Nagpur": "Maharashtra", "Vadodara": "Gujarat", "Coimbatore": "Tamil Nadu"
-}
-
-CITIES = [
-    "mumbai", "bengaluru", "new-delhi", "pune", "hyderabad", "chennai",
-    "kolkata", "ahmedabad", "jaipur", "gurugram", "noida", "surat",
-    "indore", "kochi", "chandigarh", "lucknow", "varanasi", "goa",
-    "nagpur", "vadodara", "coimbatore"
-]
-
 SYNC_COOLDOWN_HOURS = 6
 
 def _stable_id(link: str, title: str) -> str:
@@ -50,21 +33,12 @@ def _stable_id(link: str, title: str) -> str:
     hex_id = uuid.uuid5(uuid.NAMESPACE_URL, key).hex[:14]
     return f"meetup-{hex_id}"
 
-MEETUP_CITY_ALIASES = {
-    "gurugram": ["gurugram", "gurgaon"],
-    "bengaluru": ["bengaluru", "bangalore"],
-    "mumbai": ["mumbai", "bombay"],
-    "pune": ["pune", "poona"],
-    "kolkata": ["kolkata", "calcutta"],
-    "chennai": ["chennai", "madras"]
-}
-
 async def fetch_meetup_urls(city: str) -> list[str]:
     """Crawl Meetup city page with multiple keywords to find all event URLs."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     links = set()
     keywords = ["", "tech", "business", "health", "music", "art", "education", "social", "sports"]
-    aliases = MEETUP_CITY_ALIASES.get(city, [city])
+    aliases = CITY_ALIASES.get(city, [city])
     
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
