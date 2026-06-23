@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2, Bell } from "lucide-react";
+import { Search, MapPin, Sparkles, ScanLine, Ticket as TicketIcon, Navigation, Loader2, Bell, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import AlertSubscribeModal from "./AlertSubscribeModal";
 import { toast } from "sonner";
 import Counter from "./Counter";
-import { useRef } from "react";
 
 const HERO_VIDEO =
   "https://assets.codepen.io/3364143/7btrrd.mp4";
@@ -293,8 +293,20 @@ export default function Hero({ stats, onSearch, onCity }) {
   const [q, setQ] = useState("");
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [detectedCity, setDetectedCity] = useState("");
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 600], [0, 140]);
+
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        if (data.city) {
+          setDetectedCity(data.city);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const scale = useTransform(scrollY, [0, 600], [1, 1.12]);
   const overlayOpacity = useTransform(scrollY, [0, 500], [0.3, 0.85]);
 
@@ -313,9 +325,12 @@ export default function Hero({ stats, onSearch, onCity }) {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`);
           const data = await res.json();
-          let city = data.address.city || data.address.town || data.address.village || data.address.state_district;
+          
+          let area = data.address?.suburb || data.address?.neighbourhood || data.address?.town || "";
+          let city = data.address?.city || data.address?.state_district || "";
+          
           if (city) {
             if (city.toLowerCase().includes("district")) {
               city = city.replace(/district/i, "").trim();
@@ -337,8 +352,11 @@ export default function Hero({ stats, onSearch, onCity }) {
               "pune": "Pune",
             };
             const normalizedCity = cityAliases[city.toLowerCase()] || city;
+            
+            const preciseLocation = area ? `${area}, ${normalizedCity}` : normalizedCity;
 
-            toast.success(`Location found: ${normalizedCity}`);
+            setDetectedCity(preciseLocation);
+            toast.success(`Location found: ${preciseLocation}`);
             onCity?.(normalizedCity);
           } else {
             toast.error("Could not determine your city");
@@ -350,7 +368,11 @@ export default function Hero({ stats, onSearch, onCity }) {
         }
       },
       (error) => {
-        toast.error("Could not get your location. Please enable permissions.");
+        toast.error("Could not get your precise location. Please enable permissions.");
+        if (detectedCity) {
+          toast.success(`Using IP-based location: ${detectedCity}`);
+          onCity?.(detectedCity);
+        }
         setLoadingLocation(false);
       }
     );
@@ -424,23 +446,24 @@ export default function Hero({ stats, onSearch, onCity }) {
             className="mt-8 max-w-xl w-full"
             data-testid="hero-search-form"
           >
-            <div className="glass rounded-full p-1.5 flex flex-row items-center gap-2 shadow-xl shadow-black/10">
+            <div className="glass rounded-full p-1.5 flex flex-row items-center gap-2 shadow-xl shadow-black/10 focus-within:ring-2 focus-within:ring-foreground/20 transition-all">
               <div className="flex items-center gap-2 flex-1 px-3 sm:px-4">
-                <Search size={18} className="text-muted-foreground shrink-0" />
+                <Search size={18} className="text-muted-foreground shrink-0 hidden sm:block" />
                 <input
                   data-testid="hero-search-input"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search events, cities…"
-                  className="w-full bg-transparent py-2.5 outline-none placeholder:text-muted-foreground text-sm sm:text-base"
+                  className="w-full bg-transparent py-2.5 outline-none placeholder:text-muted-foreground text-base sm:text-lg focus:ring-0 focus:outline-none focus-visible:outline-none"
                 />
               </div>
               <button
                 type="submit"
                 data-testid="hero-search-submit"
-                className="shrink-0 rounded-full bg-foreground text-background px-4 sm:px-6 py-2 sm:py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 sm:gap-2"
+                className="shrink-0 rounded-full bg-foreground text-background px-4 sm:px-6 py-2.5 sm:py-3 font-semibold text-sm sm:text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50"
               >
-                <MapPin size={15} className="hidden sm:block" /> Explore
+                <Search size={16} className="sm:hidden" />
+                <span className="hidden sm:inline">Explore</span>
               </button>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-2">
@@ -453,6 +476,30 @@ export default function Hero({ stats, onSearch, onCity }) {
                 {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
                 <span>Use current location</span>
               </button>
+              
+              {detectedCity && (
+                <>
+                  <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
+                        <MapPin size={14} className="text-emerald-500" />
+                        {detectedCity}
+                        <ChevronDown size={14} className="opacity-50" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48 bg-background/95 backdrop-blur-md">
+                      <DropdownMenuItem onClick={() => onCity?.(detectedCity)}>
+                        Events in {detectedCity}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onCity?.("Delhi")}>Delhi</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onCity?.("Mumbai")}>Mumbai</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onCity?.("Bangalore")}>Bangalore</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+
               <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
               <button 
                 type="button" 

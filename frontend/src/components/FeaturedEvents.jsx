@@ -5,9 +5,9 @@ import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { getEvents } from "@/lib/api";
 import { formatDate, FALLBACK_IMG } from "@/data/meta";
 
-export default function FeaturedEvents() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function FeaturedEvents({ initialEvents }) {
+  const [events, setEvents] = useState(initialEvents || []);
+  const [loading, setLoading] = useState(!initialEvents);
   const containerRef = useRef(null);
 
   const stars = useMemo(() => {
@@ -22,13 +22,15 @@ export default function FeaturedEvents() {
   }, []);
 
   useEffect(() => {
-    getEvents({ featured: true })
-      .then((data) => {
-        setEvents(data.events || []);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!initialEvents) {
+      getEvents({ featured: true })
+        .then((data) => {
+          setEvents(data.events || []);
+        })
+        .catch((err) => console.error(err))
+        .finally(() => setLoading(false));
+    }
+  }, [initialEvents]);
 
   if (loading || events.length === 0) return null;
 
@@ -94,6 +96,7 @@ export default function FeaturedEvents() {
                       src={ev.cover_image}
                       onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
                       alt={ev.title}
+                      loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />

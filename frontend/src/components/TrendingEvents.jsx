@@ -5,16 +5,18 @@ import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
-export default function TrendingEvents() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function TrendingEvents({ initialEvents }) {
+  const [events, setEvents] = useState(initialEvents || []);
+  const [loading, setLoading] = useState(!initialEvents);
   const scroller = React.useRef(null);
 
   useEffect(() => {
-    getEvents({ trending: true, sort: "popular", limit: 15 })
-      .then((d) => setEvents(d.events))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!initialEvents) {
+      getEvents({ trending: true, sort: "popular", limit: 15 })
+        .then((d) => setEvents(d.events))
+        .finally(() => setLoading(false));
+    }
+  }, [initialEvents]);
 
   const scroll = (dir) => {
     scroller.current?.scrollBy({ left: dir * 300, behavior: "smooth" });

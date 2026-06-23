@@ -95,32 +95,48 @@ async def fetch_urls(city: str) -> list[str]:
     """Crawl allevents.in city page to find event URLs using pagination."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     links = []
+    
+    aliases = CITY_ALIASES.get(city, [city])
+    
     try:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            page = 1
-            while True:
-                url = f"https://allevents.in/{city}/all?page={page}"
-                resp = await client.get(url, headers=headers)
-                soup = BeautifulSoup(resp.text, "html.parser")
-                
-                page_links = []
-                for a in soup.select(".event-card a"):
-                    href = a.get("href", "")
-                    if href and "allevents.in" in href:
-                        page_links.append(href)
+            for alias in aliases:
+                page = 1
+                while True:
+                    url = f"https://allevents.in/{alias}/all?page={page}"
+                    resp = await client.get(url, headers=headers)
+                    
+                    # If it redirected to a page without "?page=", it means the paginated page doesn't exist
+                    if "?page=" not in str(resp.url) and page > 1:
+                        logger.info(f"[{alias}] Redirected to {resp.url}, stopping pagination.")
+                        break
                         
-                if not page_links:
-                    logger.info(f"[{city}] No more events found on page {page}. Stopping pagination.")
-                    break
+                    soup = BeautifulSoup(resp.text, "html.parser")
                     
-                links.extend(page_links)
-                
-                if page >= 200:
-                    logger.warning(f"[{city}] Reached maximum safety limit of 200 pages. Stopping.")
-                    break
+                    page_links = []
+                    for a in soup.select(".event-card a"):
+                        href = a.get("href", "")
+                        if href and "allevents.in" in href:
+                            page_links.append(href)
+                            
+                    if not page_links:
+                        logger.info(f"[{alias}] No more events found on page {page}. Stopping pagination.")
+                        break
+                        
+                    # Check if we are stuck in a redirect loop returning the same page
+                    new_links = [l for l in page_links if l not in links]
+                    if not new_links and page > 1:
+                        logger.info(f"[{alias}] Redirect loop detected (no new links on page {page}). Stopping.")
+                        break
+                        
+                    links.extend(new_links)
                     
-                page += 1
-                await asyncio.sleep(0.1)  # Speed up pagination
+                    if page >= 100:
+                        logger.warning(f"[{alias}] Reached maximum safety limit of 100 pages. Stopping.")
+                        break
+                        
+                    page += 1
+                    await asyncio.sleep(0.1)  # Speed up pagination
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city}: {e}")
     

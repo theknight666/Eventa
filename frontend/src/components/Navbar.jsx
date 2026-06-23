@@ -159,12 +159,30 @@ export default function Navbar() {
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* Search Bar */}
             <div className="relative hidden sm:block" ref={searchRef}>
-              <div className={`relative flex items-center transition-all duration-300 ${searchQuery || isSearchFocused ? "w-48 sm:w-64" : "w-10"}`}>
+              <form 
+                className={`relative flex items-center transition-all duration-300 ${searchQuery || isSearchFocused ? "w-48 sm:w-64" : "w-10"}`}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                    setIsSearchFocused(false);
+                  }
+                }}
+              >
                 <button
-                  className={`absolute left-0 h-10 w-10 flex items-center justify-center transition-transform z-10 outline-none ${searchQuery || isSearchFocused ? "text-muted-foreground" : "glass rounded-full text-foreground hover:scale-105"}`}
-                  onClick={() => {
-                    setIsSearchFocused(true);
-                    setTimeout(() => document.getElementById("nav-search-input")?.focus(), 50);
+                  type="button"
+                  className={`absolute left-0 h-10 w-10 flex items-center justify-center transition-transform z-10 focus:outline-none focus:ring-0 focus-visible:outline-none ${searchQuery || isSearchFocused ? "text-muted-foreground" : "glass rounded-full text-foreground hover:scale-105"}`}
+                  onClick={(e) => {
+                    if (searchQuery || isSearchFocused) {
+                      // If already open and they click the icon, treat as submit if query exists
+                      if (searchQuery.trim()) {
+                        router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                        setIsSearchFocused(false);
+                      }
+                    } else {
+                      setIsSearchFocused(true);
+                      setTimeout(() => document.getElementById("nav-search-input")?.focus(), 50);
+                    }
                   }}
                   aria-label="Search"
                 >
@@ -177,9 +195,9 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
-                  className={`h-10 w-full rounded-full glass text-sm bg-transparent outline-none transition-all duration-300 ${searchQuery || isSearchFocused ? "pl-10 pr-4 border border-border/50 opacity-100" : "px-0 border-transparent opacity-0 cursor-pointer pointer-events-none"}`}
+                  className={`h-10 w-full rounded-full glass text-sm bg-transparent focus:outline-none focus:ring-0 focus-visible:outline-none transition-all duration-300 ${searchQuery || isSearchFocused ? "pl-10 pr-4 border border-border/50 opacity-100 pointer-events-auto" : "px-0 border-transparent opacity-0 cursor-pointer pointer-events-none"}`}
                 />
-              </div>
+              </form>
 
               <AnimatePresence>
                 {(searchQuery || isSearchFocused) && searchQuery.trim() && (

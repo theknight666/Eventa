@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
 import Hero from "@/components/Hero";
-import TrendingEvents from "@/components/TrendingEvents";
 import FeaturedEvents from "@/components/FeaturedEvents";
-import EventsNearYou from "@/components/EventsNearYou";
-import CuratedEvents from "@/components/CuratedEvents";
+import TrendingEvents from "@/components/TrendingEvents";
 import CategoryGrid from "@/components/CategoryGrid";
 import FeaturedCities from "@/components/FeaturedCities";
-import AIRecommendations from "@/components/AIRecommendations";
-import Discover from "@/components/Discover";
 import SEO from "@/components/SEO";
-import { getStats, getCategories, getCities } from "@/lib/api";
+
+// Lazy load below-the-fold components
+const EventsNearYou = dynamic(() => import('@/components/EventsNearYou'), { ssr: false });
+const CuratedEvents = dynamic(() => import('@/components/CuratedEvents'), { ssr: false });
+const Discover = dynamic(() => import('@/components/Discover'), { ssr: false });
+const AIRecommendations = dynamic(() => import('@/components/AIRecommendations'), { ssr: false });
 
 const DEFAULT_FILTERS = {
   q: "",
@@ -22,17 +24,8 @@ const DEFAULT_FILTERS = {
   sort: "date",
 };
 
-export default function Home() {
-  const [stats, setStats] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [cities, setCities] = useState([]);
+export default function Home({ initialStats, initialCategories, initialCities, initialFeatured, initialTrending }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-
-  useEffect(() => {
-    getStats().then(setStats);
-    getCategories().then(setCategories);
-    getCities().then(setCities);
-  }, []);
 
   const scrollToDiscover = () => {
     setTimeout(() => {
@@ -71,15 +64,60 @@ export default function Home() {
           })}
         </script>
       </SEO>
-      <Hero stats={stats} onSearch={onSearch} onCity={onCity} />
-      <FeaturedEvents />
-      <TrendingEvents />
+      <Hero stats={initialStats} onSearch={onSearch} onCity={onCity} />
+      <FeaturedEvents initialEvents={initialFeatured} />
+      <TrendingEvents initialEvents={initialTrending} />
       <EventsNearYou />
       <CuratedEvents />
-      <CategoryGrid categories={categories} active={filters.category} onSelect={onCategory} />
-      <FeaturedCities cities={cities} active={filters.city} onSelect={onCity} />
-      <Discover filters={filters} setFilters={setFilters} categories={categories} cities={cities} />
+      <CategoryGrid categories={initialCategories} active={filters.category} onSelect={onCategory} />
+      <FeaturedCities cities={initialCities} active={filters.city} onSelect={onCity} />
+      <Discover filters={filters} setFilters={setFilters} categories={initialCategories} cities={initialCities} />
       <AIRecommendations />
     </main>
   );
+}
+
+export async function getStaticProps() {
+  const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "http://127.0.0.1:8000";
+  
+  try {
+    const [statsRes, catRes, citiesRes, featuredRes, trendingRes] = await Promise.all([
+      fetch(`${baseURL}/api/overview`),
+      fetch(`${baseURL}/api/categories`),
+      fetch(`${baseURL}/api/cities`),
+      fetch(`${baseURL}/api/events?featured=true`),
+      fetch(`${baseURL}/api/events?trending=true`)
+    ]);
+    
+    const [stats, categories, cities, featured, trending] = await Promise.all([
+      statsRes.ok ? statsRes.json() : null,
+      catRes.ok ? catRes.json() : [],
+      citiesRes.ok ? citiesRes.json() : [],
+      featuredRes.ok ? featuredRes.json() : { events: [] },
+      trendingRes.ok ? trendingRes.json() : { events: [] }
+    ]);
+    
+    return {
+      props: {
+        initialStats: stats,
+        initialCategories: categories,
+        initialCities: cities,
+        initialFeatured: featured.events || [],
+        initialTrending: trending.events || []
+      },
+      revalidate: 60
+    };
+  } catch (error) {
+    console.error("ISR build error:", error);
+    return {
+      props: {
+        initialStats: null,
+        initialCategories: [],
+        initialCities: [],
+        initialFeatured: [],
+        initialTrending: []
+      },
+      revalidate: 60
+    };
+  }
 }

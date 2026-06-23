@@ -37,7 +37,23 @@ async def fetch_meetup_urls(city: str) -> list[str]:
     """Crawl Meetup city page with multiple keywords to find all event URLs."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     links = set()
-    keywords = ["", "tech", "business", "health", "music", "art", "education", "social", "sports"]
+    keywords = [
+        "", "tech", "business", "health", "music", "art", "education", "social", "sports", 
+        "food", "drink", "party", "network", "club", "fitness", "yoga", "language", "culture", 
+        "writing", "design", "data", "ai", "crypto", "spiritual", "meditation", "community", 
+        "meetup", "online", "workshop", "class", "free", "weekend", "fun", "friends", "startup", 
+        "investor", "marketing", "sales", "women", "men", "singles", "dating", "career", "jobs", 
+        "hiring", "coffee", "chai", "tea", "books", "reading", "movie", "film", "comedy", 
+        "standup", "theater", "dance", "photography", "outdoors", "hiking", "adventure", 
+        "travel", "pet", "dog", "cat", "gaming", "board games", "video games", "esports", 
+        "vr", "ar", "robotics", "engineering", "science", "math", "history", "philosophy", 
+        "psychology", "self-improvement", "leadership", "management", "entrepreneurship", 
+        "real estate", "finance", "investing", "trading", "stocks", "options", "forex", 
+        "taxes", "accounting", "legal", "law", "politics", "activism", "volunteer", 
+        "charity", "nonprofit", "sustainability", "environment", "climate", "nature", 
+        "gardening", "farming", "agriculture", "cooking", "baking", "vegan", "vegetarian", 
+        "keto", "paleo", "gluten-free", "diet", "nutrition", "weight loss", "martial arts"
+    ]
     aliases = CITY_ALIASES.get(city, [city])
     
     try:
@@ -46,30 +62,30 @@ async def fetch_meetup_urls(city: str) -> list[str]:
                 for keyword in keywords:
                     url = f"https://www.meetup.com/find/?location=in--{alias}&source=EVENTS&keywords={keyword}"
                     resp = await client.get(url, headers=headers)
-                soup = BeautifulSoup(resp.text, "html.parser")
-                
-                # 1. Parse a tags
-                for a in soup.find_all("a"):
-                    href = a.get("href", "")
-                    if href and "/events/" in href and "meetup.com" in href:
-                        clean_url = href.split("?")[0]
-                        links.add(clean_url)
-                        
-                # 2. Parse __APOLLO_STATE__ for hidden/loaded events
-                script = soup.find("script", id="__NEXT_DATA__")
-                if script:
-                    try:
-                        data = json.loads(script.string)
-                        apollo = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
-                        for k, v in apollo.items():
-                            if k.startswith("Event:"):
-                                event_url = v.get("eventUrl")
-                                if event_url:
-                                    links.add(event_url.split("?")[0])
-                    except Exception as e:
-                        logger.warning(f"Error parsing apollo state for {city} - {keyword}: {e}")
-                        
-                await asyncio.sleep(0.5)
+                    soup = BeautifulSoup(resp.text, "html.parser")
+                    
+                    # 1. Parse a tags
+                    for a in soup.find_all("a"):
+                        href = a.get("href", "")
+                        if href and "/events/" in href and "meetup.com" in href:
+                            clean_url = href.split("?")[0]
+                            links.add(clean_url)
+                            
+                    # 2. Parse __APOLLO_STATE__ for hidden/loaded events
+                    script = soup.find("script", id="__NEXT_DATA__")
+                    if script:
+                        try:
+                            data = json.loads(script.string)
+                            apollo = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
+                            for k, v in apollo.items():
+                                if k.startswith("Event:"):
+                                    event_url = v.get("eventUrl")
+                                    if event_url:
+                                        links.add(event_url.split("?")[0])
+                        except Exception as e:
+                            logger.warning(f"Error parsing apollo state for {city} - {keyword}: {e}")
+                            
+                    await asyncio.sleep(0.5)
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from meetup: {e}")
     
@@ -91,10 +107,10 @@ async def scrape_meetup_event(url: str, city: str) -> Optional[dict]:
                     data = json.loads(ld.string)
                     if isinstance(data, list):
                         for item in data:
-                            if item.get('@type') == 'Event':
+                            if 'Event' in item.get('@type', ''):
                                 event_data = item
                                 break
-                    elif data.get('@type') == 'Event':
+                    elif 'Event' in data.get('@type', ''):
                         event_data = data
                 except Exception:
                     continue
@@ -288,16 +304,13 @@ async def sync_meetup_cities(db, force: bool = False) -> dict:
                 errors.append(str(e))
             return None
 
-    tasks = []
     for city in CITIES:
         urls = await fetch_meetup_urls(city)
         logger.info(f"Discovered {len(urls)} Meetup events in {city}")
-        for url in urls:
-            tasks.append(_process_url(url, city))
-            
-    logger.info(f"Beginning concurrent Meetup scrape of {len(tasks)} events...")
-    results = await asyncio.gather(*tasks)
-    upserted = len([r for r in results if r])
+        city_tasks = [_process_url(url, city) for url in urls]
+        logger.info(f"Beginning concurrent Meetup scrape of {len(city_tasks)} events for {city}...")
+        results = await asyncio.gather(*city_tasks)
+        upserted += len([r for r in results if r])
 
     try:
         await db.meta.update_one(

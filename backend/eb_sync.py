@@ -47,39 +47,39 @@ async def fetch_eb_events_for_city(city: str) -> list[dict]:
                 for category in categories:
                     for page in range(1, 101): # Up to 100 pages per category
                         url = f"https://www.eventbrite.com/d/india--{alias}/{category}/?page={page}"
-                    resp = await client.get(url, headers=headers)
-                    if resp.status_code != 200:
-                        break
-                        
-                    soup = BeautifulSoup(resp.text, "html.parser")
-                    lds = soup.find_all('script', type='application/ld+json')
-                    page_found = False
-                    
-                    for ld in lds:
-                        try:
-                            data = json.loads(ld.string)
-                            if isinstance(data, dict) and 'itemListElement' in data:
-                                for el in data['itemListElement']:
-                                    if 'item' in el:
-                                        item = el['item']
-                                        item_url = item.get('url', '')
-                                        
-                                        if item_url and item_url not in seen_urls:
-                                            if isinstance(item, dict) and item.get('@type') in ('Event', 'EducationEvent', 'BusinessEvent'):
-                                                events_data.append(item)
-                                                seen_urls.add(item_url)
-                                                page_found = True
-                                            elif isinstance(item, dict) and 'url' in item:
-                                                events_data.append(item)
-                                                seen_urls.add(item_url)
-                                                page_found = True
-                        except Exception:
-                            pass
+                        resp = await client.get(url, headers=headers)
+                        if resp.status_code != 200:
+                            break
                             
-                    if not page_found:
-                        break
+                        soup = BeautifulSoup(resp.text, "html.parser")
+                        lds = soup.find_all('script', type='application/ld+json')
+                        page_found = False
                         
-                    await asyncio.sleep(0.5)
+                        for ld in lds:
+                            try:
+                                data = json.loads(ld.string)
+                                if isinstance(data, dict) and 'itemListElement' in data:
+                                    for el in data['itemListElement']:
+                                        if 'item' in el:
+                                            item = el['item']
+                                            item_url = item.get('url', '')
+                                            
+                                            if item_url and item_url not in seen_urls:
+                                                if isinstance(item, dict) and item.get('@type') in ('Event', 'EducationEvent', 'BusinessEvent'):
+                                                    events_data.append(item)
+                                                    seen_urls.add(item_url)
+                                                    page_found = True
+                                                elif isinstance(item, dict) and 'url' in item:
+                                                    events_data.append(item)
+                                                    seen_urls.add(item_url)
+                                                    page_found = True
+                            except Exception:
+                                pass
+                                
+                        if not page_found:
+                            break
+                            
+                        await asyncio.sleep(0.5)
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from eventbrite: {e}")
     
