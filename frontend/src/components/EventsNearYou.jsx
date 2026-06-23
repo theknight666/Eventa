@@ -35,21 +35,30 @@ export default function EventsNearYou() {
           });
         };
 
+        const fetchPreciseDetails = async (lat, lon) => {
+          try {
+            const geocodeRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`);
+            if (geocodeRes.ok) {
+              const geoData = await geocodeRes.json();
+              const area = geoData.address?.suburb || geoData.address?.neighbourhood || geoData.address?.town || null;
+              const city = geoData.address?.city || geoData.address?.state_district || "your area";
+              return { area, city };
+            }
+          } catch (e) {
+            console.error("Reverse geocoding failed", e);
+          }
+          return { area: null, city: null };
+        };
+
         try {
           const coords = await getPreciseLocation();
           latitude = coords.latitude;
           longitude = coords.longitude;
           
-          // Reverse geocode to get local area name
-          try {
-            const geocodeRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            if (geocodeRes.ok) {
-              const geoData = await geocodeRes.json();
-              detectedArea = geoData.address?.suburb || geoData.address?.neighbourhood || geoData.address?.town || null;
-              detectedCity = geoData.address?.city || geoData.address?.state_district || "your area";
-            }
-          } catch (e) {
-            console.error("Reverse geocoding failed", e);
+          const details = await fetchPreciseDetails(latitude, longitude);
+          if (details.city) {
+            detectedArea = details.area;
+            detectedCity = details.city;
           }
         } catch (err) {
           console.log("Precise geolocation failed or denied, falling back to IP based location.", err);
@@ -59,8 +68,10 @@ export default function EventsNearYou() {
             const data = await res.json();
             latitude = data.latitude;
             longitude = data.longitude;
-            detectedCity = data.city || "your area";
-            detectedArea = null;
+            
+            const details = await fetchPreciseDetails(latitude, longitude);
+            detectedArea = details.area;
+            detectedCity = details.city || data.city || "your area";
           }
         }
 
