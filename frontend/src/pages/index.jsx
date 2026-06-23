@@ -27,6 +27,24 @@ const DEFAULT_FILTERS = {
 export default function Home({ initialStats, initialCategories, initialCities, initialFeatured, initialTrending }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
+  useEffect(() => {
+    // Automatically personalize the default Discover feed to the user's IP location
+    if (!filters.city && typeof window !== "undefined") {
+      // Check if there is a URL param filter, we don't want to override it
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.get("filter") && !window.location.pathname.includes("/events/")) {
+        fetch('https://ipapi.co/json/')
+          .then(res => res.json())
+          .then(data => {
+            if (data.city) {
+              setFilters(f => f.city ? f : { ...f, city: data.city });
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, []);
+
   const scrollToDiscover = () => {
     setTimeout(() => {
       document.getElementById("discover")?.scrollIntoView({ behavior: "smooth" });

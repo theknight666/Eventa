@@ -500,7 +500,12 @@ export default function Hero({ stats, cities = [], onSearch, onCity }) {
                             className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
                             value={citySearch}
                             onChange={(e) => setCitySearch(e.target.value)}
-                            onKeyDown={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                              if (e.key === "Enter" && citySearch.trim()) {
+                                onCity?.(citySearch.trim());
+                              }
+                            }}
                             onClick={(e) => e.preventDefault()}
                           />
                         </div>
@@ -520,7 +525,17 @@ export default function Hero({ stats, cities = [], onSearch, onCity }) {
                           </DropdownMenuItem>
                         ))
                       ) : (
-                        <div className="p-4 text-sm text-center text-muted-foreground">No cities found.</div>
+                        <div className="p-4 text-sm text-center text-muted-foreground">No predefined cities found.</div>
+                      )}
+
+                      {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
+                        <>
+                          <div className="h-px bg-border/50 my-1 mx-2" />
+                          <DropdownMenuItem onClick={() => onCity?.(citySearch.trim())} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
+                            <Search size={14} className="mr-2 shrink-0" />
+                            <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
+                          </DropdownMenuItem>
+                        </>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
