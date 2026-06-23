@@ -161,13 +161,17 @@ export default function Navbar() {
             <div className="relative hidden sm:block" ref={searchRef}>
               <div className={`relative flex items-center transition-all duration-300 ${searchQuery || isSearchFocused ? "w-48 sm:w-64" : "w-10"}`}>
                 <button
-                  className={`absolute left-0 h-10 w-10 flex items-center justify-center transition-transform z-10 ${searchQuery || isSearchFocused ? "text-muted-foreground" : "glass rounded-full text-foreground hover:scale-105"}`}
-                  onClick={() => setIsSearchFocused(true)}
+                  className={`absolute left-0 h-10 w-10 flex items-center justify-center transition-transform z-10 outline-none ${searchQuery || isSearchFocused ? "text-muted-foreground" : "glass rounded-full text-foreground hover:scale-105"}`}
+                  onClick={() => {
+                    setIsSearchFocused(true);
+                    setTimeout(() => document.getElementById("nav-search-input")?.focus(), 50);
+                  }}
                   aria-label="Search"
                 >
                   <Search size={18} />
                 </button>
                 <input
+                  id="nav-search-input"
                   type="text"
                   placeholder="Search events..."
                   value={searchQuery}

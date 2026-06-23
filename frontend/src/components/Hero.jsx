@@ -424,26 +424,26 @@ export default function Hero({ stats, onSearch, onCity }) {
             className="mt-8 max-w-xl w-full"
             data-testid="hero-search-form"
           >
-            <div className="glass rounded-full p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-xl shadow-black/10">
-              <div className="flex items-center gap-2 flex-1 px-4 py-1 sm:py-0">
+            <div className="glass rounded-full p-1.5 flex flex-row items-center gap-2 shadow-xl shadow-black/10">
+              <div className="flex items-center gap-2 flex-1 px-3 sm:px-4">
                 <Search size={18} className="text-muted-foreground shrink-0" />
                 <input
                   data-testid="hero-search-input"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search events, cities, speakers…"
-                  className="w-full bg-transparent py-2.5 outline-none placeholder:text-muted-foreground text-sm"
+                  placeholder="Search events, cities…"
+                  className="w-full bg-transparent py-2.5 outline-none placeholder:text-muted-foreground text-sm sm:text-base"
                 />
               </div>
               <button
                 type="submit"
                 data-testid="hero-search-submit"
-                className="w-full sm:w-auto rounded-full bg-foreground text-background px-6 py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                className="shrink-0 rounded-full bg-foreground text-background px-4 sm:px-6 py-2 sm:py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 sm:gap-2"
               >
-                <MapPin size={15} /> Explore
+                <MapPin size={15} className="hidden sm:block" /> Explore
               </button>
             </div>
-            <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground px-2">
+            <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-2">
               <button 
                 type="button" 
                 onClick={handleLocationClick} 
@@ -451,9 +451,9 @@ export default function Hero({ stats, onSearch, onCity }) {
                 className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
-                <span>Use my current location</span>
+                <span>Use current location</span>
               </button>
-              <div className="w-1 h-1 rounded-full bg-border" />
+              <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
               <button 
                 type="button" 
                 onClick={() => setAlertsOpen(true)}
