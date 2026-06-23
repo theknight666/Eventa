@@ -700,19 +700,17 @@ async def get_overview(request: Request):
     category_ids = [c["id"] for c in CATEGORIES]
     total = await db.events.count_documents({
         "approval_status": "approved", 
-        "start_iso": {"$gte": start_of_today.isoformat()},
         "category": {"$in": category_ids}
     })
     
     # Still count unique cities based on approved events
-    cities = len(await db.events.distinct("city", {"approval_status": "approved", "start_iso": {"$gte": start_of_today.isoformat()}}))
+    cities = len(await db.events.distinct("city", {"approval_status": "approved"}))
     organizers = await db.organizers.count_documents({})
     
     # Estimate realistic real-world attendees based on expected attendance size
     # since in-app registrations for scraped events are typically 0
     cursor = db.events.find({
         "approval_status": "approved",
-        "start_iso": {"$gte": start_of_today.isoformat()},
         "category": {"$in": category_ids}
     }, {"attendees_count": 1, "attendance_size": 1})
     
