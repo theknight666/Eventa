@@ -299,15 +299,22 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
   const y = useTransform(scrollY, [0, 600], [0, 140]);
   const filteredCities = cities?.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase())) || [];
 
+  const [detecting, setDetecting] = useState(true);
+
   useEffect(() => {
+    const timer = setTimeout(() => setDetecting(false), 2500);
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
       .then(data => {
         if (data.city) {
           setDetectedCity(data.city);
         }
+        setDetecting(false);
       })
-      .catch(() => {});
+      .catch(() => {
+        setDetecting(false);
+      });
+    return () => clearTimeout(timer);
   }, []);
   const scale = useTransform(scrollY, [0, 600], [1, 1.12]);
   const overlayOpacity = useTransform(scrollY, [0, 500], [0.3, 0.85]);
@@ -484,7 +491,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
                     <MapPin size={14} className={activeCity || detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
-                    {activeCity || detectedCity || "Detecting..."}
+                    {activeCity || detectedCity || (detecting ? "Detecting..." : "Select City")}
                     <ChevronDown size={14} className="opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
