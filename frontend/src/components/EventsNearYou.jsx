@@ -113,6 +113,7 @@ export default function EventsNearYou({ selectedCity }) {
         if (latitude && longitude) {
             queryParams.lat = latitude;
             queryParams.lng = longitude;
+            queryParams.radius_km = 30;
         }
         
         const d = await getEvents(queryParams);
