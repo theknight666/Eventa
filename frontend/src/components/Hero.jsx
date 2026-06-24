@@ -337,36 +337,20 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`);
           const data = await res.json();
           
-          let area = data.address?.suburb || data.address?.neighbourhood || data.address?.town || "";
-          let city = data.address?.city || data.address?.state_district || "";
+          let area = data.address?.suburb || data.address?.neighbourhood || data.address?.village || data.address?.residential || data.address?.town || "";
+          let city = data.address?.city || data.address?.county || data.address?.state_district || data.address?.state || "";
           
           if (city) {
-            if (city.toLowerCase().includes("district")) {
-              city = city.replace(/district/i, "").trim();
-            }
-            const cityAliases = {
-              "delhi": "New Delhi",
-              "new delhi": "New Delhi",
-              "bangalore": "Bengaluru",
-              "bengaluru": "Bengaluru",
-              "gurgaon": "Gurugram",
-              "gurugram": "Gurugram",
-              "bombay": "Mumbai",
-              "mumbai": "Mumbai",
-              "madras": "Chennai",
-              "chennai": "Chennai",
-              "calcutta": "Kolkata",
-              "kolkata": "Kolkata",
-              "poona": "Pune",
-              "pune": "Pune",
-            };
-            const normalizedCity = cityAliases[city.toLowerCase()] || city;
+            // Dynamically clean up common administrative suffixes if they appear
+            city = city.replace(/district/i, "").replace(/county/i, "").trim();
             
-            const preciseLocation = area ? `${area}, ${normalizedCity}` : normalizedCity;
+            const preciseLocation = area && area.toLowerCase() !== city.toLowerCase() 
+              ? `${area}, ${city}` 
+              : city;
 
             setDetectedCity(preciseLocation);
             toast.success(`Location found: ${preciseLocation}`);
-            onCity?.(normalizedCity);
+            onCity?.(city);
           } else {
             toast.error("Could not determine your city");
           }
