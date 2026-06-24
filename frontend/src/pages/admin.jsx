@@ -46,7 +46,7 @@ export default function AdminDashboard() {
         const orgs = await getAdminPendingOrganizers();
         setPendingOrganizers(orgs);
       } else if (tab === "all-events" || tab === "featured-events") {
-        const evts = await getAdminAllEvents();
+        const evts = await getAdminAllEvents(searchQuery);
         setAllEvents(evts);
       } else if (tab === "all-organizers") {
         const orgs = await getAdminAllOrganizers();
@@ -64,11 +64,14 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [tab, logout]);
+  }, [tab, logout, searchQuery]);
 
   useEffect(() => {
     if (token) {
-      loadData();
+      const timer = setTimeout(() => {
+        loadData();
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [token, loadData]);
 

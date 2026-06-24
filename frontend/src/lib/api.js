@@ -102,8 +102,8 @@ export const adminLogin = (body) =>
 export const getAdminPendingEvents = () =>
   client.get("/admin/events/pending", { headers: getAdminHeaders() }).then((r) => r.data);
 
-export const getAdminAllEvents = () =>
-  client.get("/admin/events/all", { headers: getAdminHeaders() }).then((r) => r.data);
+export const getAdminAllEvents = (q = "") =>
+  client.get("/admin/events/all", { params: { q }, headers: getAdminHeaders() }).then((r) => r.data);
 
 export const adminApproveEvent = (id) =>
   client.put(`/admin/events/${id}/approve`, {}, { headers: getAdminHeaders() }).then((r) => r.data);

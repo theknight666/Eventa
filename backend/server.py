@@ -1366,9 +1366,15 @@ async def admin_pending_events(x_admin_key: str = Header(None)):
     return [clean(d) async for d in cursor]
 
 @api_router.get("/admin/events/all")
-async def admin_all_events(x_admin_key: str = Header(None)):
+async def admin_all_events(q: str = None, x_admin_key: str = Header(None)):
     get_admin_key(x_admin_key)
-    cursor = db.events.find({}).sort([("created_at", -1)]).limit(100)
+    query = {}
+    if q:
+        query = {"$or": [
+            {"title": {"$regex": q, "$options": "i"}},
+            {"id": {"$regex": q, "$options": "i"}}
+        ]}
+    cursor = db.events.find(query).sort([("created_at", -1)]).limit(200)
     return [clean(d) async for d in cursor]
 
 @api_router.put("/admin/events/{event_id}/approve")
