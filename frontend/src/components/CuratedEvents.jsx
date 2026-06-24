@@ -41,7 +41,7 @@ function EventCarousel({ title, subtitle, icon, events, loading }) {
       ) : (
         <div ref={scroller} className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
           {events.map((ev, i) => (
-            <div key={ev.id} className="snap-start shrink-0 w-[80vw] sm:w-[300px]">
+            <div key={ev.id} className="snap-start shrink-0 w-[80vw] sm:w-[220px]">
               <EventCard event={ev} index={i} />
             </div>
           ))}

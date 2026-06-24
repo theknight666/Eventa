@@ -429,7 +429,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
         {related.length === 0 ? (
           <GridSkeleton count={3} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" data-testid="related-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" data-testid="related-grid">
             {related.map((ev, i) => (
               <EventCard key={ev.id} event={ev} index={i} />
             ))}

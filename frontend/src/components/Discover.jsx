@@ -307,7 +307,7 @@ export default function Discover({ filters, setFilters, categories = [], cities 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.25 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
               data-testid="events-grid"
             >
               {paginatedEvents.map((ev, i) => (

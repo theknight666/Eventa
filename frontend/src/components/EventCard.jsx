@@ -112,12 +112,12 @@ const EventCard = React.memo(({ event, index = 0 }) => {
 
         </div>
 
-        <div className="p-5">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+        <div className="p-4">
+          <div className="flex items-center gap-3 text-[0.7rem] text-muted-foreground mb-1.5">
             <span className="flex items-center gap-1.5"><Calendar size={13} /> {formatDate(event.start_iso)}</span>
             <span className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis"><MapPin size={13} className="shrink-0" /> {event.area ? `${event.area}, ${event.city}` : event.city}</span>
           </div>
-          <h3 className="font-display text-lg font-bold leading-snug tracking-tight line-clamp-2 min-h-[3.2rem]">
+          <h3 className="font-display text-base font-bold leading-snug tracking-tight line-clamp-2 min-h-[2.8rem]">
             {event.title}
           </h3>
           <div className="mt-3 flex items-center justify-between">
@@ -134,7 +134,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
               )}
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
             <Users size={12} />
             {event.attendees_count > 0 ? (
               <>{formatINR(event.attendees_count)} attending</>
