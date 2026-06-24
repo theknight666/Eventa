@@ -61,6 +61,7 @@ export default function Home({ initialStats, initialCategories, initialCities, i
   };
   const onCity = (city) => {
     setFilters((f) => ({ ...f, city }));
+    scrollToDiscover();
   };
 
   return (
@@ -84,7 +85,7 @@ export default function Home({ initialStats, initialCategories, initialCities, i
       <Hero stats={initialStats} cities={initialCities} activeCity={filters.city} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents initialEvents={initialFeatured} />
       <TrendingEvents initialEvents={initialTrending} />
-      <EventsNearYou />
+      <EventsNearYou selectedCity={filters.city} />
       <CuratedEvents />
       <CategoryGrid categories={initialCategories} active={filters.category} onSelect={onCategory} />
       <FeaturedCities cities={initialCities} active={filters.city} onSelect={onCity} />

@@ -4,7 +4,7 @@ import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
-export default function EventsNearYou() {
+export default function EventsNearYou({ selectedCity }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userCity, setUserCity] = useState(null);
@@ -15,6 +15,18 @@ export default function EventsNearYou() {
   useEffect(() => {
     async function fetchLocationAndEvents() {
       try {
+        if (selectedCity) {
+          setLoading(true);
+          setUserCity(selectedCity);
+          setUserArea(null);
+          setLocationStatus("found");
+          
+          const d = await getEvents({ city: selectedCity, limit: 15 });
+          setEvents(d.events || []);
+          setLoading(false);
+          return;
+        }
+
         let latitude = null;
         let longitude = null;
         let detectedCity = "your area";
@@ -118,7 +130,7 @@ export default function EventsNearYou() {
     }
 
     fetchLocationAndEvents();
-  }, []);
+  }, [selectedCity]);
 
   const scroll = (dir) => {
     scroller.current?.scrollBy({ left: dir * 300, behavior: "smooth" });
