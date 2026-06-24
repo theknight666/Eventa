@@ -803,7 +803,8 @@ async def list_events(
     if category:
         query["category"] = category
     if city:
-        query["city"] = city
+        import re
+        query["city"] = {"$regex": f"^{re.escape(city)}$", "$options": "i"}
     if state:
         query["state"] = state
     if event_type:
