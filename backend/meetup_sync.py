@@ -60,32 +60,44 @@ async def fetch_meetup_urls(city: str) -> list[str]:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
             for alias in aliases:
                 for keyword in keywords:
-                    url = f"https://www.meetup.com/find/?location=in--{alias}&source=EVENTS&keywords={keyword}"
-                    resp = await client.get(url, headers=headers)
-                    soup = BeautifulSoup(resp.text, "html.parser")
-                    
-                    # 1. Parse a tags
-                    for a in soup.find_all("a"):
-                        href = a.get("href", "")
-                        if href and "/events/" in href and "meetup.com" in href:
-                            clean_url = href.split("?")[0]
-                            links.add(clean_url)
+                    for page in range(1, 51): # Fetch up to 50 pages per keyword
+                        url = f"https://www.meetup.com/find/?location=in--{alias}&source=EVENTS&keywords={keyword}&page={page}"
+                        resp = await client.get(url, headers=headers)
+                        soup = BeautifulSoup(resp.text, "html.parser")
+                        
+                        # Track if we found events on this page
+                        found_on_page = False
+                        
+                        # 1. Parse a tags
+                        for a in soup.find_all("a"):
+                            href = a.get("href", "")
+                            if href and "/events/" in href and "meetup.com" in href:
+                                clean_url = href.split("?")[0]
+                                if clean_url not in links:
+                                    links.add(clean_url)
+                                    found_on_page = True
                             
-                    # 2. Parse __APOLLO_STATE__ for hidden/loaded events
-                    script = soup.find("script", id="__NEXT_DATA__")
-                    if script:
-                        try:
-                            data = json.loads(script.string)
-                            apollo = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
-                            for k, v in apollo.items():
-                                if k.startswith("Event:"):
-                                    event_url = v.get("eventUrl")
-                                    if event_url:
-                                        links.add(event_url.split("?")[0])
-                        except Exception as e:
-                            logger.warning(f"Error parsing apollo state for {city} - {keyword}: {e}")
+                        # 2. Parse __APOLLO_STATE__ for hidden/loaded events
+                        script = soup.find("script", id="__NEXT_DATA__")
+                        if script:
+                            try:
+                                data = json.loads(script.string)
+                                apollo = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
+                                for k, v in apollo.items():
+                                    if k.startswith("Event:"):
+                                        event_url = v.get("eventUrl")
+                                        if event_url:
+                                            eu = event_url.split("?")[0]
+                                            if eu not in links:
+                                                links.add(eu)
+                                                found_on_page = True
+                            except Exception as e:
+                                logger.warning(f"Error parsing apollo state for {city} - {keyword}: {e}")
+                                
+                        if not found_on_page:
+                            break
                             
-                    await asyncio.sleep(0.5)
+                        await asyncio.sleep(0.5)
     except Exception as e:
         logger.warning(f"Failed to fetch urls for {city} from meetup: {e}")
     

@@ -30,6 +30,7 @@ jobs:
       - name: Run Background Scraper Sync
         env:
           MONGO_URL: ${{ secrets.MONGO_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd backend
-          python run_meetup_only.py
+          python run_all_syncs.py

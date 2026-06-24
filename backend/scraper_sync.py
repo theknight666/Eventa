@@ -131,8 +131,8 @@ async def fetch_urls(city: str) -> list[str]:
                         
                     links.extend(new_links)
                     
-                    if page >= 100:
-                        logger.warning(f"[{alias}] Reached maximum safety limit of 100 pages. Stopping.")
+                    if page >= 1000:
+                        logger.warning(f"[{alias}] Reached maximum safety limit of 1000 pages. Stopping.")
                         break
                         
                     page += 1
