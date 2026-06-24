@@ -26,10 +26,11 @@ const DEFAULT_FILTERS = {
 
 export default function Home({ initialStats, initialCategories, initialCities, initialFeatured, initialTrending }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [selectedCity, setSelectedCity] = useState(null);
 
   useEffect(() => {
     // Automatically personalize the default Discover feed to the user's IP location
-    if (!filters.city && typeof window !== "undefined") {
+    if (!selectedCity && typeof window !== "undefined") {
       // Check if there is a URL param filter, we don't want to override it
       const urlParams = new URLSearchParams(window.location.search);
       if (!urlParams.get("filter") && !window.location.pathname.includes("/events/")) {
@@ -37,7 +38,7 @@ export default function Home({ initialStats, initialCategories, initialCities, i
           .then(res => res.json())
           .then(data => {
             if (data.city) {
-              setFilters(f => f.city ? f : { ...f, city: data.city });
+              setSelectedCity(c => c ? c : data.city);
             }
           })
           .catch(() => {});
@@ -51,6 +52,12 @@ export default function Home({ initialStats, initialCategories, initialCities, i
     }, 60);
   };
 
+  const scrollToEventsNearYou = () => {
+    setTimeout(() => {
+      document.getElementById("events-near-you")?.scrollIntoView({ behavior: "smooth" });
+    }, 60);
+  };
+
   const onSearch = (q) => {
     setFilters((f) => ({ ...f, q }));
     scrollToDiscover();
@@ -60,8 +67,8 @@ export default function Home({ initialStats, initialCategories, initialCities, i
     scrollToDiscover();
   };
   const onCity = (city) => {
-    setFilters((f) => ({ ...f, city }));
-    scrollToDiscover();
+    setSelectedCity(city);
+    scrollToEventsNearYou();
   };
 
   return (
@@ -82,13 +89,13 @@ export default function Home({ initialStats, initialCategories, initialCities, i
           })}
         </script>
       </SEO>
-      <Hero stats={initialStats} cities={initialCities} activeCity={filters.city} onSearch={onSearch} onCity={onCity} />
+      <Hero stats={initialStats} cities={initialCities} activeCity={selectedCity} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents initialEvents={initialFeatured} />
       <TrendingEvents initialEvents={initialTrending} />
-      <EventsNearYou selectedCity={filters.city} />
+      <EventsNearYou selectedCity={selectedCity} />
       <CuratedEvents />
       <CategoryGrid categories={initialCategories} active={filters.category} onSelect={onCategory} />
-      <FeaturedCities cities={initialCities} active={filters.city} onSelect={onCity} />
+      <FeaturedCities cities={initialCities} active={selectedCity} onSelect={onCity} />
       <Discover filters={filters} setFilters={setFilters} categories={initialCategories} cities={initialCities} />
       <AIRecommendations />
     </main>
