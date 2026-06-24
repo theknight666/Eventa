@@ -18,6 +18,7 @@ from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
 from traction_utils import extract_attendees_from_jsonld, extract_attendees_from_html
+from tenacity import retry, stop_after_attempt, wait_exponential
 import httpx
 from bs4 import BeautifulSoup
 
@@ -33,6 +34,7 @@ def _stable_id(link: str, title: str) -> str:
     hex_id = uuid.uuid5(uuid.NAMESPACE_URL, key).hex[:14]
     return f"meetup-{hex_id}"
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def fetch_meetup_urls(city: str) -> list[str]:
     """Crawl Meetup city page with multiple keywords to find all event URLs."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}

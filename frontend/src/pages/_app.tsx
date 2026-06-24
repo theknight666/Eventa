@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import Head from "next/head";
+import type { AppProps } from "next/app";
 
 import "@/index.css";
 import "@/App.css";
@@ -28,7 +29,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   // Next.js uses server-side rendering, so we need to be careful with browser APIs
   const [mounted, setMounted] = React.useState(false);
 

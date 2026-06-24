@@ -18,8 +18,17 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
+import sentry_sdk
 from passlib.context import CryptContext
 from xml.sax.saxutils import escape
+
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -188,24 +197,9 @@ async def on_startup():
     # Kick off keep-alive ping for Render free tier
     asyncio.create_task(_keep_alive())
 
-class SimpleTTLCache:
-    def __init__(self, ttl_seconds=300):
-        self.ttl = ttl_seconds
-        self.cache = {}
+    asyncio.create_task(_keep_alive())
 
-    def get(self, key):
-        if key in self.cache:
-            entry = self.cache[key]
-            if time.time() - entry['time'] < self.ttl:
-                return entry['value']
-            else:
-                del self.cache[key]
-        return None
-
-    def set(self, key, value):
-        self.cache[key] = {'value': value, 'time': time.time()}
-
-api_cache = SimpleTTLCache(ttl_seconds=300)
+from redis_client import api_cache
 
 async def _keep_alive():
     """Ping the server's external URL every 14 minutes to prevent Render free tier from sleeping."""
@@ -584,7 +578,7 @@ async def _recompute_traction_scores(db):
 @api_router.get("/categories")
 async def get_categories(request: Request):
     cache_key = "/categories"
-    cached_res = api_cache.get(cache_key)
+    cached_res = await api_cache.get(cache_key)
     if cached_res:
         return cached_res
 
@@ -600,14 +594,14 @@ async def get_categories(request: Request):
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
     res = [{**c, "count": counts.get(c["id"], 0)} for c in CATEGORIES]
-    api_cache.set(cache_key, res)
+    await api_cache.set(cache_key, res)
     return res
 
 
 @api_router.get("/cities")
 async def get_cities(request: Request):
     cache_key = "/cities"
-    cached_res = api_cache.get(cache_key)
+    cached_res = await api_cache.get(cache_key)
     if cached_res:
         return cached_res
 
@@ -623,7 +617,7 @@ async def get_cities(request: Request):
     async for row in db.events.aggregate(pipeline):
         counts[row["_id"]] = row["count"]
     res = [{**c, "count": counts.get(c["name"], 0)} for c in CITIES]
-    api_cache.set(cache_key, res)
+    await api_cache.set(cache_key, res)
     return res
 
 
@@ -684,7 +678,7 @@ async def get_sitemap():
 @api_router.get("/overview")
 async def get_overview(request: Request):
     cache_key = "/overview"
-    cached_res = api_cache.get(cache_key)
+    cached_res = await api_cache.get(cache_key)
     if cached_res:
         return cached_res
 
@@ -732,7 +726,7 @@ async def get_overview(request: Request):
         "active_organizers": organizers,
         "total_events": total,
     }
-    api_cache.set(cache_key, res)
+    await api_cache.set(cache_key, res)
     return res
 
 
@@ -795,7 +789,7 @@ async def list_events(
     skip: int = 0,
 ):
     cache_key = f"/events?{request.url.query}"
-    cached_res = api_cache.get(cache_key)
+    cached_res = await api_cache.get(cache_key)
     if cached_res:
         return cached_res
 
@@ -907,7 +901,7 @@ async def list_events(
         total = await db.events.count_documents(query)
         
     res = {"events": docs, "total": total}
-    api_cache.set(cache_key, res)
+    await api_cache.set(cache_key, res)
     return res
 
 

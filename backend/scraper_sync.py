@@ -18,6 +18,7 @@ from dedup import generate_dedup_key
 from category_utils import infer_category
 from organizer_utils import extract_organizer_name
 from traction_utils import extract_attendees_from_jsonld, extract_attendees_from_html
+from tenacity import retry, stop_after_attempt, wait_exponential
 import httpx
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -91,6 +92,7 @@ def _detect_original_source(direct_url: str, url: str, data: dict, soup) -> tupl
         
     return "scraper", url
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def fetch_urls(city: str) -> list[str]:
     """Crawl allevents.in city page to find event URLs using pagination."""
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}

@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=eventa
+      - PORT=8000
+      - ADMIN_SECRET=dev_secret
+      - JWT_SECRET=dev_jwt_secret
+      - CORS_ORIGINS=http://localhost:3000
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - mongodb
+      - redis
+
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A celery_app.celery worker --loglevel=info
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=eventa
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - mongodb
+      - redis
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A celery_app.celery beat --loglevel=info
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=eventa
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - mongodb
+      - redis
+      - celery-worker
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
