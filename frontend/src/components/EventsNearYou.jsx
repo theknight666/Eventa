@@ -4,7 +4,7 @@ import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
-export default function EventsNearYou({ selectedCity }) {
+export default function EventsNearYou({ selectedCity, userCoords }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userCity, setUserCity] = useState(null);
@@ -21,7 +21,16 @@ export default function EventsNearYou({ selectedCity }) {
           setUserArea(null);
           setLocationStatus("found");
           
-          const d = await getEvents({ city: selectedCity, limit: 15 });
+          const queryParams = { limit: 15 };
+          if (userCoords) {
+            queryParams.lat = userCoords.lat;
+            queryParams.lng = userCoords.lng;
+            queryParams.radius_km = 30;
+          } else {
+            queryParams.city = selectedCity;
+          }
+          
+          const d = await getEvents(queryParams);
           setEvents(d.events || []);
           setLoading(false);
           return;
@@ -109,11 +118,13 @@ export default function EventsNearYou({ selectedCity }) {
         setUserArea(detectedArea);
         setLocationStatus("found");
 
-        const queryParams = { limit: 15, city: normalizedCity };
+        const queryParams = { limit: 15 };
         if (latitude && longitude) {
             queryParams.lat = latitude;
             queryParams.lng = longitude;
             queryParams.radius_km = 30;
+        } else {
+            queryParams.city = normalizedCity;
         }
         
         const d = await getEvents(queryParams);

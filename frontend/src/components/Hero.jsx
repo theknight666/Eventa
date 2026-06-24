@@ -350,7 +350,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
 
             setDetectedCity(preciseLocation);
             toast.success(`Location found: ${preciseLocation}`);
-            onCity?.(city);
+            onCity?.(city, { lat: latitude, lng: longitude });
           } else {
             toast.error("Could not determine your city");
           }

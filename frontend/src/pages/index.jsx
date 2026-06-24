@@ -27,6 +27,7 @@ const DEFAULT_FILTERS = {
 export default function Home({ initialStats, initialCategories, initialCities, initialFeatured, initialTrending }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [selectedCity, setSelectedCity] = useState(null);
+  const [userCoords, setUserCoords] = useState(null);
 
   useEffect(() => {
     // Automatically personalize the default Discover feed to the user's IP location
@@ -66,8 +67,9 @@ export default function Home({ initialStats, initialCategories, initialCities, i
     setFilters((f) => ({ ...f, category: cat }));
     scrollToDiscover();
   };
-  const onCity = (city) => {
+  const onCity = (city, coords = null) => {
     setSelectedCity(city);
+    setUserCoords(coords);
     scrollToEventsNearYou();
   };
 
@@ -92,7 +94,7 @@ export default function Home({ initialStats, initialCategories, initialCities, i
       <Hero stats={initialStats} cities={initialCities} activeCity={selectedCity} onSearch={onSearch} onCity={onCity} />
       <FeaturedEvents initialEvents={initialFeatured} />
       <TrendingEvents initialEvents={initialTrending} />
-      <EventsNearYou selectedCity={selectedCity} />
+      <EventsNearYou selectedCity={selectedCity} userCoords={userCoords} />
       <CuratedEvents />
       <CategoryGrid categories={initialCategories} active={filters.category} onSelect={onCategory} />
       <FeaturedCities cities={initialCities} active={selectedCity} onSelect={onCity} />
