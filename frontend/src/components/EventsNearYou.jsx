@@ -109,13 +109,10 @@ export default function EventsNearYou({ selectedCity }) {
         setUserArea(detectedArea);
         setLocationStatus("found");
 
-        const queryParams = { limit: 15 };
+        const queryParams = { limit: 15, city: normalizedCity };
         if (latitude && longitude) {
             queryParams.lat = latitude;
             queryParams.lng = longitude;
-            queryParams.radius_km = 50;
-        } else {
-            queryParams.city = normalizedCity;
         }
         
         const d = await getEvents(queryParams);
@@ -141,7 +138,7 @@ export default function EventsNearYou({ selectedCity }) {
   }
 
   return (
-    <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24" data-testid="near-you-section">
+    <section id="events-near-you" className="mx-auto max-w-5xl px-4 sm:px-6 py-24" data-testid="near-you-section">
       <div className="flex items-end justify-between mb-10">
         <div>
           <p className="label-eyebrow text-muted-foreground flex items-center gap-2">
@@ -152,7 +149,7 @@ export default function EventsNearYou({ selectedCity }) {
           </h2>
           {userCity && (
             <p className="text-muted-foreground mt-2 font-medium">
-              Showing events within 50km of <span className="text-foreground">{userArea ? `${userArea}, ${userCity}` : userCity}</span>
+              Showing events in <span className="text-foreground">{userArea ? `${userArea}, ${userCity}` : userCity}</span>
             </p>
           )}
         </div>

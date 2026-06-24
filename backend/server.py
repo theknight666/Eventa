@@ -858,25 +858,29 @@ async def list_events(
         start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
         query["start_iso"] = {"$gte": start_of_today.isoformat()}
             
-    if lat is not None and lng is not None and radius_km is not None:
+    if lat is not None and lng is not None:
         if sort and sort != "distance":
             # If sorting by something else (like date or popularity), we cannot use $nearSphere.
             # Use $geoWithin instead, which allows custom sorting.
-            query["location"] = {
-                "$geoWithin": {
-                    "$centerSphere": [[lng, lat], radius_km / 6378.1]
+            if radius_km is not None:
+                query["location"] = {
+                    "$geoWithin": {
+                        "$centerSphere": [[lng, lat], radius_km / 6378.1]
+                    }
                 }
-            }
         else:
             # Default location search: sort by distance using $nearSphere (distance in meters)
-            query["location"] = {
-                "$nearSphere": {
-                    "$geometry": {
-                        "type": "Point",
-                        "coordinates": [lng, lat]
-                    },
-                    "$maxDistance": radius_km * 1000
+            near_sphere_query = {
+                "$geometry": {
+                    "type": "Point",
+                    "coordinates": [lng, lat]
                 }
+            }
+            if radius_km is not None:
+                near_sphere_query["$maxDistance"] = radius_km * 1000
+                
+            query["location"] = {
+                "$nearSphere": near_sphere_query
             }
             sort = "distance"
 
