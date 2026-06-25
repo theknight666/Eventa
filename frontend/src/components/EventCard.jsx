@@ -112,40 +112,50 @@ const EventCard = React.memo(({ event, index = 0 }) => {
 
         </div>
 
-        <div className="p-4">
-          <div className="flex items-center gap-3 text-[0.7rem] text-muted-foreground mb-1.5">
+        <div className="p-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[0.75rem] font-medium text-primary">
             <span className="flex items-center gap-1.5"><Calendar size={13} /> {formatDate(event.start_iso)}</span>
-            <span className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis"><MapPin size={13} className="shrink-0" /> {event.area ? `${event.area}, ${event.city}` : event.city}</span>
+            {event.ticket_status !== "available" && (
+              <span className={`px-2 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider ${TICKET_STYLES[event.ticket_status]}`}>
+                {TICKET_LABEL[event.ticket_status]}
+              </span>
+            )}
           </div>
+
           <h3 className="font-display text-base font-bold leading-snug tracking-tight line-clamp-2 min-h-[2.8rem]">
             {event.title}
           </h3>
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold ${TICKET_STYLES[event.ticket_status]}`}>
-                {TICKET_LABEL[event.ticket_status]}
-              </span>
-            </div>
-            <div className="text-right shrink-0">
+
+          <div className="flex items-center gap-1.5 text-[0.75rem] text-muted-foreground">
+            <MapPin size={13} className="shrink-0" />
+            <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+              {event.area ? `${event.area}, ${event.city}` : event.city}
+            </span>
+          </div>
+
+          <div className="mt-1 pt-3 border-t border-border flex items-center justify-between">
+            <div>
               {event.pricing === "free" ? (
-                <span className="font-bold text-emerald-500">Free</span>
+                <span className="font-bold text-emerald-500 text-sm">Free</span>
               ) : (
-                <span className="font-bold">₹{formatINR(event.price)}</span>
+                <span className="font-bold text-sm">₹{formatINR(event.price)}</span>
               )}
             </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
-            <Users size={12} />
-            {event.attendees_count > 0 ? (
-              <>{formatINR(event.attendees_count)} attending</>
-            ) : (
-              <>Be the first!</>
-            )}
-            {" · "}
-            {event.rating > 0 ? (
-              <>★ {event.rating}</>
-            ) : (
-              <span className="text-amber-500 font-semibold">New</span>
+
+            {(event.attendees_count > 0 || event.rating > 0) && (
+              <div className="flex items-center gap-2 text-[0.7rem] text-muted-foreground font-medium">
+                {event.attendees_count > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Users size={12} /> {formatINR(event.attendees_count)}
+                  </span>
+                )}
+                {event.attendees_count > 0 && event.rating > 0 && <span>·</span>}
+                {event.rating > 0 && (
+                  <span className="flex items-center gap-1 text-amber-500">
+                    ★ {event.rating}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>

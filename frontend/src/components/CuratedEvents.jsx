@@ -58,12 +58,13 @@ export default function CuratedEvents() {
   const [loadingPaid, setLoadingPaid] = useState(true);
 
   useEffect(() => {
+    const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
     getEvents({ pricing: "free", sort: "date", limit: 12 })
-      .then((d) => setFreeEvents(d.events))
+      .then((d) => setFreeEvents(d.events.filter(ev => new Date(ev.start_iso) >= startOfToday)))
       .finally(() => setLoadingFree(false));
       
     getEvents({ pricing: "paid", sort: "popular", limit: 12 })
-      .then((d) => setPaidEvents(d.events))
+      .then((d) => setPaidEvents(d.events.filter(ev => new Date(ev.start_iso) >= startOfToday)))
       .finally(() => setLoadingPaid(false));
   }, []);
 

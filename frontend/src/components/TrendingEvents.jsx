@@ -6,14 +6,20 @@ import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
 
 export default function TrendingEvents({ initialEvents }) {
-  const [events, setEvents] = useState(initialEvents || []);
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  const [events, setEvents] = useState(
+    initialEvents ? initialEvents.filter(ev => new Date(ev.start_iso) >= startOfToday) : []
+  );
   const [loading, setLoading] = useState(!initialEvents);
   const scroller = React.useRef(null);
 
   useEffect(() => {
     if (!initialEvents) {
       getEvents({ trending: true, sort: "popular", limit: 15 })
-        .then((d) => setEvents(d.events))
+        .then((d) => {
+          const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+          setEvents(d.events.filter(ev => new Date(ev.start_iso) >= startOfToday));
+        })
         .finally(() => setLoading(false));
     }
   }, [initialEvents]);

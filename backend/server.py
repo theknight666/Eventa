@@ -809,6 +809,8 @@ async def list_events(
         query["attendance_size"] = size
     if featured is not None:
         query["featured"] = featured
+    if trending is not None:
+        query["trending"] = trending
     if industries:
         ind_list = [i for i in industries.split(",") if i]
         if ind_list:
