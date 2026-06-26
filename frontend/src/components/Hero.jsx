@@ -475,7 +475,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
                     <MapPin size={14} className={activeCity || detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
-                    {activeCity || detectedCity || (detecting ? "Detecting..." : "Select City")}
+                    {detectedCity || activeCity || (detecting ? "Detecting..." : "Select City")}
                     <ChevronDown size={14} className="opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
@@ -492,6 +492,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
                         onKeyDown={(e) => {
                           e.stopPropagation();
                           if (e.key === "Enter" && citySearch.trim()) {
+                            setDetectedCity(null);
                             onCity?.(citySearch.trim());
                           }
                         }}
@@ -509,7 +510,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
                   
                   {filteredCities.length > 0 ? (
                     filteredCities.map((city) => (
-                      <DropdownMenuItem key={city.name} onClick={() => onCity?.(city.name)}>
+                      <DropdownMenuItem key={city.name} onClick={() => { setDetectedCity(null); onCity?.(city.name); }}>
                         {city.name}
                       </DropdownMenuItem>
                     ))
@@ -520,7 +521,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
                   {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
                     <>
                       <div className="h-px bg-border/50 my-1 mx-2" />
-                      <DropdownMenuItem onClick={() => onCity?.(citySearch.trim())} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
+                      <DropdownMenuItem onClick={() => { setDetectedCity(null); onCity?.(citySearch.trim()); }} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
                         <Search size={14} className="mr-2 shrink-0" />
                         <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
                       </DropdownMenuItem>
