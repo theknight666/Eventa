@@ -45,8 +45,11 @@ export default function AdminDashboard() {
       } else if (tab === "organizers") {
         const orgs = await getAdminPendingOrganizers();
         setPendingOrganizers(orgs);
-      } else if (tab === "all-events" || tab === "featured-events") {
-        const evts = await getAdminAllEvents(searchQuery);
+      } else if (tab === "all-events") {
+        const evts = await getAdminAllEvents(searchQuery, false);
+        setAllEvents(evts);
+      } else if (tab === "featured-events") {
+        const evts = await getAdminAllEvents(searchQuery, true);
         setAllEvents(evts);
       } else if (tab === "all-organizers") {
         const orgs = await getAdminAllOrganizers();
