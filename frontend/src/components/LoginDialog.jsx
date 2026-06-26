@@ -59,14 +59,17 @@ export default function LoginDialog({ open, onOpenChange }) {
   }, []);
 
   useEffect(() => {
-    if (open && mode !== "onboarding") {
-      setMode("login");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+    if (!open) {
+      const timer = setTimeout(() => {
+        setMode("login");
+        setUsername("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      }, 300);
+      return () => clearTimeout(timer);
     }
-  }, [open, mode]);
+  }, [open]);
 
   const toggleInterest = (id) => {
     setPrefInterests(prev => 
