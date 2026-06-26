@@ -390,10 +390,85 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease }}
-            className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 mb-7"
+            className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-7"
           >
-            <Sparkles size={14} className="text-foreground" />
-            <span className="label-eyebrow text-foreground/80">AI-powered event discovery · India</span>
+            <button 
+              type="button" 
+              onClick={handleLocationClick} 
+              disabled={loadingLocation} 
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50 glass px-4 py-2 rounded-full"
+            >
+              {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
+              <span>Use current location</span>
+            </button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium glass px-4 py-2 rounded-full">
+                  <MapPin size={14} className={activeCity || detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
+                  {detectedCity || activeCity || (detecting ? "Detecting..." : "Select City")}
+                  <ChevronDown size={14} className="opacity-50" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64 bg-background/95 backdrop-blur-md max-h-80 overflow-y-auto no-scrollbar">
+                <div className="p-2 sticky top-0 bg-background/95 backdrop-blur-md z-10 border-b border-border/50 mb-1">
+                  <div className="flex items-center gap-2 px-2.5 bg-muted/50 rounded-md border border-border/50 focus-within:border-primary/50 transition-colors">
+                    <Search size={14} className="text-muted-foreground shrink-0" />
+                    <input 
+                      type="text" 
+                      placeholder="Search cities..." 
+                      className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
+                      value={citySearch}
+                      onChange={(e) => setCitySearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === "Enter" && citySearch.trim()) {
+                          setDetectedCity(null);
+                          onCity?.(citySearch.trim());
+                        }
+                      }}
+                      onClick={(e) => e.preventDefault()}
+                    />
+                  </div>
+                </div>
+                
+                {detectedCity && (
+                  <DropdownMenuItem onClick={() => onCity?.(detectedCity)} className="font-medium text-emerald-500 hover:text-emerald-600 focus:text-emerald-600 focus:bg-emerald-500/10 mb-1">
+                    <MapPin size={14} className="mr-2 shrink-0" />
+                    <span className="truncate">Events in {detectedCity}</span>
+                  </DropdownMenuItem>
+                )}
+                
+                {filteredCities.length > 0 ? (
+                  filteredCities.map((city) => (
+                    <DropdownMenuItem key={city.name} onClick={() => { setDetectedCity(null); onCity?.(city.name); }}>
+                      {city.name}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="p-4 text-sm text-center text-muted-foreground">No predefined cities found.</div>
+                )}
+
+                {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
+                  <>
+                    <div className="h-px bg-border/50 my-1 mx-2" />
+                    <DropdownMenuItem onClick={() => { setDetectedCity(null); onCity?.(citySearch.trim()); }} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
+                      <Search size={14} className="mr-2 shrink-0" />
+                      <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <button 
+              type="button" 
+              onClick={() => setAlertsOpen(true)}
+              className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors glass px-4 py-2 rounded-full"
+            >
+              <Bell size={15} />
+              <span>Get Event Alerts</span>
+            </button>
           </motion.div>
 
           <h1 className="font-display font-extrabold tracking-tight text-balance text-3xl sm:text-5xl lg:text-6xl xl:text-[3.5rem] leading-[1] max-w-3xl">
@@ -460,85 +535,10 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
               </button>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-2">
-              <button 
-                type="button" 
-                onClick={handleLocationClick} 
-                disabled={loadingLocation} 
-                className="flex items-center gap-1.5 hover:text-foreground transition-colors disabled:opacity-50"
-              >
-                {loadingLocation ? <Loader2 size={15} className="animate-spin" /> : <Navigation size={15} />}
-                <span>Use current location</span>
-              </button>
-              
-              <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 hover:text-foreground transition-colors text-foreground font-medium">
-                    <MapPin size={14} className={activeCity || detectedCity ? "text-emerald-500" : "text-muted-foreground"} />
-                    {detectedCity || activeCity || (detecting ? "Detecting..." : "Select City")}
-                    <ChevronDown size={14} className="opacity-50" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-64 bg-background/95 backdrop-blur-md max-h-80 overflow-y-auto no-scrollbar">
-                  <div className="p-2 sticky top-0 bg-background/95 backdrop-blur-md z-10 border-b border-border/50 mb-1">
-                    <div className="flex items-center gap-2 px-2.5 bg-muted/50 rounded-md border border-border/50 focus-within:border-primary/50 transition-colors">
-                      <Search size={14} className="text-muted-foreground shrink-0" />
-                      <input 
-                        type="text" 
-                        placeholder="Search cities..." 
-                        className="w-full bg-transparent outline-none text-sm py-2 focus:ring-0"
-                        value={citySearch}
-                        onChange={(e) => setCitySearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          if (e.key === "Enter" && citySearch.trim()) {
-                            setDetectedCity(null);
-                            onCity?.(citySearch.trim());
-                          }
-                        }}
-                        onClick={(e) => e.preventDefault()}
-                      />
-                    </div>
-                  </div>
-                  
-                  {detectedCity && (
-                    <DropdownMenuItem onClick={() => onCity?.(detectedCity)} className="font-medium text-emerald-500 hover:text-emerald-600 focus:text-emerald-600 focus:bg-emerald-500/10 mb-1">
-                      <MapPin size={14} className="mr-2 shrink-0" />
-                      <span className="truncate">Events in {detectedCity}</span>
-                    </DropdownMenuItem>
-                  )}
-                  
-                  {filteredCities.length > 0 ? (
-                    filteredCities.map((city) => (
-                      <DropdownMenuItem key={city.name} onClick={() => { setDetectedCity(null); onCity?.(city.name); }}>
-                        {city.name}
-                      </DropdownMenuItem>
-                    ))
-                  ) : (
-                    <div className="p-4 text-sm text-center text-muted-foreground">No predefined cities found.</div>
-                  )}
-
-                  {citySearch.trim() && !filteredCities.some(c => c.name.toLowerCase() === citySearch.trim().toLowerCase()) && (
-                    <>
-                      <div className="h-px bg-border/50 my-1 mx-2" />
-                      <DropdownMenuItem onClick={() => { setDetectedCity(null); onCity?.(citySearch.trim()); }} className="font-medium text-primary hover:text-primary focus:text-primary focus:bg-primary/10">
-                        <Search size={14} className="mr-2 shrink-0" />
-                        <span className="truncate">Search everywhere for "{citySearch.trim()}"</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <div className="w-1 h-1 rounded-full bg-border hidden sm:block" />
-              <button 
-                type="button" 
-                onClick={() => setAlertsOpen(true)}
-                className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
-              >
-                <Bell size={15} />
-                <span>Get Event Alerts</span>
-              </button>
+              <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-2">
+                <Sparkles size={14} className="text-foreground" />
+                <span className="label-eyebrow text-foreground/80">AI-powered event discovery · India</span>
+              </div>
             </div>
           </motion.form>
 
