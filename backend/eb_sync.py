@@ -248,11 +248,12 @@ async def sync_eb_cities(db, force: bool = False) -> dict:
                     event["industry"] = existing_event.get("industry", event["industry"])
                     event["tags"] = existing_event.get("tags", event["tags"])
                     
-                set_data = {k: v for k, v in event.items() if k not in ("attendees_count", "views", "created_at")}
+                set_data = {k: v for k, v in event.items() if k not in ("attendees_count", "views", "created_at", "trending")}
                 set_on_insert = {
                     "attendees_count": event["attendees_count"],
                     "views": event["views"],
                     "created_at": event["created_at"],
+                    "trending": event.get("trending", False),
                 }
                 await db.events.update_one(
                     {"id": event["id"]},
