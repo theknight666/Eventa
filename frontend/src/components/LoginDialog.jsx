@@ -37,6 +37,7 @@ export default function LoginDialog({ open, onOpenChange }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [loading, setLoading] = useState(false);
   
@@ -63,6 +64,7 @@ export default function LoginDialog({ open, onOpenChange }) {
       setUsername("");
       setEmail("");
       setPassword("");
+      setConfirmPassword("");
     }
   }, [open, mode]);
 
@@ -137,8 +139,13 @@ export default function LoginDialog({ open, onOpenChange }) {
       return;
     }
 
-    if (!password || (mode === "register" && (!username || !email)) || (mode === "login" && !email)) {
+    if (!password || (mode === "register" && (!username || !email || !confirmPassword)) || (mode === "login" && !email)) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (mode === "register" && password !== confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
     
@@ -147,6 +154,7 @@ export default function LoginDialog({ open, onOpenChange }) {
       let attendee;
       if (mode === "register") {
         attendee = await attendeeRegister({ name: username, email, password });
+        login(attendee);
         setTempUser(attendee);
         setMode("onboarding");
       } else {
@@ -310,6 +318,19 @@ export default function LoginDialog({ open, onOpenChange }) {
                     className={inputCls} 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
+                    placeholder="••••••••" 
+                  />
+                </div>
+              )}
+              {mode === "register" && (
+                <div>
+                  <label className="label-eyebrow text-muted-foreground mb-1.5 mt-4 block">Confirm Password</label>
+                  <input 
+                    data-testid="login-confirm-password" 
+                    type="password" 
+                    className={inputCls} 
+                    value={confirmPassword} 
+                    onChange={(e) => setConfirmPassword(e.target.value)} 
                     placeholder="••••••••" 
                   />
                 </div>
