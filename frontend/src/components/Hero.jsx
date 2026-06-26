@@ -324,9 +324,9 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
     if (q.trim()) onSearch?.(q);
   };
 
-  const handleLocationClick = () => {
+  const handleLocationClick = (silent = false) => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
+      if (!silent) toast.error("Geolocation is not supported by your browser");
       return;
     }
     setLoadingLocation(true);
@@ -334,35 +334,34 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`);
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&email=hello@eventa.in&accept-language=en`);
+          if (!res.ok) throw new Error("API error");
           const data = await res.json();
           
           let area = data.address?.suburb || data.address?.neighbourhood || data.address?.village || data.address?.residential || data.address?.town || "";
           let city = data.address?.city || data.address?.county || data.address?.state_district || data.address?.state || "";
           
           if (city) {
-            // Dynamically clean up common administrative suffixes if they appear
             city = city.replace(/district/i, "").replace(/county/i, "").trim();
-            
             const preciseLocation = area && area.toLowerCase() !== city.toLowerCase() 
               ? `${area}, ${city}` 
               : city;
 
             setDetectedCity(preciseLocation);
-            toast.success(`Location found: ${preciseLocation}`);
+            if (!silent) toast.success(`Location found: ${preciseLocation}`);
             onCity?.(city, { lat: latitude, lng: longitude });
           } else {
-            toast.error("Could not determine your city");
+            if (!silent) toast.error("Could not determine your city");
           }
         } catch (error) {
-          toast.error("Failed to reverse geocode location");
+          if (!silent) toast.error("Failed to reverse geocode location");
         } finally {
           setLoadingLocation(false);
         }
       },
       (error) => {
-        toast.error("Could not get your precise location. Please enable permissions.");
-        if (detectedCity) {
+        if (!silent) toast.error("Could not get your precise location. Please enable permissions.");
+        if (detectedCity && !silent) {
           toast.success(`Using IP-based location: ${detectedCity}`);
           onCity?.(detectedCity);
         }
@@ -370,6 +369,17 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
       }
     );
   };
+
+  useEffect(() => {
+    // Auto-fetch if permission is already granted
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        if (result.state === 'granted') {
+          handleLocationClick(true);
+        }
+      });
+    }
+  }, []);
 
   const counters = [
     { label: "Total Events", value: stats?.total_events || 0 },
