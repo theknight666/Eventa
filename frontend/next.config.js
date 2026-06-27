@@ -2,13 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      "images.unsplash.com",
-      "unsplash.com",
-      "images.pexels.com",
-      "api.qrserver.com",
-      "lh3.googleusercontent.com", // For Google Auth avatars
-      "assets.emergent.sh"
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      }
     ],
   },
   async headers() {

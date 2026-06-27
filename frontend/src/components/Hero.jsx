@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import AlertSubscribeModal from "./AlertSubscribeModal";
 import { toast } from "sonner";
 import Counter from "./Counter";
+import Image from "next/image";
 
 const HERO_VIDEO =
   "https://assets.codepen.io/3364143/7btrrd.mp4";
@@ -223,11 +224,15 @@ function Ticket3D() {
              <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-700 dark:bg-yellow-600/30 rounded-full blur-3xl -ml-12 -mb-12 transition-opacity duration-500 group-hover:opacity-100 opacity-80 dark:opacity-60" />
              
              <div className="relative z-10 w-full max-w-[200px] aspect-square bg-white rounded-2xl p-4 flex items-center justify-center shadow-inner">
-                <img 
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=EVENTA-VIP-PASS-2026&margin=0" 
-                  alt="VIP QR Code" 
-                  className="w-full h-full object-contain mix-blend-multiply"
-                />
+                <div className="relative w-full h-full">
+                  <Image 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=EVENTA-VIP-PASS-2026&margin=0" 
+                    alt="VIP QR Code" 
+                    fill
+                    sizes="200px"
+                    className="object-contain mix-blend-multiply"
+                  />
+                </div>
              </div>
              <div className="relative z-10 mt-8 text-center space-y-2">
                <div className="font-display text-white dark:text-foreground font-extrabold tracking-tracking-widest text-lg">SCAN FOR MAGIC</div>
@@ -276,7 +281,7 @@ const HeroBackground = React.memo(({ y, scale, overlayOpacity }) => {
           muted 
           playsInline 
           disablePictureInPicture
-          preload="auto"
+          preload="none"
           className="h-full w-full object-cover opacity-100"
         >
           <source src="/hero-bg.mp4" type="video/mp4" />

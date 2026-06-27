@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -38,11 +39,11 @@ export default function Footer() {
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5 flex-wrap justify-center">
             <span>© {new Date().getFullYear()} Eventa. Made with ❤️ in India by</span>
-            <a href="https://www.seoplanet.in" target="_blank" rel="noopener noreferrer" className="inline-flex">
+            <a href="https://www.seoplanet.in" target="_blank" rel="noopener noreferrer" className="inline-flex relative h-[12px] w-[60px]">
               {/* Image for light mode (black text) */}
-              <img src="/seo-planet-black.png" alt="SEO Planet" className="h-[12px] transform translate-y-[1px] object-contain rounded-[2px] hover:opacity-80 transition-opacity dark:hidden block" />
+              <Image src="/seo-planet-black.png" alt="SEO Planet" fill sizes="60px" className="transform translate-y-[1px] object-contain rounded-[2px] hover:opacity-80 transition-opacity dark:hidden block" />
               {/* Image for dark mode (white text) */}
-              <img src="/seo-planet.png" alt="SEO Planet" className="h-[12px] transform translate-y-[1px] object-contain rounded-[2px] hover:opacity-80 transition-opacity hidden dark:block" />
+              <Image src="/seo-planet.png" alt="SEO Planet" fill sizes="60px" className="transform translate-y-[1px] object-contain rounded-[2px] hover:opacity-80 transition-opacity hidden dark:block" />
             </a>
           </div>
           <span className="label-eyebrow">Discover · Connect · Grow</span>

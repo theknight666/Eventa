@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, Search, Building2, User, LogOut, Menu, X } from "lucide-react";
@@ -222,7 +223,15 @@ export default function Navbar() {
                             }}
                             className="px-4 py-3 hover:bg-muted transition-colors flex items-center gap-3"
                           >
-                            <img src={ev.cover_image} onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1540575467063-178a50c2df87")} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                            <div className="relative w-10 h-10 shrink-0">
+                              <Image 
+                                src={ev.cover_image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87"} 
+                                alt="" 
+                                fill
+                                sizes="40px"
+                                className="rounded-lg object-cover" 
+                              />
+                            </div>
                             <div className="flex flex-col overflow-hidden">
                               <span className="text-sm font-semibold truncate text-foreground leading-tight">{ev.title}</span>
                               <span className="text-xs text-muted-foreground truncate mt-0.5">{ev.city} • {new Date(ev.start_iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>

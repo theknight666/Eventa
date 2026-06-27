@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
 import { MapPin, Sparkles } from "lucide-react";
 import { FALLBACK_IMG } from "@/data/meta";
+import Image from "next/image";
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -72,12 +73,13 @@ function CityCard({ city, isActive, onSelect, delay, className = "" }) {
           className="absolute inset-0 w-full h-full"
           style={{ transform: "translateZ(-30px)" }}
         >
-          <img
+          <Image
             src={city.image}
             onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
             alt={city.name}
-            loading="lazy"
-            className={`absolute inset-0 h-full w-full object-cover transition-transform duration-1000 ease-out z-0
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className={`object-cover transition-transform duration-1000 ease-out z-0
                       ${isActive ? "scale-105" : "scale-110 group-hover:scale-[1.15]"}`}
           />
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/40 to-black/10 transition-opacity duration-500 group-hover:from-black/100" />

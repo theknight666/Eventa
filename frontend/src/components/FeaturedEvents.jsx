@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { getEvents } from "@/lib/api";
 import { formatDate, FALLBACK_IMG } from "@/data/meta";
+import Image from "next/image";
 
 export default function FeaturedEvents({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents || []);
@@ -92,12 +93,13 @@ export default function FeaturedEvents({ initialEvents }) {
                   className="group block relative rounded-3xl overflow-hidden border border-amber-500/20 bg-white/60 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors shadow-xl dark:shadow-2xl backdrop-blur-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">
-                    <img
+                    <Image
                       src={ev.cover_image}
                       onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
                       alt={ev.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
                     

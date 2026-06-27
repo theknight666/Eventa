@@ -8,7 +8,15 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import Head from "next/head";
+import Script from "next/script";
 import type { AppProps } from "next/app";
+import { Manrope } from "next/font/google";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 import "@/index.css";
 import "@/App.css";
@@ -38,7 +46,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId="729384923230-5fd80u66uajlodone0h656hh76nq7f34.apps.googleusercontent.com">
+    <div className={manrope.className}>
+      <Script src="https://assets.emergent.sh/scripts/emergent-main.js" strategy="afterInteractive" />
+      <GoogleOAuthProvider clientId="729384923230-5fd80u66uajlodone0h656hh76nq7f34.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <UserProvider>
@@ -77,5 +87,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         </ThemeProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>
+    </div>
   );
 }
