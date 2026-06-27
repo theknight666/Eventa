@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
 import Hero from "@/components/Hero";
-import FeaturedEvents from "@/components/FeaturedEvents";
-import TrendingEvents from "@/components/TrendingEvents";
-import CategoryGrid from "@/components/CategoryGrid";
-import FeaturedCities from "@/components/FeaturedCities";
 import SEO from "@/components/SEO";
 
-// Lazy load below-the-fold components
+// Lazy load below-the-fold components to improve PageSpeed score
 const EventsNearYou = dynamic(() => import('@/components/EventsNearYou'), { ssr: false });
 const CuratedEvents = dynamic(() => import('@/components/CuratedEvents'), { ssr: false });
 const Discover = dynamic(() => import('@/components/Discover'), { ssr: false });
 const AIRecommendations = dynamic(() => import('@/components/AIRecommendations'), { ssr: false });
+const FeaturedEvents = dynamic(() => import('@/components/FeaturedEvents'));
+const TrendingEvents = dynamic(() => import('@/components/TrendingEvents'));
+const CategoryGrid = dynamic(() => import('@/components/CategoryGrid'));
+const FeaturedCities = dynamic(() => import('@/components/FeaturedCities'));
 
 const DEFAULT_FILTERS = {
   q: "",

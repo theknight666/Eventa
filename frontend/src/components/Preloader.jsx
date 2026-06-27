@@ -2,11 +2,19 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Preloader() {
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setDone(true), 1500);
-    return () => clearTimeout(t);
+    // Only run the preloader once per session to avoid annoying users and Lighthouse
+    const hasRun = sessionStorage.getItem("eventa_preloader");
+    if (!hasRun) {
+      setDone(false);
+      const t = setTimeout(() => {
+        setDone(true);
+        sessionStorage.setItem("eventa_preloader", "true");
+      }, 1000);
+      return () => clearTimeout(t);
+    }
   }, []);
 
   return (

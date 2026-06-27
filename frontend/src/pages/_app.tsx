@@ -25,6 +25,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Preloader from "@/components/Preloader";
 import GlobalBackground from "@/components/GlobalBackground";
 
 const queryClient = new QueryClient({
@@ -51,6 +52,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                     <meta name="theme-color" content="#000000" />
                   </Head>
                   <GlobalBackground />
+                  <Preloader />
                   <SmoothScroll>
                     <Navbar />
                     <div className="flex-1">
