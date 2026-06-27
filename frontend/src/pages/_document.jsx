@@ -32,11 +32,7 @@ export default function Document() {
         <link rel="apple-touch-icon" href="/favicon.png" />
 
         <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
-        <link rel="preload" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" as="style" />
-        <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'" />
-        <noscript>
-          <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" rel="stylesheet" />
-        </noscript>
+        <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" rel="stylesheet" />
         
         <script
           dangerouslySetInnerHTML={{
