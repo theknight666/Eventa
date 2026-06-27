@@ -47,7 +47,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <div className={manrope.className}>
-      <Script src="https://assets.emergent.sh/scripts/emergent-main.js" strategy="afterInteractive" />
       <GoogleOAuthProvider clientId="729384923230-5fd80u66uajlodone0h656hh76nq7f34.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
