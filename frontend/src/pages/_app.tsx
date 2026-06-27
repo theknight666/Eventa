@@ -22,7 +22,6 @@ import "@/index.css";
 import "@/App.css";
 
 import SmoothScroll from "@/components/SmoothScroll";
-import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -38,13 +37,6 @@ const queryClient = new QueryClient({
 });
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-  // Next.js uses server-side rendering, so we need to be careful with browser APIs
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <div className={manrope.className}>
       <GoogleOAuthProvider clientId="729384923230-5fd80u66uajlodone0h656hh76nq7f34.apps.googleusercontent.com">
@@ -59,24 +51,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                     <meta name="theme-color" content="#000000" />
                   </Head>
                   <GlobalBackground />
-                  
-                  {mounted ? (
-                    <SmoothScroll>
-                      <Navbar />
+                  <SmoothScroll>
+                    <Navbar />
+                    <div className="flex-1">
                       <Component {...pageProps} />
-                      <Footer />
-                    </SmoothScroll>
-                  ) : (
-                    <div className="min-h-screen flex flex-col">
-                      <Navbar />
-                      <div className="flex-1">
-                        <Component {...pageProps} />
-                      </div>
-                      <Footer />
                     </div>
-                  )}
+                    <Footer />
+                  </SmoothScroll>
                   
-                  <Preloader />
                   <Toaster position="bottom-right" theme="system" />
                   <SpeedInsights />
                 </ErrorBoundary>

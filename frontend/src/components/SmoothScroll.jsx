@@ -10,6 +10,11 @@ export default function SmoothScroll({ children }) {
   }, [pathname]);
 
   useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (isMobile || prefersReducedMotion) return;
+
     const lenis = new Lenis({
       lerp: 0.09,
       smoothWheel: true,

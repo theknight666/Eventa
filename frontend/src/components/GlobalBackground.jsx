@@ -12,6 +12,9 @@ export default function GlobalBackground() {
   const maskImage = useMotionTemplate`radial-gradient(180px circle at ${smoothX}px ${smoothY}px, black, transparent 100%)`;
 
   useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    if (isMobile) return;
+
     const handleMouseMove = (e) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
@@ -25,9 +28,9 @@ export default function GlobalBackground() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-slate-50 dark:bg-[#050505] transition-colors duration-500">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] dark:opacity-[0.25] mix-blend-multiply dark:mix-blend-overlay" />
       
-      {/* 30% Visibility applied to the entire masked layer */}
+      {/* 30% Visibility applied to the entire masked layer - HIDDEN ON MOBILE */}
       <motion.div 
-        className="absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30 transform-gpu will-change-transform"
+        className="hidden md:block absolute inset-0 z-0 pointer-events-none opacity-[0.15] dark:opacity-30 transform-gpu will-change-transform"
         style={{ WebkitMaskImage: maskImage, maskImage: maskImage }}
       >
         {/* text-amber-600/500 ensures deeply amber lines on both modes */}
