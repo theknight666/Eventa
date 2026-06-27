@@ -78,7 +78,8 @@ function CityCard({ city, isActive, onSelect, delay, className = "" }) {
             onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
             alt={city.name}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            quality={60}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 20vw"
             className={`object-cover transition-transform duration-1000 ease-out z-0
                       ${isActive ? "scale-105" : "scale-110 group-hover:scale-[1.15]"}`}
           />

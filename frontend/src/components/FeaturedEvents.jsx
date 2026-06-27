@@ -98,7 +98,8 @@ export default function FeaturedEvents({ initialEvents }) {
                       onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
                       alt={ev.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      quality={60}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 20vw"
                       className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
