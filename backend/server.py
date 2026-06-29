@@ -70,6 +70,30 @@ db = client[os.environ.get('DB_NAME', 'eventa')]
 
 app = FastAPI(title="Eventa — India Event Discovery")
 
+import urllib.request
+
+async def self_ping_loop():
+    while True:
+        try:
+            # Sleep for 15 minutes (900 seconds)
+            await asyncio.sleep(900)
+            
+            # Hugging Face provides SPACE_HOST environment variable automatically
+            space_host = os.environ.get("SPACE_HOST", "theknight666-eventa-backend.hf.space")
+            url = f"https://{space_host}/"
+            
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Self-Ping)'})
+            with urllib.request.urlopen(req) as response:
+                pass
+            print(f"Self-ping to {url} successful to prevent sleep.")
+        except Exception as e:
+            print(f"Self-ping failed: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    # Start the self-ping loop in the background when the server starts
+    asyncio.create_task(self_ping_loop())
+
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
