@@ -14,5 +14,11 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        # REPLACE 'your-hf-username/Eventa-Backend' with your actual Hugging Face username and Space name!
-        run: git push --force https://user:$HF_TOKEN@huggingface.co/spaces/theknight666/Eventa-Backend main
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git rm -r --cached frontend/ || true
+          git commit -m "Deploy to Hugging Face"
+          git push --force https://theknight666:$HF_TOKEN@huggingface.co/spaces/theknight666/Eventa-Backend HEAD:main
+
+
