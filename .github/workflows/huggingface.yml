@@ -19,7 +19,16 @@ jobs:
           git init
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add Dockerfile backend/
+          echo "---" > README.md
+          echo "title: Eventa Backend" >> README.md
+          echo "emoji: 🚀" >> README.md
+          echo "colorFrom: blue" >> README.md
+          echo "colorTo: indigo" >> README.md
+          echo "sdk: docker" >> README.md
+          echo "pinned: false" >> README.md
+          echo "app_port: 7860" >> README.md
+          echo "---" >> README.md
+          git add Dockerfile backend/ README.md
           git commit -m "Deploy to Hugging Face"
           git push --force https://theknight666:$HF_TOKEN@huggingface.co/spaces/theknight666/Eventa-Backend HEAD:main
 
