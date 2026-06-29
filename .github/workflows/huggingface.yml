@@ -19,8 +19,7 @@ jobs:
           git init
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          rm -rf frontend/
-          git add .
+          git add Dockerfile backend/
           git commit -m "Deploy to Hugging Face"
           git push --force https://theknight666:$HF_TOKEN@huggingface.co/spaces/theknight666/Eventa-Backend HEAD:main
 
