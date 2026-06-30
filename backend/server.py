@@ -116,6 +116,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class AntiScrapeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # 1. Block common scraping user-agents
+        user_agent = request.headers.get("user-agent", "").lower()
+        blocked_agents = ["python-requests", "curl", "wget", "scrapy", "postman", "httpx", "urllib", "puppeteer", "headlesschrome"]
+        if any(agent in user_agent for agent in blocked_agents) and "self-ping" not in user_agent:
+            return JSONResponse(status_code=403, content={"detail": "Automated access is not allowed."})
+            
+        # 2. Enforce custom header on /api routes
+        if request.url.path.startswith("/api") and request.method != "OPTIONS":
+            if not request.url.path.startswith("/api/admin"):
+                client_header = request.headers.get("x-eventa-client")
+                if client_header != "web":
+                    return JSONResponse(status_code=403, content={"detail": "Invalid client request. Anti-Scraping protection active."})
+                    
+        return await call_next(request)
+
+app.add_middleware(AntiScrapeMiddleware)
+
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -700,6 +721,7 @@ async def get_sitemap():
     return Response(content="\n".join(xml_lines), media_type="application/xml")
 
 @api_router.get("/overview")
+@limiter.limit("30/minute")
 async def get_overview(request: Request):
     cache_key = "/overview"
     cached_res = await api_cache.get(cache_key)
@@ -792,6 +814,7 @@ async def force_migrate_coords():
     return {"status": "ok", "updated": updated, "skipped": skipped, "index_status": index_status}
 
 @api_router.get("/events")
+@limiter.limit("60/minute")
 async def list_events(
     request: Request,
     q: Optional[str] = None,
@@ -932,7 +955,8 @@ async def list_events(
 
 
 @api_router.get("/events/{event_id}")
-async def get_event(event_id: str):
+@limiter.limit("100/minute")
+async def get_event(request: Request, event_id: str):
     doc = await db.events.find_one({"$or": [{"id": event_id}, {"slug": event_id}]})
     if not doc:
         raise HTTPException(status_code=404, detail="Event not found")

@@ -5,7 +5,12 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 export const API = `${BACKEND_URL}/api`;
 
-const client = axios.create({ baseURL: API });
+const client = axios.create({ 
+  baseURL: API,
+  headers: {
+    "x-eventa-client": "web"
+  }
+});
 
 client.interceptors.response.use(
   (response) => response,
