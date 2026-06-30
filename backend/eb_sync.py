@@ -47,7 +47,7 @@ async def fetch_eb_events_for_city(city: str) -> list[dict]:
             aliases = CITY_ALIASES.get(city, [city])
             for alias in aliases:
                 for category in categories:
-                    for page in range(1, 1001): # Up to 1000 pages per category
+                    for page in range(1, 6): # Up to 5 pages per category (prevents 6-hour timeout)
                         url = f"https://www.eventbrite.com/d/india--{alias}/{category}/?page={page}"
                         resp = await client.get(url, headers=headers)
                         if resp.status_code != 200:
