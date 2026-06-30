@@ -10,7 +10,11 @@ on:
 jobs:
   scrape-events:
     runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [meetup, eventbrite, luma, townscript, allevents]
+        
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,10 +31,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Background Scraper Sync
+      - name: Run Dedicated Background Scraper Sync
         env:
           MONGO_URL: ${{ secrets.MONGO_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd backend
-          python run_all_syncs.py
+          python run_single_sync.py ${{ matrix.platform }}

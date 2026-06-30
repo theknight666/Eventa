@@ -41,7 +41,20 @@ async def fetch_meetup_urls(city: str) -> list[str]:
     links = set()
     keywords = [
         "", "tech", "business", "health", "music", "art", "education", "social", "sports", 
-        "food", "networking", "startup", "investor", "marketing", "career", "jobs"
+        "food", "drink", "party", "network", "club", "fitness", "yoga", "language", "culture", 
+        "writing", "design", "data", "ai", "crypto", "spiritual", "meditation", "community", 
+        "meetup", "online", "workshop", "class", "free", "weekend", "fun", "friends", "startup", 
+        "investor", "marketing", "sales", "women", "men", "singles", "dating", "career", "jobs", 
+        "hiring", "coffee", "chai", "tea", "books", "reading", "movie", "film", "comedy", 
+        "standup", "theater", "dance", "photography", "outdoors", "hiking", "adventure", 
+        "travel", "pet", "dog", "cat", "gaming", "board games", "video games", "esports", 
+        "vr", "ar", "robotics", "engineering", "science", "math", "history", "philosophy", 
+        "psychology", "self-improvement", "leadership", "management", "entrepreneurship", 
+        "real estate", "finance", "investing", "trading", "stocks", "options", "forex", 
+        "taxes", "accounting", "legal", "law", "politics", "activism", "volunteer", 
+        "charity", "nonprofit", "sustainability", "environment", "climate", "nature", 
+        "gardening", "farming", "agriculture", "cooking", "baking", "vegan", "vegetarian", 
+        "keto", "paleo", "gluten-free", "diet", "nutrition", "weight loss", "martial arts"
     ]
     aliases = CITY_ALIASES.get(city, [city])
     
@@ -49,7 +62,7 @@ async def fetch_meetup_urls(city: str) -> list[str]:
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
             for alias in aliases:
                 for keyword in keywords:
-                    for page in range(1, 6): # Fetch up to 5 pages per keyword (prevents 6-hour timeout)
+                    for page in range(1, 51): # Fetch up to 50 pages per keyword
                         url = f"https://www.meetup.com/find/?location=in--{alias}&source=EVENTS&keywords={keyword}&page={page}"
                         resp = await client.get(url, headers=headers)
                         soup = BeautifulSoup(resp.text, "html.parser")
