@@ -24,21 +24,23 @@ async def main():
     
     # Run sequentially to prevent memory/rate limit issues on GitHub Actions
     # force=True ignores the 6-hour cooldowns
-    print("--- Running Luma Sync ---")
-    await sync_luma_cities(db, force=True)
     
-    print("--- Running Townscript Sync ---")
-    await sync_ts_cities(db, force=True)
+    sync_tasks = [
+        ("Luma", sync_luma_cities),
+        ("Townscript", sync_ts_cities),
+        ("Eventbrite", sync_eb_cities),
+        ("Meetup", sync_meetup_cities),
+        ("AllEvents", sync_all_cities)
+    ]
     
-    print("--- Running Eventbrite Sync ---")
-    await sync_eb_cities(db, force=True)
-    
-    print("--- Running Meetup Sync ---")
-    await sync_meetup_cities(db, force=True)
-    
-    print("--- Running AllEvents Sync ---")
-    await sync_all_cities(db, force=True) 
-    
+    for name, sync_func in sync_tasks:
+        print(f"--- Running {name} Sync ---")
+        try:
+            await sync_func(db, force=True)
+        except Exception as e:
+            logging.error(f"Error during {name} sync: {e}")
+            print(f"Continuing with next sync...")
+            
     print('All massive syncs complete! Database successfully populated.')
 
 if __name__ == '__main__':
