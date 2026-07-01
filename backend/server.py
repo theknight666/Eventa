@@ -64,11 +64,25 @@ def _sched():
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'eventa')]
+mongo_url = os.environ.get('MONGO_URL')
+if mongo_url:
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[os.environ.get('DB_NAME', 'eventa')]
+else:
+    client = None
+    db = None
+    print("WARNING: MONGO_URL is missing! Database will not work.")
 
 app = FastAPI(title="Eventa — India Event Discovery")
+
+@app.get("/api/debug-env")
+def debug_env():
+    return {
+        "mongo_present": "MONGO_URL" in os.environ,
+        "db_name": os.environ.get("DB_NAME"),
+        "cors": os.environ.get("CORS_ORIGINS"),
+        "admin": os.environ.get("ADMIN_SECRET") is None
+    }
 
 import urllib.request
 
