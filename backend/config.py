@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import logging
 
@@ -7,13 +8,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
-    MONGO_URL: str | None = None
+    MONGO_URL: Optional[str] = None
     ADMIN_SECRET: str = "superadmin123"
     JWT_SECRET: str = "devsecret"
     CORS_ORIGINS: str = "*"
-    RENDER: str | None = None
-    OPENAI_API_KEY: str | None = None
-    EMERGENT_LLM_KEY: str | None = None
+    RENDER: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    EMERGENT_LLM_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
