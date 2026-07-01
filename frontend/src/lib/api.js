@@ -7,21 +7,54 @@ export const API = `${BACKEND_URL}/api`;
 
 const client = axios.create({ 
   baseURL: API,
+  timeout: 25000,
   headers: {
     "x-eventa-client": "web"
   }
 });
 
+// Interceptor to show a toast if the request is taking unusually long (e.g. cold start)
+const slowRequestTimers = new Map();
+
+client.interceptors.request.use((config) => {
+  const requestId = Math.random().toString(36).substring(7);
+  config.requestId = requestId;
+  slowRequestTimers.set(requestId, setTimeout(() => {
+    toast.loading("Waking up the server, please wait...", { id: requestId });
+  }, 4000));
+  return config;
+});
+
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const timer = slowRequestTimers.get(response.config.requestId);
+    if (timer) {
+      clearTimeout(timer);
+      slowRequestTimers.delete(response.config.requestId);
+      toast.dismiss(response.config.requestId);
+    }
+    return response;
+  },
   (error) => {
+    if (error.config && error.config.requestId) {
+      const timer = slowRequestTimers.get(error.config.requestId);
+      if (timer) {
+        clearTimeout(timer);
+        slowRequestTimers.delete(error.config.requestId);
+        toast.dismiss(error.config.requestId);
+      }
+    }
+
     console.error("API Error caught globally:", error);
     if (!error.response) {
-      toast.error("Network error. Please check your connection.");
+      if (error.code === 'ECONNABORTED') {
+        toast.error("Request timed out. The server is taking too long to wake up.");
+      } else {
+        toast.error("Network error. Please check your connection.");
+      }
     } else if (error.response.status >= 500) {
       toast.error("Server error. We are looking into it.");
     } else {
-      // Don't toast 401s globally if they are expected (like expired tokens), but generally safe for now.
       toast.error(error.response.data?.detail || "An unexpected error occurred.");
     }
     return Promise.reject(error);

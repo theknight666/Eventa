@@ -64,24 +64,25 @@ def _sched():
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ.get('MONGO_URL')
-if mongo_url:
-    client = AsyncIOMotorClient(mongo_url)
+from config import settings
+
+if settings.MONGO_URL:
+    client = AsyncIOMotorClient(settings.MONGO_URL)
+    # The config doesn't have DB_NAME by default, we can still use os.environ for non-critical things
     db = client[os.environ.get('DB_NAME', 'eventa')]
 else:
     client = None
     db = None
-    print("WARNING: MONGO_URL is missing! Database will not work.")
 
 app = FastAPI(title="Eventa — India Event Discovery")
 
 @app.get("/api/debug-env")
 def debug_env():
     return {
-        "mongo_present": "MONGO_URL" in os.environ,
-        "db_name": os.environ.get("DB_NAME"),
-        "cors": os.environ.get("CORS_ORIGINS"),
-        "admin": os.environ.get("ADMIN_SECRET") is None
+        "mongo_present": bool(settings.MONGO_URL),
+        "db_name": os.environ.get("DB_NAME", "eventa"),
+        "cors": settings.CORS_ORIGINS,
+        "admin": bool(settings.ADMIN_SECRET)
     }
 
 import urllib.request
@@ -116,8 +117,8 @@ limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
-if cors_origins_env == "*" and os.environ.get("RENDER"):
+cors_origins_env = settings.CORS_ORIGINS
+if cors_origins_env == "*" and settings.RENDER:
     allowed_origins = ["https://eventa.in", "https://www.eventa.in"]
 else:
     allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")] if cors_origins_env != "*" else ["*"]
@@ -156,7 +157,7 @@ api_router = APIRouter(prefix="/api")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+EMERGENT_LLM_KEY = settings.EMERGENT_LLM_KEY
 
 CATEGORIES = [
     {"id": "startup", "label": "Startup", "icon": "Rocket"},
@@ -1071,7 +1072,7 @@ async def recommendations(req: RecommendRequest):
 
 
 # ======================= AUTH & SECURITY =======================
-JWT_SECRET = os.environ.get("JWT_SECRET", os.environ.get("ADMIN_SECRET", "superadmin123"))
+JWT_SECRET = settings.JWT_SECRET
 JWT_ALGORITHM = "HS256"
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -1416,7 +1417,7 @@ class AdminLoginReq(BaseModel):
 
 @api_router.post("/admin/login")
 async def admin_login(req: AdminLoginReq):
-    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
+    secret = settings.ADMIN_SECRET
     if req.password == secret:
         token = create_access_token({"sub": "admin", "role": "admin"}, timedelta(days=1))
         return {"ok": True, "token": token}
@@ -1589,8 +1590,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_db_client():
-    secret = os.environ.get("ADMIN_SECRET", "superadmin123")
-    if secret == "superadmin123" and os.environ.get("RENDER"):
+    secret = settings.ADMIN_SECRET
+    if secret == "superadmin123" and settings.RENDER:
         logger.critical("CRITICAL: ADMIN_SECRET is set to default 'superadmin123' in production!")
         raise RuntimeError("Insecure ADMIN_SECRET in production. Please set ADMIN_SECRET env var.")
         

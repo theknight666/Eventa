@@ -1,47 +1,44 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import useSWR from "swr";
 import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import { GridSkeleton } from "./Skeletons";
+import ErrorState from "./ErrorState";
 
 export default function EventsNearYou({ selectedCity, userCoords }) {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [queryParams, setQueryParams] = useState(null);
   const [userCity, setUserCity] = useState(null);
   const [userArea, setUserArea] = useState(null);
   const [locationStatus, setLocationStatus] = useState("detecting"); // detecting, found, denied, error
   const scroller = useRef(null);
 
   useEffect(() => {
-    async function fetchLocationAndEvents() {
+    async function fetchLocation() {
       try {
         if (selectedCity) {
-          setLoading(true);
           setUserCity(selectedCity);
           setUserArea(null);
           setLocationStatus("found");
           
-          const queryParams = { limit: 15 };
+          const params = { limit: 15 };
           if (userCoords) {
-            queryParams.lat = userCoords.lat;
-            queryParams.lng = userCoords.lng;
-            queryParams.radius_km = 30;
+            params.lat = userCoords.lat;
+            params.lng = userCoords.lng;
+            params.radius_km = 30;
           } else {
-            queryParams.city = selectedCity;
+            params.city = selectedCity;
           }
-          
-          const d = await getEvents(queryParams);
-          setEvents(d.events || []);
-          setLoading(false);
+          setQueryParams(params);
           return;
         }
 
+        setLocationStatus("detecting");
         let latitude = null;
         let longitude = null;
         let detectedCity = "your area";
         let detectedArea = null;
 
-        // Try precise geolocation first
         const getPreciseLocation = () => {
           return new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
@@ -83,7 +80,6 @@ export default function EventsNearYou({ selectedCity, userCoords }) {
           }
         } catch (err) {
           console.log("Precise geolocation failed or denied, falling back to IP based location.", err);
-          // Fallback to IP-based location
           const res = await fetch("https://ipapi.co/json/");
           if (res.ok) {
             const data = await res.json();
@@ -118,36 +114,37 @@ export default function EventsNearYou({ selectedCity, userCoords }) {
         setUserArea(detectedArea);
         setLocationStatus("found");
 
-        const queryParams = { limit: 15 };
+        const params = { limit: 15 };
         if (latitude && longitude) {
-            queryParams.lat = latitude;
-            queryParams.lng = longitude;
-            queryParams.radius_km = 30;
+            params.lat = latitude;
+            params.lng = longitude;
+            params.radius_km = 30;
         } else {
-            queryParams.city = normalizedCity;
+            params.city = normalizedCity;
         }
         
-        const d = await getEvents(queryParams);
-        
-        setEvents(d.events || []);
+        setQueryParams(params);
       } catch (error) {
-        console.error("Location or fetch error:", error);
+        console.error("Location error:", error);
         setLocationStatus("error");
-      } finally {
-        setLoading(false);
       }
     }
 
-    fetchLocationAndEvents();
-  }, [selectedCity]);
+    fetchLocation();
+  }, [selectedCity, userCoords]);
+
+  const { data, error, isLoading, mutate } = useSWR(
+    queryParams ? ["/events", queryParams] : null,
+    ([, params]) => getEvents(params),
+    { revalidateOnFocus: false }
+  );
 
   const scroll = (dir) => {
     scroller.current?.scrollBy({ left: dir * 300, behavior: "smooth" });
   };
 
-  if (locationStatus === "denied" || locationStatus === "error") {
-    return null; // Optionally, we could show a prompt "Enable location to see events near you"
-  }
+  const events = data?.events || [];
+  const loading = isLoading || locationStatus === "detecting";
 
   return (
     <section id="events-near-you" className="mx-auto max-w-5xl px-4 sm:px-6 py-24" data-testid="near-you-section">
@@ -175,10 +172,13 @@ export default function EventsNearYou({ selectedCity, userCoords }) {
         </div>
       </div>
 
-      {loading || locationStatus === "detecting" ? (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <Loader2 size={32} className="animate-spin mb-4 text-primary" />
-          <p>{locationStatus === "detecting" ? "Detecting your location..." : "Fetching events..."}</p>
+      {error || locationStatus === "error" ? (
+        <div className="h-[300px]">
+          <ErrorState message="Failed to load events in your area. The server might be asleep." onRetry={() => mutate()} />
+        </div>
+      ) : loading ? (
+        <div className="flex gap-6 overflow-hidden pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6">
+          <GridSkeleton count={4} />
         </div>
       ) : events.length === 0 ? (
         <div className="glass p-8 rounded-3xl text-center">

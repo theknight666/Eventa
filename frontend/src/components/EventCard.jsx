@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useSaved } from "@/context/SavedContext";
 import { useUser } from "@/context/UserContext";
 import { CATEGORY_META, formatDate, formatINR, FALLBACK_IMG } from "@/data/meta";
-import Image from "next/image";
+import SafeImage from "./SafeImage";
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -67,9 +67,8 @@ const EventCard = React.memo(({ event, index = 0 }) => {
     >
       <Link href={`/event/${event.slug || event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
         <div className="relative aspect-[16/10] overflow-hidden">
-          <Image
-            src={event.cover_image?.startsWith("/") ? FALLBACK_IMG : (event.cover_image || FALLBACK_IMG)}
-            onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
+          <SafeImage
+            src={event.cover_image}
             alt={event.title}
             fill
             quality={60}

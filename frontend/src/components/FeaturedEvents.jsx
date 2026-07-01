@@ -2,13 +2,13 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Calendar, MapPin, ArrowRight } from "lucide-react";
+import useSWR from "swr";
 import { getEvents } from "@/lib/api";
 import { formatDate, FALLBACK_IMG } from "@/data/meta";
-import Image from "next/image";
+import SafeImage from "./SafeImage";
+import ErrorState from "./ErrorState";
 
 export default function FeaturedEvents({ initialEvents }) {
-  const [events, setEvents] = useState(initialEvents || []);
-  const [loading, setLoading] = useState(!initialEvents);
   const containerRef = useRef(null);
 
   const stars = useMemo(() => {
@@ -22,16 +22,22 @@ export default function FeaturedEvents({ initialEvents }) {
     }));
   }, []);
 
-  useEffect(() => {
-    if (!initialEvents) {
-      getEvents({ featured: true })
-        .then((data) => {
-          setEvents(data.events || []);
-        })
-        .catch((err) => console.error(err))
-        .finally(() => setLoading(false));
-    }
-  }, [initialEvents]);
+  const { data, error, isLoading, mutate } = useSWR(
+    !initialEvents ? ["/events", { featured: true }] : null,
+    ([, params]) => getEvents(params),
+    { revalidateOnFocus: false, fallbackData: initialEvents ? { events: initialEvents } : undefined }
+  );
+
+  if (error) {
+    return (
+      <section className="py-16 px-4 max-w-7xl mx-auto h-[400px]">
+        <ErrorState message="Failed to load featured events." onRetry={() => mutate()} />
+      </section>
+    );
+  }
+
+  const events = data?.events || [];
+  const loading = isLoading;
 
   if (loading || events.length === 0) return null;
 
@@ -93,9 +99,8 @@ export default function FeaturedEvents({ initialEvents }) {
                   className="group block relative rounded-3xl overflow-hidden border border-amber-500/20 bg-white/60 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors shadow-xl dark:shadow-2xl backdrop-blur-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">
-                    <Image
-                      src={ev.cover_image?.startsWith("/") ? FALLBACK_IMG : (ev.cover_image || FALLBACK_IMG)}
-                      onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
+                    <SafeImage
+                      src={ev.cover_image}
                       alt={ev.title}
                       fill
                       quality={60}
