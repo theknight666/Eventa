@@ -30,7 +30,7 @@ export default function GlobalBackground() {
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 bg-slate-50 dark:bg-[#050505] transition-colors duration-500">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] dark:opacity-[0.25] mix-blend-multiply dark:mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.15] dark:opacity-[0.25] mix-blend-multiply dark:mix-blend-overlay" />
       
       {/* 30% Visibility applied to the entire masked layer - HIDDEN ON MOBILE */}
       {!isMobile && (

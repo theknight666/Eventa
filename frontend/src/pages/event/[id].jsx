@@ -200,7 +200,7 @@ export default function EventDetail({ event: initialEvent, related: initialRelat
       {/* Hero banner */}
       <div className="relative min-h-[60vh] lg:min-h-[70vh] w-full overflow-hidden flex flex-col">
         <img
-          src={event.cover_image}
+          src={event.cover_image?.startsWith("/") ? FALLBACK_IMG : (event.cover_image || FALLBACK_IMG)}
           onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
           alt={event.title}
           className="absolute inset-0 h-full w-full object-cover"

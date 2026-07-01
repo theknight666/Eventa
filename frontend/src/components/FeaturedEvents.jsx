@@ -47,7 +47,7 @@ export default function FeaturedEvents({ initialEvents }) {
         <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/40 dark:bg-amber-600/50 blur-[100px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-orange-400/40 dark:bg-orange-600/50 blur-[100px] rounded-full pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/30 dark:bg-amber-700/40 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-30 mix-blend-overlay pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 dark:opacity-30 mix-blend-overlay pointer-events-none" />
 
         {/* Galaxy Starfield */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -94,7 +94,7 @@ export default function FeaturedEvents({ initialEvents }) {
                 >
                   <div className="aspect-[16/10] overflow-hidden relative">
                     <Image
-                      src={ev.cover_image}
+                      src={ev.cover_image?.startsWith("/") ? FALLBACK_IMG : (ev.cover_image || FALLBACK_IMG)}
                       onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
                       alt={ev.title}
                       fill

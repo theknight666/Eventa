@@ -74,7 +74,7 @@ function CityCard({ city, isActive, onSelect, delay, className = "" }) {
           style={{ transform: "translateZ(-30px)" }}
         >
           <Image
-            src={city.image}
+            src={city.image?.startsWith("/") ? FALLBACK_IMG : (city.image || FALLBACK_IMG)}
             onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
             alt={city.name}
             fill

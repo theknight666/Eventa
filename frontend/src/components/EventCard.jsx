@@ -68,7 +68,7 @@ const EventCard = React.memo(({ event, index = 0 }) => {
       <Link href={`/event/${event.slug || event.id}`} className="group block rounded-3xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
         <div className="relative aspect-[16/10] overflow-hidden">
           <Image
-            src={event.cover_image}
+            src={event.cover_image?.startsWith("/") ? FALLBACK_IMG : (event.cover_image || FALLBACK_IMG)}
             onError={(e) => (e.currentTarget.src = FALLBACK_IMG)}
             alt={event.title}
             fill
