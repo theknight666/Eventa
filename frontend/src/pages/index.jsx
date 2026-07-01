@@ -108,12 +108,13 @@ export async function getStaticProps() {
   const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "http://127.0.0.1:8000";
   
   try {
+    const headers = { "x-eventa-client": "web" };
     const [statsRes, catRes, citiesRes, featuredRes, trendingRes] = await Promise.all([
-      fetch(`${baseURL}/api/overview`),
-      fetch(`${baseURL}/api/categories`),
-      fetch(`${baseURL}/api/cities`),
-      fetch(`${baseURL}/api/events?featured=true`),
-      fetch(`${baseURL}/api/events?trending=true`)
+      fetch(`${baseURL}/api/overview`, { headers }),
+      fetch(`${baseURL}/api/categories`, { headers }),
+      fetch(`${baseURL}/api/cities`, { headers }),
+      fetch(`${baseURL}/api/events?featured=true`, { headers }),
+      fetch(`${baseURL}/api/events?trending=true`, { headers })
     ]);
     
     const [stats, categories, cities, featured, trending] = await Promise.all([
