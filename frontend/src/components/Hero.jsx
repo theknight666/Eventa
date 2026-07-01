@@ -518,7 +518,7 @@ export default function Hero({ stats, cities = [], activeCity, onSearch, onCity 
             className="mt-6 max-w-xl text-lg sm:text-xl text-muted-foreground leading-relaxed"
           >
             One intelligent home for every conference, summit, festival and meetup
-            worth your time — across 8+ cities and 20+ industries.
+            worth your time — across 100+ cities and 20+ industries.
           </motion.p>
 
           <motion.form
