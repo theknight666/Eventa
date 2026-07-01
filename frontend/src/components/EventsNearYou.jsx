@@ -178,7 +178,7 @@ export default function EventsNearYou({ selectedCity, userCoords }) {
       {loading || locationStatus === "detecting" ? (
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <Loader2 size={32} className="animate-spin mb-4 text-primary" />
-          <p>Detecting your location...</p>
+          <p>{locationStatus === "detecting" ? "Detecting your location..." : "Fetching events..."}</p>
         </div>
       ) : events.length === 0 ? (
         <div className="glass p-8 rounded-3xl text-center">
